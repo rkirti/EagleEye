@@ -1,0 +1,6 @@
+bin/
+obj/
+*swp
+*swo
+changes
+tags

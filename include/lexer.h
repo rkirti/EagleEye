@@ -5,6 +5,8 @@
 #ifndef LEXER_H
 #define LEXER_H
 
+#include "circuit.h"
+
 /*
  * Define globla functions to be used by lexer 
  * to add elements to the circuit
