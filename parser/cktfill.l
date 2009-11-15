@@ -9,6 +9,8 @@
 #include "parser.tab.h"
 
 #define YYDEBUG 1
+
+#define Pass_Gate_Name()  { yylval.gatename=(char*)malloc(sizeof(char)*(strlen(yytext)+1));strcpy(yylval.gatename,yytext); printf("This is the name being passed: %s\n", yylval.gatename);}    
 extern YYSTYPE yylval;
 
 %}
@@ -36,14 +38,14 @@ xor {return T_XOR;}
 "(" {return T_LPAREN;}
 ")" {return T_RPAREN;}
 
-AND[0-9]+_[0-9]+  { yylval.gatename=(char*)malloc(10);return T_AND_NAME;}
-NAND[0-9]+_[0-9]+  { return T_NAND_NAME;}
-OR[0-9]+_[0-9]+  {return T_OR_NAME;}
-NOR[0-9]+_[0-9]+  {return T_NOR_NAME;}
-NOT[0-9]+_[0-9]+  {return T_NOT_NAME;}
-BUF[0-9]+_[0-9]+  {return T_BUF_NAME;}
-XOR[0-9]+_[0-9]+  { return T_XOR_NAME;}
-[A-Za-z]+[0-9]+   {return T_NAME;}
+AND[0-9]+_[0-9]+  { Pass_Gate_Name();return T_AND_NAME;}
+NAND[0-9]+_[0-9]+  {  Pass_Gate_Name(); return T_NAND_NAME;}
+OR[0-9]+_[0-9]+  {  Pass_Gate_Name(); return T_OR_NAME;}
+NOR[0-9]+_[0-9]+  {  Pass_Gate_Name(); return T_NOR_NAME;}
+NOT[0-9]+_[0-9]+  { Pass_Gate_Name(); return T_NOT_NAME;}
+BUF[0-9]+_[0-9]+  { Pass_Gate_Name(); return T_BUF_NAME;}
+XOR[0-9]+_[0-9]+  { Pass_Gate_Name();return T_XOR_NAME;}
+[A-Za-z]+[0-9]+   {Pass_Gate_Name();return T_NAME;}
 
 
 %%
