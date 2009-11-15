@@ -24,7 +24,7 @@ bool lexer()	// dummy lexer, written by GJ
 	Lexer_AddWire(n2,PI);
 	Lexer_AddWire(n3,PO);
 
-	Lexer_AddGate(AND,(char *)"AND2_0",n3,n12,2);
+	Lexer_AddGate(OR,(char *)"AND2_0",n3,n12,2);
 
 	return true;
 }

@@ -89,10 +89,10 @@ class Fault{
 class Circuit {
     
 public:
-    map<string,Wire*> PriInputs; // Set of primary inputs
-    map<string,Wire*> PriOutputs; //Set of primary outputs
-    map<string,Wire*> Netlist;	// All wires in the circuit
-    map<string,Gate*> Gates;   //All the gates in the circuit
+    map<string,Wire *> PriInputs; // Set of primary inputs
+    map<string,Wire *> PriOutputs; //Set of primary outputs
+    map<string,Wire *> Netlist;	// All wires in the circuit
+    map<string,Gate *> Gates;   //All the gates in the circuit
      
     Value*  testVector; // Array of values to be assigned to the pri inputs 
     //list<TestVector*> TestSet; // Final result  of test vectors generated
