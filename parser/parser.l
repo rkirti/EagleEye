@@ -1,3 +1,16 @@
+%{
+    /* Basic lexer for eagle eye */
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include "y.tab.h"
+
+#define YYDEBUG 1
+
+%}
+
 
 
 
