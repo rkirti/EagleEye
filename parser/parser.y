@@ -6,6 +6,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "defs.h"
+
+typedef enum wiretype{PI=0,PO,CONNECTION} WireType;
+
+typedef enum gatetype{AND=0,OR,NOT,NAND,NOR,XOR}GateType;
+
+
+#include "/home/oespirit/code/cs633/atpg/include/lexer.h"
 #define YYDEBUG 1
 
 extern char* yytext;
@@ -15,10 +22,8 @@ extern int yydebug;
 
 FILE* infp;
 
-typedef enum gatetype{AND=0,OR,NOT,NAND,NOR,XOR} GateType;
 
 
-typedef enum wiretype{PI=0,PO,CONNECTION} WireType;
 
 void Populate_Gate(Gatenode* gate,Namenode* output,Namenode* inputs) 
 {
@@ -164,12 +169,6 @@ name: T_NAME  { $$=$1;}
  ;
 
 %%
-
-void yyerror(const char* arg)
-{
-   /*   printf("Error [Line %d]: %s",numLines,arg);*/
-}
-
 
 int main(int argc, char** argv)
 {
