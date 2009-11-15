@@ -7,3 +7,4 @@ tags
 *.tab.c
 *.tab.h
 lex.yy.c
+depend.mak

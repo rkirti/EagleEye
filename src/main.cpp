@@ -14,7 +14,7 @@ int main(int argc,char **argv)
 	/*
 	 * Call the lexer now !
 	 */
-	if( !lexer() )
+	if( !lexer(argc,argv) )
 	{
 		cout << ":(" << endl;
 		exit(0);

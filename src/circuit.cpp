@@ -141,7 +141,7 @@ static Value Not(list<Wire*> inputs)
 
 static Value Nand(list<Wire*> inputs)
 {
-   int output=U;
+   int output=ONE;	// initially the ouput should be 1, so that it outputs sets to the starting value on doing the first and
    list<Wire *>::iterator iter;
    for (iter=inputs.begin(); iter != inputs.end(); iter++ )
        output &= (*iter)->value;
@@ -152,7 +152,7 @@ static Value Nand(list<Wire*> inputs)
 
 static Value Nor(list<Wire*> inputs)
 {
-   int output=U;
+   int output=ZERO;	// initially the ouput should be 0, so that it outputs sets to the starting value on doing the first or 
    list<Wire *>::iterator iter;
    for (iter=inputs.begin(); iter != inputs.end(); iter++ )
        output |= (*iter)->value;

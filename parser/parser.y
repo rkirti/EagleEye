@@ -12,7 +12,8 @@ typedef enum wiretype{PI=0,PO,CONNECTION} WireType;
 typedef enum gatetype{AND=0,OR,NOT,NAND,NOR,XOR}GateType;
 
 
-#include "/home/oespirit/code/cs633/atpg/include/lexer.h"
+extern int Lexer_AddWire(char *inName,WireType type);
+extern int Lexer_AddGate(GateType type, char *name,char* output,char **inputs,int numSignals);
 #define YYDEBUG 1
 
 extern char* yytext;
@@ -170,7 +171,7 @@ name: T_NAME  { $$=$1;}
 
 %%
 
-int main(int argc, char** argv)
+int lexer(int argc, char** argv)
 {
     if (argc != 2)
     {
@@ -195,5 +196,9 @@ int main(int argc, char** argv)
     return 0;
 }
   
-
+yyerror(s)
+char *s;
+{
+	fprintf(stderr,"%s\n",s);
+}
 
