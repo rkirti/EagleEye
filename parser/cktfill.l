@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include "defs.h"
 #include "parser.tab.h"
 
 #define YYDEBUG 1

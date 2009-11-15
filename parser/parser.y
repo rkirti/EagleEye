@@ -5,7 +5,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
+#include "defs.h"
 #define YYDEBUG 1
 
 extern char* yytext;
@@ -15,20 +15,9 @@ extern int yydebug;
 
 FILE* infp;
 
-typedef struct namenode{
-    char* name;
-    struct namenode* next;
-}Namenode;
-
-typedef struct gatenode{
-    Namenode* output;
-    Namenode* inputlist;
-}Gatenode;
-
 Namenode* Add_Name_To_List(Namenode* list, char* name)
 {
 }
-
 
 
 %}
