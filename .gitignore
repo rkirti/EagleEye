@@ -4,3 +4,6 @@ obj/
 *swo
 changes
 tags
+*.tab.c
+*.tab.h
+lex.yy.c

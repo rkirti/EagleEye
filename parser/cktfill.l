@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include "parser.tab.h"
+#include "y.tab.h"
 
 #define YYDEBUG 1
 
@@ -35,7 +35,7 @@ xor {return T_XOR;}
 "(" {return T_LPAREN;}
 ")" {return T_RPAREN;}
 
-AND[0-9]+_[0-9]+  { return T_AND_NAME;}
+AND[0-9]+_[0-9]+  { yylval.gatename=(char*)malloc(10);return T_AND_NAME;}
 NAND[0-9]+_[0-9]+  { return T_NAND_NAME;}
 OR[0-9]+_[0-9]+  {return T_OR_NAME;}
 NOR[0-9]+_[0-9]+  {return T_NOR_NAME;}
