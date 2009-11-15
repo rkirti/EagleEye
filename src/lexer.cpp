@@ -3,7 +3,7 @@
 
 using namespace std;
 
-bool Lexer_AddWire(char *inName,WireType type)
+bool Lexer_AddWire(char* inName,WireType type)
 {
 	return circuit.AddWire(inName,type);
 
@@ -15,10 +15,11 @@ bool Lexer_AddGate(GateType type, char *name,char* output,char **inputs,int numS
 }
 	
 
+
 bool lexer()	// dummy lexer, written by GJ
 {
 	char n1[]="N1", n2[]="N2", n3[]="N3";
-	char *n12[3] = { (char *)"N1",(char *)"N2" };
+	char* n12[3] = { (char *)"N1",(char *)"N2" };
 	Lexer_AddWire(n1,PI);
 	Lexer_AddWire(n2,PI);
 	Lexer_AddWire(n3,PO);
@@ -27,4 +28,3 @@ bool lexer()	// dummy lexer, written by GJ
 
 	return true;
 }
-

@@ -1,7 +1,7 @@
-
 /*
  * CIRCUIT Related functions for class Circuit
  */
+
 #ifndef CIRCUIT_H
 #define CIRCUIT_H
 
@@ -56,7 +56,7 @@ class Wire: public Element
         Wire(char *name, WireType givenWtype,Value val=U)
            :Element(name,WIRE) 
         {
-	    wtype = givenWtype;
+	        wtype = givenWtype;
             value = val;
         }
 };
