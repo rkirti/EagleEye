@@ -42,6 +42,7 @@ NOR[0-9]+_[0-9]+  {return T_NOR_NAME;}
 NOT[0-9]+_[0-9]+  {return T_NOT_NAME;}
 BUF[0-9]+_[0-9]+  {return T_BUF_NAME;}
 XOR[0-9]+_[0-9]+  { return T_XOR_NAME;}
+[A-Za-z]+[0-9]+   {return T_NAME;}
 
 
 %%
