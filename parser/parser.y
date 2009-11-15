@@ -1,7 +1,7 @@
 %{
 /* Simple parser to populate the ckt using
  * the verilog description
- * */
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -84,32 +84,34 @@ inputs:  T_INPUT signallist T_SEMICOLON   {printf("inputs parsed");}
    ;
 
 outputs:  T_OUTPUT signallist T_SEMICOLON    {printf("outputs parsed");}
+
    ;
 
 wire:  T_WIRE signallist T_SEMICOLON   {printf("wire parsed");}
+
   ;  
 
 
 
 gatelist: gatelist gate T_SEMICOLON   
-| gate T_SEMICOLON    {printf("gatelist parsed");}
+| gate T_SEMICOLON 
  ;
 
 gate: and   {printf("and gate parsed");}
   | or   {printf("or gate parsed");}
   | not   {printf("not gate parsed");}
-  | nor     {printf("nor gate parsed");
+  | nor     {printf("nor gate parsed");}
   | nand      {printf("nand gate parsed");}
   | xor
   | buf
   ;
 
 signallist: signallist T_COMMA name   { $$ = Add_Name_To_List($1,$3); }
-  | name  { $$ = Add_Name_To_List($$,$1); }
+  |name  { $$ = Add_Name_To_List($$,$1); }
   ;
 
 
-output: name  { $$ = Add_Name_To_List($$,$1);}
+output: name  { $$ = Add_Name_To_List($$,$1); }
   ;
 
 and: T_AND T_AND_NAME T_LPAREN output T_COMMA signallist T_RPAREN {/*$$->output = $4;$$->inputlist = $6;*/}

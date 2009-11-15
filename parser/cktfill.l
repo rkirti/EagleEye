@@ -5,10 +5,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include "y.tab.h"
+#include "parser.tab.h"
 
 #define YYDEBUG 1
-
+extern YYSTYPE yylval;
 
 %}
 
