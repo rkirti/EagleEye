@@ -32,7 +32,7 @@ void Circuit::Add_Gate_To_Wire_Input(Gate* gate,const char* wirename)
 /*
  * Circuit::methods
  */
-bool  Circuit::AddWire(char *inName,WireType type)
+bool  Circuit::AddWire(const char *inName,WireType type)
 {
 	Wire *iwire = new Wire(inName,type);
 	Netlist.insert( pair<string,Wire *>(inName,iwire) );
@@ -202,3 +202,64 @@ const GateEvaluate g_EvaluateTable[] =
     Xor
 };
 
+void Circuit::Update_Wire_Pair(Wire* oldwire,Wire* newwire)
+{
+        
+
+
+}
+void Circuit::Update_Gate_Input(Gate* gate, Wire* oldwire,Wire* newwire)
+{
+
+}
+ 
+
+void Circuit:: ResolveWire(Wire* wire)
+{
+    // Assuming that initially all outputs of
+    // a wire are gates
+    //Steps:
+    // 1. Find out if a wire has more than one outputs
+    // 2. Create a new wire - with input as the orig wire
+    // and output as the gate
+    // 3. Update the orig wire's outputs to reflect the wires rather than gates
+    // 4. Update the output gates (orig gates) inputs showing the new wires
+    // as inputs
+  
+  
+  
+    cout << "Need to resolve wire" << wire->id << endl;
+    list<Element*>:: iterator iter = (wire->outputs).begin();
+    while ( iter != (wire->outputs).end() )
+    {
+        Gate* gate = dynamic_cast<Gate*>(*iter);
+        assert(gate); // dynamic_cast must not fail
+        string newname = (wire->id)+"_"+(gate->id);
+        // Add a new wire for this instance
+        circuit.AddWire(newname.c_str(),CONNECTION);
+        
+        Add_Gate_To_Wire_Output(gate,newname.c_str());
+        Wire* newwire = ((circuit.Netlist).find(newname))->second;
+        Update_Wire_Pair(wire, newwire);
+        Update_Gate_Input(gate,wire,newwire);
+        iter++;
+    }
+
+}
+
+
+/*TODO: When does this return false? */
+
+bool Circuit::ResolveBranches()
+{
+   map<string,Wire*>:: iterator iter = (circuit.Netlist).begin();
+    while (iter != (circuit.Netlist).end())
+    {
+        Wire* iwire = iter->second;
+        if ( (int)(iwire->outputs).size() > 1)
+                ResolveWire(iwire);
+        iter++;
+
+    }
+    return true;
+}

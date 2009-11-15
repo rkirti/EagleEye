@@ -32,7 +32,7 @@ class Element
 
         /*Class element is an abstract class*/
         virtual Value Evaluate()=0;
-        Element(char* s, CktElement givenType=UNKNOWN) 
+        Element(const char* s, CktElement givenType=UNKNOWN) 
         { 
             id=s;
             type = givenType;
@@ -54,7 +54,7 @@ class Wire: public Element
         Element* input;
         list<Element*> outputs;
 
-        Wire(char *name, WireType givenWtype,Value val=U)
+        Wire(const char *name, WireType givenWtype,Value val=U)
            :Element(name,WIRE) 
         {
 	        wtype = givenWtype;
@@ -72,7 +72,7 @@ class Gate: public Element
     list<Wire*> inputs;
     Wire* output;
 
-    Gate(char* name, GateType givenType) 
+    Gate( char* name, GateType givenType) 
     	:Element(name,GATE)
     {  
         gtype = givenType;
@@ -100,13 +100,16 @@ public:
     list<Fault*> FaultSet; // Set of faults we need to run ATPG for
     
     /*this should move to a different header file*/
-    bool AddWire(char* name,WireType type);
+    bool AddWire(const char* name,WireType type);
     /*Signals: input and output signals of the gate*/
     bool AddGate(GateType type, char *name,char* output,char **inputs,int numSignals);
     void Add_Gate_To_Wire_Output(Gate* gate,const char* wirename);   
     void  Add_Gate_To_Wire_Input(Gate* gate,const char* wirename);
- 
     bool ResolveBranches();
+    void ResolveWire(Wire* somewire);
+
+    void Update_Wire_Pair(Wire* oldwire,Wire* newwire);
+   void  Update_Gate_Input(Gate* gate, Wire* oldwire,Wire* newwire);
 
 };
 
