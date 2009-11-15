@@ -27,11 +27,18 @@ typedef struct gatenode{
     Namenode* inputlist;
 }Gatenode;
 
+Namenode* Add_Name_To_List(Namenode* list, char* name)
+{
+}
+
+
+
 %union{
     Namenode* namelist;
     Gatenode* gate;
     char letter;
     char* gatename;
+    char* genname;
 }
 
 
@@ -58,11 +65,11 @@ typedef struct gatenode{
 %token <gatename> T_BUF_NAME  
 %token T_XOR  
 %token <gatename> T_XOR_NAME
-
+%token <genname> T_NAME
 
 %type <gate> and or not nor nand xor buf 
 %type <namelist> signallist output
-
+%type <genname> name
 
 %%
 
@@ -76,7 +83,7 @@ module:  T_MODULE name T_LPAREN signallist T_RPAREN T_SEMICOLON
 input:  T_INPUT signallist T_SEMICOLON
    ;
 
-output:  T_OUTPUT signallist T_SEMICOLON
+output:  T_OUTPUT signallist T_SEMICOLON {$$ = $2;} 
    ;
 
 wire:  T_WIRE signallist T_SEMICOLON
@@ -97,12 +104,12 @@ gate: and
   | buf
   ;
 
-signallist: signallist T_COMMA name
-  |name
+signallist: signallist T_COMMA name   { $$ = Add_Name_To_List($1,$3); }
+  |name  { $$ = Add_Name_To_List($$,$1); }
   ;
 
 
-output: name
+output: name  { $$ = Add_Name_To_List($$,$1); }
   ;
 
 and: T_AND T_AND_NAME T_LPAREN output T_COMMA signallist T_RPAREN
