@@ -5,8 +5,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "lexer.h"
-#include "circuit.h"
 
 #define YYDEBUG 1
 
@@ -33,6 +31,9 @@ Namenode* Add_Name_To_List(Namenode* list, char* name)
 
 
 
+%}
+
+
 %union{
     Namenode* namelist;
     Gatenode* gate;
@@ -42,7 +43,6 @@ Namenode* Add_Name_To_List(Namenode* list, char* name)
 }
 
 
-%}
 
 
 %token T_ENDMODULE
@@ -73,17 +73,17 @@ Namenode* Add_Name_To_List(Namenode* list, char* name)
 
 %%
 
-ckt: module input output wire gatelist T_ENDMODULE
+ckt: module inputs outputs wire gatelist T_ENDMODULE
    ;
 
 
 module:  T_MODULE name T_LPAREN signallist T_RPAREN T_SEMICOLON
    ;
 
-input:  T_INPUT signallist T_SEMICOLON
+inputs:  T_INPUT signallist T_SEMICOLON
    ;
 
-output:  T_OUTPUT signallist T_SEMICOLON {$$ = $2;} 
+outputs:  T_OUTPUT signallist T_SEMICOLON
    ;
 
 wire:  T_WIRE signallist T_SEMICOLON
@@ -112,29 +112,27 @@ signallist: signallist T_COMMA name   { $$ = Add_Name_To_List($1,$3); }
 output: name  { $$ = Add_Name_To_List($$,$1); }
   ;
 
-and: T_AND T_AND_NAME T_LPAREN output T_COMMA signallist T_RPAREN {$$.output = $4;$$.inputlist = $6;}
+and: T_AND T_AND_NAME T_LPAREN output T_COMMA signallist T_RPAREN {$$->output = $4;$$->inputlist = $6;}
   ; 
 
-nand: T_NAND T_NAND_NAME T_LPAREN output T_COMMA signallist T_RPAREN  {$$.output = $4;$$.inputlist = $6;}
+nand: T_NAND T_NAND_NAME T_LPAREN output T_COMMA signallist T_RPAREN  {$$->output = $4;$$->inputlist = $6;}
   ;
 
-or: T_OR T_OR_NAME T_LPAREN output T_COMMA signallist T_RPAREN   {$$.output = $4;$$.inputlist = $6;}
+or: T_OR T_OR_NAME T_LPAREN output T_COMMA signallist T_RPAREN   {$$->output = $4;$$->inputlist = $6;}
   ;
 
-nor: T_NOR T_NOR_NAME T_LPAREN output T_COMMA signallist T_RPAREN    {$$.output = $4;$$.inputlist = $6;}
+nor: T_NOR T_NOR_NAME T_LPAREN output T_COMMA signallist T_RPAREN    {$$->output = $4;$$->inputlist = $6;}
  ;
 
 
-not: T_NOT T_NOT_NAME T_LPAREN output T_COMMA signallist T_RPAREN    {$$.output = $4;$$.inputlist = $6;}
+not: T_NOT T_NOT_NAME T_LPAREN output T_COMMA signallist T_RPAREN    {$$->output = $4;$$->inputlist = $6;}
  ;
 
 
-
-
-xor: T_XOR T_XOR_NAME T_LPAREN output T_COMMA signallist T_RPAREN    {$$.output = $4;$$.inputlist = $6;}
+xor: T_XOR T_XOR_NAME T_LPAREN output T_COMMA signallist T_RPAREN    {$$->output = $4;$$->inputlist = $6;}
 ;
 
-buf:  T_BUF  T_BUF_NAME  T_LPAREN output T_COMMA signallist T_RPAREN    {$$.output = $4;$$.inputlist = $6;}
+buf:  T_BUF  T_BUF_NAME  T_LPAREN output T_COMMA signallist T_RPAREN    {$$->output = $4;$$->inputlist = $6;}
 ;
   
 
@@ -171,3 +169,5 @@ int main(int argc, char** argv)
     return 0;
 }
   
+
+
