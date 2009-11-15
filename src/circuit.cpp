@@ -93,6 +93,9 @@ bool Circuit::AddGate(GateType type, char *name,char* output,char **inputs,int n
 
     }
 
+    // Finally we add the gate to the circuit list
+    circuit.Gates.insert( pair<string,Gate *>(name, gate) );
+
     return true;
 }
 
@@ -110,7 +113,7 @@ Value Gate::Evaluate()
  */
 static Value And(list<Wire*> inputs)
 {
-   int output=U;
+   int output=ONE;	// initially the ouput should be 1, so that it outputs sets to the starting value on doing the first and
    list<Wire *>::iterator iter;
    for (iter=inputs.begin(); iter != inputs.end(); iter++ )
        output &= (*iter)->value;
@@ -121,7 +124,7 @@ static Value And(list<Wire*> inputs)
 
 static Value Or(list<Wire*> inputs)
 {
-   int output=U;
+   int output=ZERO;	// initially the ouput should be 0, so that it outputs sets to the starting value on doing the first or 
    list<Wire *>::iterator iter;
    for (iter=inputs.begin(); iter != inputs.end(); iter++ )
        output |= (*iter)->value;

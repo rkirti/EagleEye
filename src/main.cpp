@@ -19,8 +19,7 @@ int main(int argc,char **argv)
 		cout << ":(" << endl;
 		exit(0);
 	}
-
-
+	
 	Do_ATPG();	// :P
 
 	/*
@@ -31,7 +30,7 @@ int main(int argc,char **argv)
 	
 	for(;iter != (circuit.Netlist).end(); iter++)
 	{
-		cout << iter->first << iter->second->wtype << iter->second->value << endl;
+		cout << iter->first << iter->second->wtype << "  " << iter->second->value << endl;
 	}
 
 
