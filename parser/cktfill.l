@@ -1,17 +1,16 @@
 %{
-    /* Basic lexer for eagle eye */
+    /* Basic lexer for EagleEye */
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include "y.tab.h"
+#include "parser.tab.h"
 
 #define YYDEBUG 1
 
+
 %}
-
-
 
 
 %%
@@ -36,14 +35,20 @@ xor {return T_XOR;}
 "(" {return T_LPAREN;}
 ")" {return T_RPAREN;}
 
-AND[0-9]+_[0-9]+  {yylval=yytext; return T_AND_NAME;}
-NAND[0-9]+_[0-9]+  {yylval=yytext; return T_NAND_NAME;}
-OR[0-9]+_[0-9]+  {yylval=yytext; return T_OR_NAME;}
-NOR[0-9]+_[0-9]+  {yylval=yytext; return T_NOR_NAME;}
-NOT[0-9]+_[0-9]+  {yylval=yytext; return T_NOT_NAME;}
-BUF[0-9]+_[0-9]+  {yylval=yytext; return T_BUF_NAME;}
-XOR[0-9]+_[0-9]+  {yylval=yytext; return T_XOR_NAME;}
+AND[0-9]+_[0-9]+  { return T_AND_NAME;}
+NAND[0-9]+_[0-9]+  { return T_NAND_NAME;}
+OR[0-9]+_[0-9]+  {return T_OR_NAME;}
+NOR[0-9]+_[0-9]+  {return T_NOR_NAME;}
+NOT[0-9]+_[0-9]+  {return T_NOT_NAME;}
+BUF[0-9]+_[0-9]+  {return T_BUF_NAME;}
+XOR[0-9]+_[0-9]+  { return T_XOR_NAME;}
 
+
+%%
+
+int yywrap(){
+    return 1;
+}
 
 
 

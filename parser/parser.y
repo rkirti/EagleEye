@@ -143,6 +143,12 @@ name: T_NAME
 %%
 
 
+yyerror(const char* arg)
+{
+   /*   printf("Error [Line %d]: %s",numLines,arg);*/
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -161,7 +167,7 @@ int main(int argc, char** argv)
     }
     
    yyin = infp;
-   yydebug=1;
+   yydebug=0;
     
    while(!feof(yyin)){
         yyparse();
