@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "defs.h"
 
 typedef enum wiretype{PI=0,PO,CONNECTION} WireType;
@@ -34,6 +35,14 @@ void Populate_Gate(Gatenode* gate,Namenode* output,Namenode* inputs)
 }
 
 
+Namenode* Init_List(char* name)
+{
+    Namenode* newnode = (Namenode*)malloc(sizeof(Namenode));
+    newnode->name  = name;
+    newnode->next  = NULL;
+    return newnode;
+}
+
 
 Namenode* Add_Name_To_List(Namenode* list, char* name)
 {
@@ -54,10 +63,13 @@ void Add_To_Netlist(Namenode* list, WireType type)
     Namenode* head = list;
     while (current)
     {
+        printf("Calling add wire for %s\n",current->name);
         Lexer_AddWire(current->name,type);
         current = current->next;
     }
 }
+
+
 
 %}
 
@@ -134,7 +146,7 @@ gate: and
   ;
 
 signallist: signallist T_COMMA name   { $$ = Add_Name_To_List($1,$3); }
-  |name  { $$ = Add_Name_To_List($$,$1); }
+  |name  { $$ = Init_List($1); }
   ;
 
 
@@ -193,7 +205,7 @@ int lexer(int argc, char** argv)
    while(!feof(yyin)){
         yyparse();
   }
-    return 0;
+    return 1;
 }
   
 yyerror(s)
