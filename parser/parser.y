@@ -40,9 +40,6 @@ int Find_Length(Namenode* list)
     return len;
 }
 
-
-
-
 void Add_To_Gatelist(Gatenode* gate, GateType type, char* gatename)
 { 
     int numInputs = Find_Length(gate->inputlist);

@@ -10,7 +10,7 @@
 #include <map>
 #include <string>                                                 
 #include <cstdlib>                                                
-
+#include <cassert>
 
 using namespace std;
 
@@ -49,8 +49,9 @@ class Wire: public Element
 	{
 		return U;
 	}
-
-        list<Element*> inputs;
+        /* Gate has only one output 
+         * and wire has only one input*/
+        Element* input;
         list<Element*> outputs;
 
         Wire(char *name, WireType givenWtype,Value val=U)
@@ -102,7 +103,9 @@ public:
     bool AddWire(char* name,WireType type);
     /*Signals: input and output signals of the gate*/
     bool AddGate(GateType type, char *name,char* output,char **inputs,int numSignals);
-    
+    void Add_Gate_To_Wire_Output(Gate* gate,const char* wirename);   
+    void  Add_Gate_To_Wire_Input(Gate* gate,const char* wirename);
+ 
     bool ResolveBranches();
 
 };

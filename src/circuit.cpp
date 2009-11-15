@@ -8,6 +8,26 @@ static int cktDebug=1;
 
 
 
+void Circuit::Add_Gate_To_Wire_Output(Gate* gate,const char* wirename)
+{
+    Wire* iwire = ((circuit.Netlist).find(wirename))->second;
+    assert( (circuit.Netlist).find(wirename) != (circuit.Netlist).end());
+    cout << "Added gate  "  << gate->id <<  "  as output of wire  " << iwire->id << endl;
+    iwire->outputs.push_back((Element*)gate);    
+    return;
+}
+
+
+void Circuit::Add_Gate_To_Wire_Input(Gate* gate,const char* wirename)
+{
+    Wire* iwire = ((circuit.Netlist).find(wirename))->second;
+    assert( (circuit.Netlist).find(wirename) != (circuit.Netlist).end());
+    cout << "Added gate  "  << gate->id <<  "  as input of wire  " << iwire->id << endl;
+    iwire->input = (Element*)gate;    
+    return;
+}
+
+
 
 /*
  * Circuit::methods
@@ -60,6 +80,8 @@ bool Circuit::AddGate(GateType type, char *name,char* output,char **inputs,int n
     }
 
     // Now that we are convinced, add the wire as gate's output
+    // and the gate as wire's input :P
+    Add_Gate_To_Wire_Input(gate,((iter->second)->id).c_str());
     gate->output = iter->second;
 
     while (numSignals--)
@@ -90,7 +112,7 @@ bool Circuit::AddGate(GateType type, char *name,char* output,char **inputs,int n
 
         // Now that we are convinced, add the wire as gate's input
         gate->inputs.push_back(iter->second);
-
+        Add_Gate_To_Wire_Output(gate,((iter->second)->id).c_str());
     }
 
     // Finally we add the gate to the circuit list
