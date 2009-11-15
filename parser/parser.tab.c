@@ -499,7 +499,7 @@ static const yytype_uint8 yyrline[] =
 {
        0,    76,    76,    80,    83,    86,    89,    94,    95,    98,
       99,   100,   101,   102,   103,   104,   107,   108,   112,   115,
-     118,   121,   124,   127,   130,   133,   138
+     118,   121,   124,   128,   134,   137,   142
 };
 #endif
 
@@ -1470,9 +1470,44 @@ yyreduce:
     { (yyval.namelist) = Add_Name_To_List((yyval.namelist),(yyvsp[(1) - (1)].genname)); ;}
     break;
 
+  case 19:
+#line 115 "parser.y"
+    {(yyval.gate).output = (yyvsp[(4) - (7)].namelist);(yyval.gate).inputlist = (yyvsp[(6) - (7)].namelist);;}
+    break;
+
+  case 20:
+#line 118 "parser.y"
+    {(yyval.gate).output = (yyvsp[(4) - (7)].namelist);(yyval.gate).inputlist = (yyvsp[(6) - (7)].namelist);;}
+    break;
+
+  case 21:
+#line 121 "parser.y"
+    {(yyval.gate).output = (yyvsp[(4) - (7)].namelist);(yyval.gate).inputlist = (yyvsp[(6) - (7)].namelist);;}
+    break;
+
+  case 22:
+#line 124 "parser.y"
+    {(yyval.gate).output = (yyvsp[(4) - (7)].namelist);(yyval.gate).inputlist = (yyvsp[(6) - (7)].namelist);;}
+    break;
+
+  case 23:
+#line 128 "parser.y"
+    {(yyval.gate).output = (yyvsp[(4) - (7)].namelist);(yyval.gate).inputlist = (yyvsp[(6) - (7)].namelist);;}
+    break;
+
+  case 24:
+#line 134 "parser.y"
+    {(yyval.gate).output = (yyvsp[(4) - (7)].namelist);(yyval.gate).inputlist = (yyvsp[(6) - (7)].namelist);;}
+    break;
+
+  case 25:
+#line 137 "parser.y"
+    {(yyval.gate).output = (yyvsp[(4) - (7)].namelist);(yyval.gate).inputlist = (yyvsp[(6) - (7)].namelist);;}
+    break;
+
 
 /* Line 1267 of yacc.c.  */
-#line 1476 "parser.tab.c"
+#line 1511 "parser.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -1686,7 +1721,7 @@ yyreturn:
 }
 
 
-#line 141 "parser.y"
+#line 145 "parser.y"
 
 
 

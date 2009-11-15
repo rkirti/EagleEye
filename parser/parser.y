@@ -112,25 +112,29 @@ signallist: signallist T_COMMA name   { $$ = Add_Name_To_List($1,$3); }
 output: name  { $$ = Add_Name_To_List($$,$1); }
   ;
 
-and: T_AND T_AND_NAME T_LPAREN output T_COMMA signallist T_RPAREN
+and: T_AND T_AND_NAME T_LPAREN output T_COMMA signallist T_RPAREN {$$.output = $4;$$.inputlist = $6;}
   ; 
 
-nand: T_NAND T_NAND_NAME T_LPAREN output T_COMMA signallist T_RPAREN
+nand: T_NAND T_NAND_NAME T_LPAREN output T_COMMA signallist T_RPAREN  {$$.output = $4;$$.inputlist = $6;}
   ;
 
-or: T_OR T_OR_NAME T_LPAREN output T_COMMA signallist T_RPAREN
+or: T_OR T_OR_NAME T_LPAREN output T_COMMA signallist T_RPAREN   {$$.output = $4;$$.inputlist = $6;}
   ;
 
-nor: T_NOR T_NOR_NAME T_LPAREN output T_COMMA signallist T_RPAREN
+nor: T_NOR T_NOR_NAME T_LPAREN output T_COMMA signallist T_RPAREN    {$$.output = $4;$$.inputlist = $6;}
  ;
 
-not: T_NOT T_NOT_NAME T_LPAREN output T_COMMA signallist T_RPAREN
+
+not: T_NOT T_NOT_NAME T_LPAREN output T_COMMA signallist T_RPAREN    {$$.output = $4;$$.inputlist = $6;}
  ;
 
-xor: T_XOR T_XOR_NAME T_LPAREN output T_COMMA signallist T_RPAREN
+
+
+
+xor: T_XOR T_XOR_NAME T_LPAREN output T_COMMA signallist T_RPAREN    {$$.output = $4;$$.inputlist = $6;}
 ;
 
-buf:  T_BUF  T_BUF_NAME  T_LPAREN output T_COMMA signallist T_RPAREN
+buf:  T_BUF  T_BUF_NAME  T_LPAREN output T_COMMA signallist T_RPAREN    {$$.output = $4;$$.inputlist = $6;}
 ;
   
 
