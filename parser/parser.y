@@ -32,8 +32,6 @@ typedef struct gatenode{
     Gatenode* gate;
     char letter;
     char* gatename;
-    char letter;
-    int id;
 }
 
 
@@ -63,7 +61,7 @@ typedef struct gatenode{
 
 
 %type <gate> and or not nor nand xor buf 
-%type <namelist> signallist
+%type <namelist> signallist output
 
 
 %%
@@ -130,7 +128,7 @@ buf:  T_BUF  T_BUF_NAME  T_LPAREN output T_COMMA signallist T_RPAREN
   
 
  /*Common name format for gates,wires and circuits */
-name: NAME  
+name: T_NAME  
  ;
 
 %%
