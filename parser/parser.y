@@ -15,26 +15,45 @@ extern int yydebug;
 
 FILE* infp;
 
+typedef enum gatetype{AND=0,OR,NOT,NAND,NOR,XOR} GateType;
+
+
+typedef enum wiretype{PI=0,PO,CONNECTION} WireType;
+
+void Populate_Gate(Gatenode* gate,Namenode* output,Namenode* inputs) 
+{
+    gate=(Gatenode*)malloc(sizeof(Gatenode));
+    gate->output = output; 
+    gate->inputlist = inputs;
+}
+
+
+
 Namenode* Add_Name_To_List(Namenode* list, char* name)
 {
     Namenode* current = list;
     Namenode* head = list;
-    Namenode* new = (Namenode*)malloc(sizeof(Namenode));
+    Namenode* newnode = (Namenode*)malloc(sizeof(Namenode));
     while (current->next) current= current->next;
-    new->next= NULL;
-    new->name = name;
-    current->next = new;
+    newnode->next= NULL;
+    newnode->name = name;
+    current->next = newnode;
     return  head;
 }
 
 
+void Add_To_Netlist(Namenode* list, WireType type)
+{
+    Namenode* current = list;
+    Namenode* head = list;
+    while (current)
+    {
+        Lexer_AddWire(current->name,type);
+        current = current->next;
+    }
+}
+
 %}
-
-
-#define Populate_Gate() {$$=(Gatenode*)malloc(sizeof(Gatenode)); \
-                         $$->output = $4; \
-                         $$->inputs = $6; \
-                         }
 
 
 %union{
@@ -83,15 +102,14 @@ ckt: module inputs outputs wire gatelist T_ENDMODULE {printf("ckt parsed");}
 module:  T_MODULE name T_LPAREN signallist T_RPAREN T_SEMICOLON {printf("module parsed");}
    ;
 
-inputs:  T_INPUT signallist T_SEMICOLON   {printf("inputs parsed");}
+inputs:  T_INPUT signallist T_SEMICOLON   {printf("inputs parsed"); Add_To_Netlist($2, PI);}
    ;
 
-outputs:  T_OUTPUT signallist T_SEMICOLON    {printf("outputs parsed");}
+outputs:  T_OUTPUT signallist T_SEMICOLON    {printf("outputs parsed");  Add_To_Netlist($2, PO);}
 
    ;
 
-wire:  T_WIRE signallist T_SEMICOLON   {printf("wire parsed");} 
-
+wire:  T_WIRE signallist T_SEMICOLON   {printf("wire parsed"); Add_To_Netlist($2, CONNECTION);} 
   ;  
 
 
@@ -100,11 +118,11 @@ gatelist: gatelist gate T_SEMICOLON
 | gate T_SEMICOLON 
  ;
 
-gate: and   {printf("and gate parsed");}
-  | or   {printf("or gate parsed");}
-  | not   {printf("not gate parsed");}
-  | nor     {printf("nor gate parsed");}
-  | nand      {printf("nand gate parsed");}
+gate: and  
+  | or
+  | not 
+  | nor 
+  | nand 
   | xor
   | buf
   ;
@@ -117,27 +135,27 @@ signallist: signallist T_COMMA name   { $$ = Add_Name_To_List($1,$3); }
 output: name  { $$ = (Namenode*)malloc(sizeof(Namenode)); $$->next = NULL; $$->name = $1; }
   ;
 
-and: T_AND T_AND_NAME T_LPAREN output T_COMMA signallist T_RPAREN   {Populate_Gate();}
+and: T_AND T_AND_NAME T_LPAREN output T_COMMA signallist T_RPAREN   {Populate_Gate($$,$4,$6);}
   ; 
 
-nand: T_NAND T_NAND_NAME T_LPAREN output T_COMMA signallist T_RPAREN  {Populate_Gate();}
+nand: T_NAND T_NAND_NAME T_LPAREN output T_COMMA signallist T_RPAREN  {Populate_Gate($$,$4,$6);}
   ;
 
-or: T_OR T_OR_NAME T_LPAREN output T_COMMA signallist T_RPAREN   {Populate_Gate();}
+or: T_OR T_OR_NAME T_LPAREN output T_COMMA signallist T_RPAREN   {Populate_Gate($$,$4,$6);}
   ;
 
-nor: T_NOR T_NOR_NAME T_LPAREN output T_COMMA signallist T_RPAREN    {Populate_Gate();}
+nor: T_NOR T_NOR_NAME T_LPAREN output T_COMMA signallist T_RPAREN    {Populate_Gate($$,$4,$6);}
  ;
 
 
-not: T_NOT T_NOT_NAME T_LPAREN output T_COMMA signallist T_RPAREN   {Populate_Gate();}
+not: T_NOT T_NOT_NAME T_LPAREN output T_COMMA signallist T_RPAREN   {Populate_Gate($$,$4,$6);}
  ;
 
 
-xor: T_XOR T_XOR_NAME T_LPAREN output T_COMMA signallist T_RPAREN    {Populate_Gate();}
+xor: T_XOR T_XOR_NAME T_LPAREN output T_COMMA signallist T_RPAREN    {Populate_Gate($$,$4,$6);}
 ;
 
-buf:  T_BUF  T_BUF_NAME  T_LPAREN output T_COMMA signallist T_RPAREN    {Populate_Gate();}
+buf:  T_BUF  T_BUF_NAME  T_LPAREN output T_COMMA signallist T_RPAREN    {Populate_Gate($$,$4,$6);}
 ;
   
 
@@ -147,12 +165,10 @@ name: T_NAME  { $$=$1;}
 
 %%
 
-
-yyerror(const char* arg)
+void yyerror(const char* arg)
 {
    /*   printf("Error [Line %d]: %s",numLines,arg);*/
 }
-
 
 
 int main(int argc, char** argv)
