@@ -25,17 +25,27 @@ int main(int argc,char **argv)
 	/*
 	 * print the circuit, just to test it
 	 */
-	
 	map<string,Wire*>::iterator iter=(circuit.Netlist).begin();
 	
 	for(;iter != (circuit.Netlist).end(); iter++)
 	{
-		cout << iter->first << iter->second->wtype << "  " << iter->second->value << endl;
+		cout << iter->first << "  " << iter->second->wtype << "  " << iter->second->value << endl;
 	}
-
-
-
-	return 0;
+	
+    map<string,Gate*>::iterator iter1=(circuit.Gates).begin();
+	
+	for(;iter1 != (circuit.Gates).end(); iter1++)
+	{
+		cout << iter1->first << "  " << iter1->second->gtype << "  " << endl;
+	}
+	
+    
+    
+    
+    
+    
+    
+    return 0;
 }
 
 

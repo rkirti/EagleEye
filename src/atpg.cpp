@@ -4,6 +4,7 @@
 
 bool Do_ATPG()
 {
+    /*
 	map<string,Wire *>::iterator iter1=circuit.Netlist.begin();
 
 	iter1->second->value = ZERO;
@@ -15,7 +16,7 @@ bool Do_ATPG()
 	{
 		cout << iter2->first << endl;
 		iter2->second->output->value = iter2->second->Evaluate();
-	}
-
+	}*/
+    
 	return true;
 }

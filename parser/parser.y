@@ -10,7 +10,7 @@
 
 typedef enum wiretype{PI=0,PO,CONNECTION} WireType;
 
-typedef enum gatetype{AND=0,OR,NOT,NAND,NOR,XOR}GateType;
+typedef enum gatetype{AND=0,OR,NOT,NAND,NOR,XOR,BUF}GateType;
 
 
 extern int Lexer_AddWire(char *inName,WireType type);
@@ -25,13 +25,49 @@ extern int yydebug;
 FILE* infp;
 
 
+int Find_Length(Namenode* list)
+{
+    int len=0;
+    Namenode* head= list;
+    if (!list) return 0;
+    while (head)
+    {
+        head=head->next;
+        printf("Incrementing len\n");
+        len++;
+    }
+    printf("num of inputs:%d \n",len);
+    return len;
+}
 
 
-void Populate_Gate(Gatenode* gate,Namenode* output,Namenode* inputs) 
+
+
+void Add_To_Gatelist(Gatenode* gate, GateType type, char* gatename)
+{ 
+    int numInputs = Find_Length(gate->inputlist);
+    Namenode* current = gate->inputlist;
+    char** inputnames = (char**)malloc(sizeof(char*)*numInputs);
+    int j;
+    for (j=0;j <numInputs; j++)
+    {
+        inputnames[j] = current->name;
+        printf("Checking strings: %s\n",inputnames[j]);
+        current = current->next; 
+    }
+    Lexer_AddGate(type,gatename,gate->output->name,inputnames,numInputs);    
+}
+
+
+
+
+void Populate_Gate(Gatenode* gate,Namenode* output,Namenode* inputs,GateType type, char* gatename) 
 {
     gate=(Gatenode*)malloc(sizeof(Gatenode));
     gate->output = output; 
     gate->inputlist = inputs;
+    printf("Adding gate with name: %s to gatelist\n", gatename);
+    Add_To_Gatelist(gate,type,gatename);
 }
 
 
@@ -68,7 +104,6 @@ void Add_To_Netlist(Namenode* list, WireType type)
         current = current->next;
     }
 }
-
 
 
 %}
@@ -153,27 +188,27 @@ signallist: signallist T_COMMA name   { $$ = Add_Name_To_List($1,$3); }
 output: name  { $$ = (Namenode*)malloc(sizeof(Namenode)); $$->next = NULL; $$->name = $1; }
   ;
 
-and: T_AND T_AND_NAME T_LPAREN output T_COMMA signallist T_RPAREN   {Populate_Gate($$,$4,$6);}
+and: T_AND T_AND_NAME T_LPAREN output T_COMMA signallist T_RPAREN   {Populate_Gate($$,$4,$6,AND,$2);}
   ; 
 
-nand: T_NAND T_NAND_NAME T_LPAREN output T_COMMA signallist T_RPAREN  {Populate_Gate($$,$4,$6);}
+nand: T_NAND T_NAND_NAME T_LPAREN output T_COMMA signallist T_RPAREN  {Populate_Gate($$,$4,$6,NAND,$2);}
   ;
 
-or: T_OR T_OR_NAME T_LPAREN output T_COMMA signallist T_RPAREN   {Populate_Gate($$,$4,$6);}
+or: T_OR T_OR_NAME T_LPAREN output T_COMMA signallist T_RPAREN   {Populate_Gate($$,$4,$6,OR,$2);}
   ;
 
-nor: T_NOR T_NOR_NAME T_LPAREN output T_COMMA signallist T_RPAREN    {Populate_Gate($$,$4,$6);}
+nor: T_NOR T_NOR_NAME T_LPAREN output T_COMMA signallist T_RPAREN    {Populate_Gate($$,$4,$6,NOR,$2);}
  ;
 
 
-not: T_NOT T_NOT_NAME T_LPAREN output T_COMMA signallist T_RPAREN   {Populate_Gate($$,$4,$6);}
+not: T_NOT T_NOT_NAME T_LPAREN output T_COMMA signallist T_RPAREN   {Populate_Gate($$,$4,$6,NOT,$2);}
  ;
 
 
-xor: T_XOR T_XOR_NAME T_LPAREN output T_COMMA signallist T_RPAREN    {Populate_Gate($$,$4,$6);}
+xor: T_XOR T_XOR_NAME T_LPAREN output T_COMMA signallist T_RPAREN    {Populate_Gate($$,$4,$6, XOR,$2);}
 ;
 
-buf:  T_BUF  T_BUF_NAME  T_LPAREN output T_COMMA signallist T_RPAREN    {Populate_Gate($$,$4,$6);}
+buf:  T_BUF  T_BUF_NAME  T_LPAREN output T_COMMA signallist T_RPAREN    {Populate_Gate($$,$4,$6,BUF,$2);}
 ;
   
 

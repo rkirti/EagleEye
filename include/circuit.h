@@ -22,7 +22,7 @@ enum GateType{AND=0,OR,NOT,NAND,NOR,XOR};
 
 //const char* Evals[] = {AND,OR,};
 
-enum WireType{PI=0,PO,CONNECTION};
+enum WireType{PI=0,PO=1,CONNECTION=2};
 
 class Element
 {
