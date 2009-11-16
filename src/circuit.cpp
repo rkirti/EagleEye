@@ -117,57 +117,80 @@ bool Circuit::AddGate(GateType type, char *name,char* output,char **inputs,int n
     }
 
     // Finally we add the gate to the circuit list
+    gate->tempInputs = (gate->inputs).size();
     circuit.Gates.insert( pair<string,Gate *>(name, gate) );
 
     return true;
 }
 
-class WireAndLevel 
-{
-    public:
-	Wire *wire;
-	int level;
-	WireAndLevel(Wire *givenWire, int Level)
-	{
-	    wire = givenWire;
-	    level = Level;
-	}
-};
+
 
 bool Circuit::Levelize()
 {
+    int level=0;
+    map<string,Wire*> ::iterator iter =  (circuit.PriInputs).begin();
+    multimap<int,Element*>:: iterator levelIter;
 
-    queue<WireAndLevel> myqueue;
 
-    map<string,Wire *>::iterator iter;
-    for (iter=circuit.PriInputs.begin(); iter != circuit.PriInputs.end(); iter++)
-	myqueue.push (WireAndLevel(iter->second,0));
-
-    while ( !myqueue.empty() )
-    {
-	WireAndLevel temp=myqueue.front();
-	//cout << temp.wire->id << " and clevel=" << temp.level << endl;
-	list<Element *>::iterator listIter = ((temp.wire)->outputs).begin();
-	for ( ; listIter != ( (temp.wire)->outputs).end(); listIter++)
-	{
-	    if ( (*listIter)->type != GATE )
-	    {
-		cout << "error ! you should call levelize before resolving brances :)" << endl;
-		return false;
-	    }
-	    Gate *gate = dynamic_cast<Gate *>(*listIter);
-	    gate->level++;	// used temporarily :)
-	    //cout << "gate level=" << gate->level << "gate inputs="<< gate->inputs.size() << "name=" << gate->id << endl;
-	    if ( gate->level >= gate->inputs.size() )
-		gate->level = temp.level;	// freeze the level and remember that this will not happen again. Prove it !
-
-	    // Now push the gate's output into the queue with current level++
-	    myqueue.push (WireAndLevel(gate->output, temp.level+1));
-	}
-	myqueue.pop();
+    // Adding the primary inputs to level zero
+    for (;iter != (circuit.PriInputs).end(); iter++)
+    {   
+        cout << "Adding  " << iter->second->id << "at level 0" << endl;
+        (circuit.Levels).insert(pair<int,Element*>(0,(Element*)iter->second));
     }
 
-    return true;
+    do
+    {
+        for (levelIter = ((circuit.Levels).equal_range(level)).first; 
+                levelIter !=((circuit.Levels).equal_range(level)).second; levelIter++)
+        {
+         //   cout <<"Iter is now at" << levelIter->second->id  <<endl;
+            if ( (levelIter->second)->type == GATE)
+            {
+                Gate* curGate = dynamic_cast<Gate*>(levelIter->second);
+                Wire* curWire = curGate->output;
+                
+               // cout << "Found gate" << curGate->id << "for search at level " << level<< endl; 
+                list<Element*>::iterator iter = (curWire->outputs).begin();
+                for (;iter != (curWire->outputs).end(); iter++)
+                {
+                    Gate*  curGate = dynamic_cast<Gate*>(*iter);
+                    if (!curGate) continue; 
+                    curGate->tempInputs--;
+                    if (curGate->tempInputs == 0) 
+                    {
+
+                        cout << "Adding  " << curGate->id << "at level" << level+1 << endl;
+                        (circuit.Levels).insert(pair<int,Element*>(level+1,(Element*)curGate));
+                    }
+                }
+            }
+            else if  ( (dynamic_cast<Wire*>(levelIter->second))->wtype == PI )
+            {
+                Wire* curWire =   dynamic_cast<Wire*>(levelIter->second);
+             //   cout << "Found PI" << curWire->id << "for search at level " << level<< endl; 
+                list<Element*>::iterator iter = (curWire->outputs).begin();
+                for (;iter != (curWire->outputs).end(); iter++)
+                {
+                    Gate*  curGate = dynamic_cast<Gate*>(*iter);
+                    if (!curGate) continue; 
+                    curGate->tempInputs--;
+                    if (curGate->tempInputs == 0) 
+                    {
+
+                        cout << "Adding  " << curGate->id << "at level" << level+1 << endl;
+                        (circuit.Levels).insert(pair<int,Element*>(level+1,(Element*)curGate));
+                    }
+                }
+
+            } 
+
+            else cout << "something wrong" << endl;
+
+
+        }
+    }while (   (circuit.Levels).find(++level) != (circuit.Levels).end() ); 
+
 }
 
 

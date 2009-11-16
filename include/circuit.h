@@ -76,10 +76,9 @@ class Gate: public Element
     list<Wire*> inputs;
     Wire* output;
 
-    int fanin;	// this should be equal to the no of inputs
-
     int level;	// The level of the gate, initially should be zero and is assigned after calling Levelize()
 
+    int tempInputs; // needed by levelise
     Gate( char* name, GateType givenType) 
     	:Element(name,GATE)
     {  
@@ -104,8 +103,7 @@ public:
     map<string,Wire *> Netlist;	// All wires in the circuit
     map<string,Gate *> Gates;   //All the gates in the circuit
     map<string,int> RepeatInputs; // If the same wire branches and two or more branches go to the same gate, we need this to name the wires
-
-
+    multimap<int,Element*> Levels;
 
     Value*  testVector; // Array of values to be assigned to the pri inputs 
     //list<TestVector*> TestSet; // Final result  of test vectors generated
