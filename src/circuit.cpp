@@ -12,7 +12,7 @@ void Circuit::Add_Gate_To_Wire_Output(Gate* gate,const char* wirename)
 {
     Wire* iwire = ((circuit.Netlist).find(wirename))->second;
     assert( (circuit.Netlist).find(wirename) != (circuit.Netlist).end());
-    cout << "Added gate  "  << gate->id <<  "  as output of wire  " << iwire->id << endl;
+ //   cout << "Added gate  "  << gate->id <<  "  as output of wire  " << iwire->id << endl;
     iwire->outputs.push_back((Element*)gate);    
     return;
 }
@@ -22,7 +22,7 @@ void Circuit::Add_Gate_To_Wire_Input(Gate* gate,const char* wirename)
 {
     Wire* iwire = ((circuit.Netlist).find(wirename))->second;
     assert( (circuit.Netlist).find(wirename) != (circuit.Netlist).end());
-    cout << "Added gate  "  << gate->id <<  "  as input of wire  " << iwire->id << endl;
+  //  cout << "Added gate  "  << gate->id <<  "  as input of wire  " << iwire->id << endl;
     iwire->input = (Element*)gate;    
     return;
 }
@@ -215,7 +215,7 @@ void Circuit:: ResolveWire(Wire* wire)
     // 4. Update the output gates (orig gates) inputs showing the new wires
     // as inputs
 
-    cout << "Need to resolve wire" << wire->id << endl;
+    cout << "Need to resolve wire:   " << wire->id << endl;
     list<Element*>:: iterator iter = (wire->outputs).begin();
     while ( iter != (wire->outputs).end() )
     {
@@ -226,7 +226,9 @@ void Circuit:: ResolveWire(Wire* wire)
         Gate* gate = dynamic_cast<Gate*>(*iter);
         assert(gate); // dynamic_cast must not fail
         string newname = (wire->id)+"_"+(gate->id);
+        newname = Check_Name_Present(newname);
         // step 2. Add a new wire for this instance
+        cout << "Adding derived wire:    " <<  newname  << endl;
         circuit.AddWire(newname.c_str(),CONNECTION);
 
         // The new wire's output should be the 
@@ -239,13 +241,13 @@ void Circuit:: ResolveWire(Wire* wire)
 
         Wire* newwire = ((circuit.Netlist).find(newname))->second;
         newwire->input = wire;
+         // finally update the gate's inputlist
+        (gate->inputs).remove(wire);
+        (gate->inputs).push_back(newwire);
         
         (*iter) = newwire;
 
-        // finally update the gate's inputlist
-        (gate->inputs).remove(wire);
-        (gate->inputs).push_back(newwire);
-        iter++;
+       iter++;
         }
 
 
@@ -269,9 +271,52 @@ bool Circuit::ResolveBranches()
     {
         Wire* iwire = iter->second;
         
-        if ( ((int)(iwire->outputs).size() > 1) || ( ( (int) (iwire->outputs).size() > 0 ) && iwire->wtype == PO ))
+        if (  ( (int)(iwire->outputs).size() > 1 
+            || ( (int) (iwire->outputs).size() > 0  && iwire->wtype == PO)) 
+            && (Wire_Not_Derived(iwire)))
                 ResolveWire(iwire);
         iter++;
     }
+    cout << "Resolve branches completed successfully" << endl;
     return true;
+}
+
+
+string Circuit::intToString(int inInt)
+{
+    stringstream ss;
+    string s;
+    ss << inInt;
+    s = ss.str();
+    return s;
+}
+
+string Circuit::Check_Name_Present(string givenname)
+{
+    map<string,int>::iterator iter = (circuit.RepeatInputs).find(givenname);
+    cout << givenname <<endl;
+    if (iter != (circuit.RepeatInputs).end())
+    {
+            iter->second += 1;
+            string newname;
+            newname = givenname + "_" + intToString(iter->second);
+            cout << "Returning name   " << newname << endl;
+         //   cout << "int value is  "  << iter->second << endl;
+            return newname;
+    }
+    else 
+     {
+         (circuit.RepeatInputs).insert(pair<string,int>(givenname,0));
+         cout << "Adding the namemap" << givenname << endl;
+        //    cout << "Returning name   " << givenname << endl;
+         return  givenname;
+     }
+
+}
+
+
+bool Circuit::Wire_Not_Derived(Wire* wire)
+{
+    if (strstr((wire->id).c_str(),"_")) return false;
+    else return true;
 }

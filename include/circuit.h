@@ -11,6 +11,10 @@
 #include <string>                                                 
 #include <cstdlib>                                                
 #include <cassert>
+#include <cstdlib>
+#include <cstring>
+#include <sstream>
+
 
 using namespace std;
 
@@ -94,7 +98,10 @@ public:
     map<string,Wire *> PriOutputs; //Set of primary outputs
     map<string,Wire *> Netlist;	// All wires in the circuit
     map<string,Gate *> Gates;   //All the gates in the circuit
-     
+    map<string,int> RepeatInputs; // If the same wire branches and two or more branches go to the same gate, we need this to name the wires
+
+
+
     Value*  testVector; // Array of values to be assigned to the pri inputs 
     //list<TestVector*> TestSet; // Final result  of test vectors generated
     list<Fault*> FaultSet; // Set of faults we need to run ATPG for
@@ -111,6 +118,11 @@ public:
     void Update_Wire_Pair(Wire* oldwire,Wire* newwire);
    void  Update_Gate_Input(Gate* gate, Wire* oldwire,Wire* newwire);
 
+   string Check_Name_Present(string givenname);
+string intToString(int inInt);
+
+
+bool Wire_Not_Derived(Wire* wire);
 };
 
 

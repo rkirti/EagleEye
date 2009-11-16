@@ -37,10 +37,8 @@ int Find_Length(Namenode* list)
     while (head)
     {
         head=head->next;
-        printf("Incrementing len\n");
         len++;
     }
-    printf("num of inputs:%d \n",len);
     return len;
 }
 
@@ -53,7 +51,6 @@ void Add_To_Gatelist(Gatenode* gate, GateType type, char* gatename)
     for (j=0;j <numInputs; j++)
     {
         inputnames[j] = current->name;
-        printf("Checking strings: %s\n",inputnames[j]);
         current = current->next; 
     }
     Lexer_AddGate(type,gatename,gate->output->name,inputnames,numInputs);    
@@ -67,7 +64,6 @@ void Populate_Gate(Gatenode* gate,Namenode* output,Namenode* inputs,GateType typ
     gate=(Gatenode*)malloc(sizeof(Gatenode));
     gate->output = output; 
     gate->inputlist = inputs;
-    printf("Adding gate with name: %s to gatelist\n", gatename);
     Add_To_Gatelist(gate,type,gatename);
 }
 
@@ -100,7 +96,6 @@ void Add_To_Netlist(Namenode* list, WireType type)
     Namenode* head = list;
     while (current)
     {
-        printf("Calling add wire for %s\n",current->name);
         Lexer_AddWire(current->name,type);
         current = current->next;
     }
@@ -149,7 +144,7 @@ void Add_To_Netlist(Namenode* list, WireType type)
 
 %%
 
-ckt: module inputs outputs wire gatelist {printf("gatelist parsed\n");} T_ENDMODULE {printf("ckt parsed");}
+ckt: module inputs outputs wire gatelist T_ENDMODULE {printf("ckt parsed");}
    ;
 
 
@@ -171,7 +166,7 @@ wire:  T_WIRE signallist T_SEMICOLON   {printf("wire parsed"); Add_To_Netlist($2
 
 
 
-gatelist: gatelist gate T_SEMICOLON { lineNum++;printf(" gate I count: %d lineNum %d\n", count++, lineNum); }
+gatelist: gatelist gate T_SEMICOLON { lineNum++; }
 | gate T_SEMICOLON  {lineNum++;} 
 
  ;
