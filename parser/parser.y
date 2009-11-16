@@ -8,6 +8,8 @@
 #include <assert.h>
 #include "defs.h"
 
+#define YYMAXDEPTH 10000
+
 typedef enum wiretype{PI=0,PO,CONNECTION} WireType;
 
 typedef enum gatetype{AND=0,OR,NOT,NAND,NOR,XOR,BUF}GateType;
@@ -21,6 +23,8 @@ extern char* yytext;
 extern FILE* yyin;
 extern int yydebug;
 
+int lineNum=1;
+int count=0;
 
 FILE* infp;
 
@@ -145,27 +149,31 @@ void Add_To_Netlist(Namenode* list, WireType type)
 
 %%
 
-ckt: module inputs outputs wire gatelist T_ENDMODULE {printf("ckt parsed");}
+ckt: module inputs outputs wire gatelist {printf("gatelist parsed\n");} T_ENDMODULE {printf("ckt parsed");}
    ;
 
 
-module:  T_MODULE name T_LPAREN signallist T_RPAREN T_SEMICOLON {printf("module parsed");}
+module:  T_MODULE name T_LPAREN signallist T_RPAREN T_SEMICOLON {printf("module parsed");} {lineNum++;}
    ;
 
-inputs:  T_INPUT signallist T_SEMICOLON   {printf("inputs parsed"); Add_To_Netlist($2, PI);}
-   ;
-
-outputs:  T_OUTPUT signallist T_SEMICOLON    {printf("outputs parsed");  Add_To_Netlist($2, PO);}
+inputs:  T_INPUT signallist T_SEMICOLON   {printf("inputs parsed"); Add_To_Netlist($2, PI);}   {lineNum++;}
 
    ;
 
-wire:  T_WIRE signallist T_SEMICOLON   {printf("wire parsed"); Add_To_Netlist($2, CONNECTION);} 
+outputs:  T_OUTPUT signallist T_SEMICOLON    {printf("outputs parsed");  Add_To_Netlist($2, PO);}   {lineNum++;}
+
+
+   ;
+
+wire:  T_WIRE signallist T_SEMICOLON   {printf("wire parsed"); Add_To_Netlist($2, CONNECTION);}   {lineNum++;}
+
   ;  
 
 
 
-gatelist: gatelist gate T_SEMICOLON   
-| gate T_SEMICOLON 
+gatelist: gatelist gate T_SEMICOLON { lineNum++;printf(" gate I count: %d lineNum %d\n", count++, lineNum); }
+| gate T_SEMICOLON  {lineNum++;} 
+
  ;
 
 gate: and  
@@ -178,7 +186,7 @@ gate: and
   ;
 
 signallist: signallist T_COMMA name   { $$ = Add_Name_To_List($1,$3); }
-  |name  { $$ = Init_List($1); }
+  |name { $$ = Init_List($1); }
   ;
 
 
@@ -217,7 +225,7 @@ name: T_NAME  { $$=$1;}
 
 int lexer(int argc, char** argv)
 {
-    if (argc != 2)
+    if (argc < 2)
     {
         printf("Usage: ./atpg <verilog_source> \n");
         exit(0);
@@ -243,6 +251,6 @@ int lexer(int argc, char** argv)
 yyerror(s)
 char *s;
 {
-	fprintf(stderr,"%s\n",s);
+	fprintf(stderr,"%s at lineNum %s %d %d\n",s,yytext,lineNum, YYMAXDEPTH);
 }
 

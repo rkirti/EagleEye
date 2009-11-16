@@ -202,17 +202,6 @@ const GateEvaluate g_EvaluateTable[] =
     Xor
 };
 
-void Circuit::Update_Wire_Pair(Wire* oldwire,Wire* newwire)
-{
-        
-
-
-}
-void Circuit::Update_Gate_Input(Gate* gate, Wire* oldwire,Wire* newwire)
-{
-
-}
- 
 
 void Circuit:: ResolveWire(Wire* wire)
 {
@@ -225,30 +214,53 @@ void Circuit:: ResolveWire(Wire* wire)
     // 3. Update the orig wire's outputs to reflect the wires rather than gates
     // 4. Update the output gates (orig gates) inputs showing the new wires
     // as inputs
-  
-  
-  
+
     cout << "Need to resolve wire" << wire->id << endl;
     list<Element*>:: iterator iter = (wire->outputs).begin();
     while ( iter != (wire->outputs).end() )
     {
+        Element* curEle = (*iter);
+        if (curEle->type == GATE)
+        {
+
         Gate* gate = dynamic_cast<Gate*>(*iter);
         assert(gate); // dynamic_cast must not fail
         string newname = (wire->id)+"_"+(gate->id);
-        // Add a new wire for this instance
+        // step 2. Add a new wire for this instance
         circuit.AddWire(newname.c_str(),CONNECTION);
-        
+
+        // The new wire's output should be the 
+        // gate
         Add_Gate_To_Wire_Output(gate,newname.c_str());
+
+        // The new wire's input should be the old wire and
+        // the old wire' output should change from gate to 
+        // new wire
+
         Wire* newwire = ((circuit.Netlist).find(newname))->second;
-        Update_Wire_Pair(wire, newwire);
-        Update_Gate_Input(gate,wire,newwire);
+        newwire->input = wire;
+        
+        (*iter) = newwire;
+
+        // finally update the gate's inputlist
+        (gate->inputs).remove(wire);
+        (gate->inputs).push_back(newwire);
         iter++;
+        }
+
+
+        else continue;
     }
 
+    if (wire->wtype == PO)
+    {
+        cout << "***************PO with fanout detected*************" <<  endl;
+    }
 }
 
 
-/*TODO: When does this return false? */
+
+
 
 bool Circuit::ResolveBranches()
 {
@@ -256,10 +268,10 @@ bool Circuit::ResolveBranches()
     while (iter != (circuit.Netlist).end())
     {
         Wire* iwire = iter->second;
-        if ( (int)(iwire->outputs).size() > 1)
+        
+        if ( ((int)(iwire->outputs).size() > 1) || ( ( (int) (iwire->outputs).size() > 0 ) && iwire->wtype == PO ))
                 ResolveWire(iwire);
         iter++;
-
     }
     return true;
 }
