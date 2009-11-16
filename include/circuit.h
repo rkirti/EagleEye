@@ -126,6 +126,7 @@ public:
 string intToString(int inInt);
 
 
+bool Evaluate();
 bool Wire_Not_Derived(Wire* wire);
 };
 

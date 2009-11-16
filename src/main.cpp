@@ -22,7 +22,9 @@ int main(int argc,char **argv)
 
 	circuit.Levelize();
 	//circuit.ResolveBranches();
-	Do_ATPG();	// :P
+	//Do_ATPG();	// :P
+
+        circuit.Evaluate();
 
 	/*
 	 * print the circuit, just to test it

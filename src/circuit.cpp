@@ -125,6 +125,51 @@ bool Circuit::AddGate(GateType type, char *name,char* output,char **inputs,int n
 
 
 
+bool Circuit::Evaluate()
+{
+    int level=1;
+    multimap<int,Element*>:: iterator levelIter;
+    map<string,Wire*> ::iterator iter =  (circuit.PriInputs).begin();
+
+
+    // Adding gen. values to the primary inputs 
+    for (;iter != (circuit.PriInputs).end(); iter++)
+    {   
+        (iter->second)->value=ZERO;
+    }
+
+
+    do
+    {
+        for (levelIter = ((circuit.Levels).equal_range(level)).first; 
+                levelIter !=((circuit.Levels).equal_range(level)).second; levelIter++)
+        {
+            //   cout <<"Iter is now at" << levelIter->second->id  <<endl;
+            if ( (levelIter->second)->type == GATE)
+            {
+                Gate* curGate = dynamic_cast<Gate*>(levelIter->second);
+                (curGate->output)->value = curGate->Evaluate();
+
+            }
+            else cout << "something wrong" << endl;
+
+
+        }
+    }while (   (circuit.Levels).find(++level) != (circuit.Levels).end() ); 
+
+    iter = (circuit.PriOutputs).begin();
+    
+    for (;iter != (circuit.PriOutputs).end(); iter++)
+    {   
+        cout << "PO: " << (iter->second)->id << "value:  " << (iter->second)->value << endl;
+    }
+
+
+
+    return true;
+}
+
+
 bool Circuit::Levelize()
 {
     int level=0;
