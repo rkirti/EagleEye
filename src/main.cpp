@@ -21,7 +21,7 @@ int main(int argc,char **argv)
 	}
 
 	circuit.Levelize();
-	//circuit.ResolveBranches();
+	circuit.ResolveBranches();
 	Do_ATPG();	// :P
 
 	/*
