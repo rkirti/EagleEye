@@ -72,10 +72,15 @@ class Gate: public Element
     list<Wire*> inputs;
     Wire* output;
 
+    int fanin;	// this should be equal to the no of inputs
+
+    int level;	// The level of the gate, initially should be zero and is assigned after calling Levelize()
+
     Gate( char* name, GateType givenType) 
     	:Element(name,GATE)
     {  
         gtype = givenType;
+	level = 0;
     } 
 };
 
@@ -105,6 +110,7 @@ public:
     bool AddGate(GateType type, char *name,char* output,char **inputs,int numSignals);
     void Add_Gate_To_Wire_Output(Gate* gate,const char* wirename);   
     void  Add_Gate_To_Wire_Input(Gate* gate,const char* wirename);
+    bool Levelize();
     bool ResolveBranches();
     void ResolveWire(Wire* somewire);
 

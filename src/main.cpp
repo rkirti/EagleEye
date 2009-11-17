@@ -19,14 +19,15 @@ int main(int argc,char **argv)
 		cout << ":(" << endl;
 		exit(0);
 	}
+
+	circuit.Levelize();
 	//circuit.ResolveBranches();
-	//Do_ATPG();	// :P
+	Do_ATPG();	// :P
 
 	/*
 	 * print the circuit, just to test it
 	 */
 	
-    /*
     map<string,Wire*>::iterator iter=(circuit.Netlist).begin();
 	
 	for(;iter != (circuit.Netlist).end(); iter++)
@@ -38,10 +39,9 @@ int main(int argc,char **argv)
 	
 	for(;iter1 != (circuit.Gates).end(); iter1++)
 	{
-		cout << iter1->first << "  " << iter1->second->gtype << "  " << endl;
+		cout << iter1->first << "  " << iter1->second->gtype << " level="<< iter1->second->level << "  " << endl;
 	}
 	
-    */
     
     
     

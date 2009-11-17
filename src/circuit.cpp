@@ -1,4 +1,5 @@
 #include "circuit.h"
+#include <queue>
 using namespace std;
 
 
@@ -121,7 +122,56 @@ bool Circuit::AddGate(GateType type, char *name,char* output,char **inputs,int n
     return true;
 }
 
+class WireAndLevel 
+{
+    public:
+	Wire *wire;
+	int level;
+	WireAndLevel(Wire *givenWire, int Level)
+	{
+	    wire = givenWire;
+	    level = Level;
+	}
+};
 
+bool Circuit::Levelize()
+{
+
+    queue<WireAndLevel> myqueue;
+
+    map<string,Wire *>::iterator iter;
+    for (iter=circuit.PriInputs.begin(); iter != circuit.PriInputs.end(); iter++)
+	myqueue.push (WireAndLevel(iter->second,0));
+
+    while ( !myqueue.empty() )
+    {
+	WireAndLevel temp=myqueue.front();
+	//cout << temp.wire->id << " and clevel=" << temp.level << endl;
+	list<Element *>::iterator listIter = ((temp.wire)->outputs).begin();
+	for ( ; listIter != ( (temp.wire)->outputs).end(); listIter++)
+	{
+	    if ( (*listIter)->type != GATE )
+	    {
+		cout << "error ! you should call levelize before resolving brances :)" << endl;
+		return false;
+	    }
+	    Gate *gate = dynamic_cast<Gate *>(*listIter);
+	    gate->level++;	// used temporarily :)
+	    //cout << "gate level=" << gate->level << "gate inputs="<< gate->inputs.size() << "name=" << gate->id << endl;
+	    if ( gate->level >= gate->inputs.size() )
+		gate->level = temp.level;	// freeze the level and remember that this will not happen again. Prove it !
+
+	    // Now push the gate's output into the queue with current level++
+	    myqueue.push (WireAndLevel(gate->output, temp.level+1));
+	}
+	myqueue.pop();
+    }
+
+    return true;
+}
+
+
+    
 /*
  * Gate::methods
  */
