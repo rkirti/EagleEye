@@ -148,7 +148,27 @@ bool Circuit::Evaluate()
             if ( (levelIter->second)->type == GATE)
             {
                 Gate* curGate = dynamic_cast<Gate*>(levelIter->second);
-                (curGate->output)->value = curGate->Evaluate();
+                Value curValue = curGate->Evaluate();
+                Wire* outputWire = curGate->output;
+                outputWire->value = curValue;
+                if  ((outputWire->outputs).size() > 1) 
+                {
+                    list<Element*>::iterator iter = (outputWire->outputs).begin();
+                    cout << "printing output list of wire: " << outputWire->id<< endl;
+
+
+                    for (;iter != (outputWire->outputs).end(); iter++)
+                    {
+                        cout << "output: " << (*iter)->id << endl;
+                        Wire* check = (dynamic_cast<Wire*>(*iter));
+                        assert(check);
+                        check->value = curValue;
+
+                    }
+
+                }
+
+
 
             }
             else cout << "something wrong" << endl;
@@ -235,7 +255,7 @@ bool Circuit::Levelize()
 
         }
     }while (   (circuit.Levels).find(++level) != (circuit.Levels).end() ); 
-
+    cout << "Levelization completed" << endl;
 }
 
 
@@ -272,11 +292,26 @@ static Value Or(list<Wire*> inputs)
 
 }
 
+
+static Value Buf(list<Wire*> inputs)
+{
+   int output=ZERO;	// initially the ouput should be 0, so that it outputs sets to the starting value on doing the first or 
+   assert(inputs.size() == 1);
+   list<Wire *>::iterator iter;
+   for (iter=inputs.begin(); iter != inputs.end(); iter++ )
+       output = (*iter)->value;
+    return (Value)output;
+
+}
+
+
+
+
 static Value Not(list<Wire*> inputs)
 {
    list<Wire *>::iterator iter;
    iter=inputs.begin();
-   return (Value)(~((*iter)->value));
+   return (Value)((~((*iter)->value))&0xf);
 }
 
 static Value Nand(list<Wire*> inputs)
@@ -317,7 +352,8 @@ const GateEvaluate g_EvaluateTable[] =
     Not,
     Nand,
     Nor,
-    Xor
+    Xor,
+    Buf
 };
 
 
@@ -375,6 +411,7 @@ void Circuit:: ResolveWire(Wire* wire)
     if (wire->wtype == PO)
     {
         cout << "***************PO with fanout detected*************" <<  endl;
+        assert(false);
     }
 }
 

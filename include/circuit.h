@@ -22,7 +22,7 @@ enum Value{ZERO=0b0000,ONE=0b1111,U=0b0101,D=0b1100,DBAR=0b0011,ZEROBYU=0b0001,U
 
 enum CktElement{WIRE=0,GATE,UNKNOWN};
 
-enum GateType{AND=0,OR,NOT,NAND,NOR,XOR};
+enum GateType{AND=0,OR,NOT,NAND,NOR,XOR,BUF};
 
 //const char* Evals[] = {AND,OR,};
 
