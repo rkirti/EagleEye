@@ -8,6 +8,13 @@ static int cktDebug=1;
 #define DEBUG(...) {if (cktDebug) {printf(__VA_ARGS__); printf("\n")}
 
 
+Value ControlValues[7] = {ZERO,ONE,U,ZERO,ONE,U,U};
+
+Value InversionValues[7] = {ZERO,ZERO,U,ONE,ONE,U,U};
+
+
+
+
 
 void Circuit::Add_Gate_To_Wire_Output(Gate* gate,const char* wirename)
 {
@@ -141,6 +148,9 @@ bool Circuit::Evaluate()
 
     do
     {
+        /* first and second are the end-point iterators that has been
+         * returned on qeurying the multimap on a value
+         */
         for (levelIter = ((circuit.Levels).equal_range(level)).first; 
                 levelIter !=((circuit.Levels).equal_range(level)).second; levelIter++)
         {
@@ -156,7 +166,10 @@ bool Circuit::Evaluate()
                     list<Element*>::iterator iter = (outputWire->outputs).begin();
                     cout << "printing output list of wire: " << outputWire->id<< endl;
 
-
+                    /* Reasons for the dynamic cast: 
+                     * If the output wire has > 1 output, they are all bound to
+                     * be wires.
+                     * */
                     for (;iter != (outputWire->outputs).end(); iter++)
                     {
                         cout << "output: " << (*iter)->id << endl;
@@ -184,8 +197,6 @@ bool Circuit::Evaluate()
         cout << "PO: " << (iter->second)->id << "value:  " << (iter->second)->value << endl;
     }
 
-
-
     return true;
 }
 
@@ -193,7 +204,7 @@ bool Circuit::Evaluate()
 bool Circuit::Levelize()
 {
     int level=0;
-    map<string,Wire*> ::iterator iter =  (circuit.PriInputs).begin();
+    map<string,Wire*>::iterator iter =  (circuit.PriInputs).begin();
     multimap<int,Element*>:: iterator levelIter;
 
 
@@ -475,3 +486,42 @@ bool Circuit::Wire_Not_Derived(Wire* wire)
     if (strstr((wire->id).c_str(),"_")) return false;
     else return true;
 }
+
+
+bool Circuit::Imply_And_Check()
+{
+    while (!circuit.ImpliQueue.empty())
+    {
+        Implication*  curImplication = (circuit.ImpliQueue).front();
+        Wire* curWire = curImplication->wire;
+        Value curValue = curImplication->value;
+        
+        if (curImplication->direction == 0) 
+        {
+
+//            Gate* curGate = dynamic_cast<Gate*>curWire->input;
+  //          if (curValue == (ControlValues[curGate->gtype] &  ))
+
+
+        }
+
+
+        //Check if it is backward 
+        // Get the gate whose output 
+
+
+
+
+    }
+
+
+}
+
+
+/*
+bool Circuit::Add_To_DFrontier(string name,Value value)
+{
+    
+    Wire* curWire = ((circuit.Netlist).find(wirename))->second;
+    assert(curWire);
+}*/

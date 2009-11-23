@@ -7,6 +7,7 @@
 
 #include <iostream>                                               
 #include <list>                                                   
+#include <queue>                                                   
 #include <map>
 #include <string>                                                 
 #include <cstdlib>                                                
@@ -95,20 +96,62 @@ class Fault{
 
 
 
+/* Instead of adding gates to D or J Frontiers,
+ * we add their output wires
+ * */
+class WireValuePair{
+    Wire*  iwire;
+    Value* value;
+};
+
+
+class Implication{
+ 
+public: 
+    Wire* wire;
+    Value value;
+    bool direction; /* 0 backward,1 forward*/
+};
+
+
+
+
+
 class Circuit {
     
 public:
+    
+    /* Stuff needed for basic circuit description
+     * Parsing and evaluation*/
     map<string,Wire *> PriInputs; // Set of primary inputs
     map<string,Wire *> PriOutputs; //Set of primary outputs
     map<string,Wire *> Netlist;	// All wires in the circuit
     map<string,Gate *> Gates;   //All the gates in the circuit
-    map<string,int> RepeatInputs; // If the same wire branches and two or more branches go to the same gate, we need this to name the wires
+
+    queue<Implication*> ImpliQueue;
+
+
+    /* This headache added to take care of a special case in renaming fanout
+     * wires. 
+     * If the same wire branches and two or more branches go to the same gate, 
+     * we need this to name the wires
+     */
+    map<string,int> RepeatInputs; 
+
+
+
+
     multimap<int,Element*> Levels;
 
     Value*  testVector; // Array of values to be assigned to the pri inputs 
     //list<TestVector*> TestSet; // Final result  of test vectors generated
     list<Fault*> FaultSet; // Set of faults we need to run ATPG for
     
+
+    list<WireValuePair> DFrontier;
+    list<WireValuePair> JFrontier;
+
+
     /*this should move to a different header file*/
     bool AddWire(const char* name,WireType type);
     /*Signals: input and output signals of the gate*/
@@ -120,14 +163,16 @@ public:
     void ResolveWire(Wire* somewire);
 
     void Update_Wire_Pair(Wire* oldwire,Wire* newwire);
-   void  Update_Gate_Input(Gate* gate, Wire* oldwire,Wire* newwire);
+    void  Update_Gate_Input(Gate* gate, Wire* oldwire,Wire* newwire);
 
    string Check_Name_Present(string givenname);
-string intToString(int inInt);
+   string intToString(int inInt);
 
 
 bool Evaluate();
 bool Wire_Not_Derived(Wire* wire);
+    bool Imply_And_Check();
+
 };
 
 
