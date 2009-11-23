@@ -6,9 +6,11 @@
 #define ATPG_H
 
 #include "lexer.h"
-
+#include "circuit.h"
 
 bool Do_ATPG();
+
+
 
 
 

@@ -19,7 +19,7 @@
 
 using namespace std;
 
-enum Value{ZERO=0b0000,ONE=0b1111,U=0b0101,D=0b1100,DBAR=0b0011,ZEROBYU=0b0001,UBYZERO=0b0100,ONEBYU=0b1101,UBYONE=0b0111};
+enum Value{ZERO=0b0000,ONE=0b1111,U=0b0101,D=0b1100,DBAR=0b0011,ZEROBYU=0b0001,UBYZERO=0b0100,ONEBYU=0b1101,UBYONE=0b0111,UBAR=0b1010};
 
 enum CktElement{WIRE=0,GATE,UNKNOWN};
 
@@ -84,7 +84,7 @@ class Gate: public Element
     	:Element(name,GATE)
     {  
         gtype = givenType;
-	level = 0;
+        level = 0;
     } 
 };
 
@@ -100,25 +100,34 @@ class Fault{
  * we add their output wires
  * */
 class WireValuePair{
+    public:
     Wire*  iwire;
-    Value* value;
+    Value value;
+    WireValuePair(Wire *inputwire,Value val)
+    {
+        iwire = inputwire;
+        value = val;
+    }
 };
 
 
 class Implication{
- 
 public: 
     Wire* wire;
     Value value;
     bool direction; /* 0 backward,1 forward*/
+    Implication(Wire* iwire,Value ival,bool dir)
+    {
+        wire = iwire;
+        value =ival;
+        direction = dir;
+    }
 };
-
 
 
 
 
 class Circuit {
-    
 public:
     
     /* Stuff needed for basic circuit description
@@ -151,6 +160,13 @@ public:
     list<WireValuePair> DFrontier;
     list<WireValuePair> JFrontier;
 
+    // Function, which adds a wire to the J frontier, along with it's value
+    bool Add_To_JFrontier(Wire *wire,Value);
+    bool Add_To_DFrontier(Wire *wire,Value);
+
+    bool RemoveFromJ(Wire *wire);
+    bool RemoveFromD(Wire *wire);
+
 
     /*this should move to a different header file*/
     bool AddWire(const char* name,WireType type);
@@ -168,7 +184,7 @@ public:
    string Check_Name_Present(string givenname);
    string intToString(int inInt);
 
-
+bool D_Algo();
 bool Evaluate();
 bool Wire_Not_Derived(Wire* wire);
     bool Imply_And_Check();
