@@ -495,14 +495,27 @@ bool Do_Xor(bool val1, bool val2)
 
     bool output;
     output = (val1 & (~(val2)) | ((~val1) & (val2)));
-    return output;
+    return output&(0xf);
+}
+
+
+int Translate_Value_To_Int(Value value)
+{
+    switch(value)
+    {
+        case 0x0: 
+            return 0;
+        case 0xff:
+            return 1;
+    }
+    return 0;
 }
 
 
 bool Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplication, Wire* curWire,Value curValue)
 {
     Gate* curGate = dynamic_cast<Gate*>(curWire->input);
-    assert(curValue == (Do_Xor(!ControlValues[curGate->gtype],InversionValues[curGate->gtype])));
+    assert( Translate_Value_To_Int(curValue) == Do_Xor(!ControlValues[curGate->gtype],InversionValues[curGate->gtype]));
     assert(curGate);
 
 
@@ -530,7 +543,8 @@ bool Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplication, Wir
 
     /*Check if all inputs of the gate are unknown or cbar*/
     /*TODO:You might want to iterate through the input list
-     * instead. */
+     * instead. 
+     */
 
     if (curGate->Evaluate() == curValue)
     {
@@ -581,7 +595,8 @@ bool Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplication, Wir
 bool Handle_Output_Coming_From_Control_Value(Implication* curImplication, Wire* curWire,Value curValue)
 {
     Gate* curGate = dynamic_cast<Gate*>(curWire->input);
-    assert(curValue == (Do_Xor(ControlValues[curGate->gtype],InversionValues[curGate->gtype])));
+    assert(Translate_Value_To_Int
+            (curValue) == (Do_Xor(ControlValues[curGate->gtype],InversionValues[curGate->gtype])));
 
     list<Wire*>::iterator iter = (curGate->inputs).begin();
     int inputUCount = 0;
@@ -600,8 +615,11 @@ bool Handle_Output_Coming_From_Control_Value(Implication* curImplication, Wire* 
         return true;
     } 
 
-    if (curWire->value != U) return false;
-
+    if (curWire->value != U) 
+    {
+        cout << __LINE__ << ": Returning false" << endl;
+        return false;
+    }
 
     /*Check if all inputs of the gate are unknown or cbar*/
     /*TODO:You might want to iterate through the input list
@@ -614,7 +632,13 @@ bool Handle_Output_Coming_From_Control_Value(Implication* curImplication, Wire* 
     } 
 
     /*Some input has value c */
-    if (curGate->Evaluate() != U) return false;
+    if (curGate->Evaluate() != U) 
+    {
+
+        cout << __LINE__ << ": Returning false" << endl;
+        return false;
+    }
+
 
     if (inputUCount>1) 
     {
@@ -669,11 +693,11 @@ bool Resolve_Backward_Implication(Implication* curImplication,Wire* curWire, Val
     assert(curGate);
     
     cout << "Backward implication is on this gate's output: " << curGate->id << endl;
-    cout << "cbar xor i is  "<<  Do_Xor(!ControlValues[curGate->gtype],InversionValues[curGate->gtype]) <<  endl;
+    cout << "c xor i is  "<<  Do_Xor(ControlValues[curGate->gtype],InversionValues[curGate->gtype]) <<  endl;
     cout << "Value to be implied is : " <<  curValue << endl;
 
 
-    if (curValue == (Do_Xor(!ControlValues[curGate->gtype],InversionValues[curGate->gtype])))
+    if ( Translate_Value_To_Int(curValue) == Do_Xor(ControlValues[curGate->gtype],InversionValues[curGate->gtype]))
     {
         return Handle_Output_Coming_From_Control_Value(curImplication,curWire,curValue);
     }
@@ -692,7 +716,10 @@ bool Resolve_Forward_Implication(Implication* curImplication,Wire* curWire, Valu
     // if the value of the wire is already set
     // And if it is the right value or not
     if ( (curWire->value != U) && (curWire->value != curValue) )
+    {
+        cout << __LINE__ << ": Returning false" << endl;
         return false;
+    }
 
     // if it is a PO, set the value to the wire 
     // and pop off the implication 
@@ -738,6 +765,7 @@ bool Resolve_Forward_Implication(Implication* curImplication,Wire* curWire, Valu
     {
         // revert back !
         curWire->value = wireOldValue;
+        cout << __LINE__ << ": Returning false" << endl;
         return false;
     }
 
@@ -822,23 +850,33 @@ bool Circuit::Imply_And_Check()
         Wire* curWire = curImplication->wire;
         Value curValue = curImplication->value;
         cout << __LINE__ << ": ";
-        cout << "New implication from the queue:  " << (curWire->id) <<  ":   "<< (curValue) << endl;
-
-
+        cout << "New implication from the queue:  " << (curWire->id) <<  ":   "<< (curValue) ;
+        if (curImplication->direction == 0) cout <<   "  backwards" << endl;
+        else cout << "  forward" << endl;
+            
         //  Resolving backward implication
         if (curImplication->direction == false) 
         {
             if (Resolve_Backward_Implication(curImplication,curWire,curValue) == false)
+            {
+
+                cout << __LINE__ << ": Returning false" << endl;
                 return false;
-            else continue;
+            }
+                else continue;
 
         }
         //  Resolving forward implication
         else
         {
             if (Resolve_Forward_Implication(curImplication,curWire,curValue) == false)
+         {
+
+                cout << __LINE__ << ": Returning false" << endl;
                 return false;
-            else continue;
+         
+         }
+                else continue;
 
         }
 
@@ -851,8 +889,12 @@ bool Circuit::D_Algo()
 { 
      //Ensure all implications are made and they 
      // are consistent
-    if (circuit.Imply_And_Check() == false) return false;
-     
+    if (circuit.Imply_And_Check() == false) 
+    {
+
+        cout << __LINE__ << ": Returning false" << endl;
+        return false;
+    }
      //Iterate through list of POs to see if any of them has 
      //D or DBAR. If so, return true.   
     
@@ -872,8 +914,12 @@ DFrontierWork:
     // Error is not at PO. Algo should execute :(
     
     // No means of propagating the error ahead
-    if (circuit.DFrontier.empty()) return false;
-    
+    if (circuit.DFrontier.empty()) 
+    {
+
+        cout << __LINE__ << ": Returning false" << endl;
+        return false;
+    }
     for (;checkIter !=(circuit.DFrontier).end();checkIter++)
     {
         /*Selecting a gate from the DFrontier*/
@@ -882,7 +928,7 @@ DFrontierWork:
         
       cout << "Selected gate: " << curGate->id 
            << "from the D Frontier" << endl;
-      cout << "Control value is: " << cval;
+      cout << "Control value is: " << cval << endl;
 
       list<Wire*>::iterator inputIter = (curGate->inputs).begin();
       for (;inputIter != (curGate->inputs).end();inputIter++)
@@ -891,10 +937,16 @@ DFrontierWork:
             {
                 // All implications backward
                 
-                Implication* newImply= new Implication(*inputIter,(Value)(~cval),false); /*bool false = 0 = backward*/
-                
+                Implication* newImply= new Implication(*inputIter,(Value)((~cval)&0xf),false); /*bool false = 0 = backward*/
+                cout << __LINE__  << ":  " ;
+                cout << "Adding implication: " << (*inputIter)->id
+                     <<  ~(cval) << endl; 
                 (circuit.ImpliQueue).push(newImply);
             }         
+          else
+              cout <<  "DEBUG: Wire: " << (*inputIter)->id << "value: " <<  (*inputIter)->value <<endl; 
+
+
       }
 
      if (D_Algo() == true) return true;
@@ -911,9 +963,11 @@ JFrontierWork:
        Gate* curGate=dynamic_cast<Gate*>(checkIter->iwire->input);
        Value cval = ControlValues[curGate->gtype];
         
+      cout << __LINE__ ;
       cout << "Selected gate: " << curGate->id 
            << "from the D Frontier" << endl;
-      cout << "Control value is: " << cval;
+      cout << "Control value is: " << cval << endl;
+      cout << endl <<  endl;
 
       list<Wire*>::iterator inputIter = (curGate->inputs).begin();
       for (;inputIter != (curGate->inputs).end();inputIter++)
@@ -922,6 +976,9 @@ JFrontierWork:
             {
                 // All implications backward
                 Implication* newImply= new Implication(*inputIter,(Value)(cval),false); /*bool false = 0 = backward*/
+                cout << "Adding implication: " << (*inputIter)->id
+                     <<  ~(cval) << endl; 
+              
                 (circuit.ImpliQueue).push(newImply);
                 break;
             }         

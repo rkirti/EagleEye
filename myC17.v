@@ -15,25 +15,3 @@ nand NAND2_4 (N22, N10, N2);
 endmodule
 
 
-module TestBenches (N0,N1,N2,N3,N6,N7,N22,N23);
-
-reg N0,N1,N2,N3,N6,N7;
-
-wire N22,N23;
-
-
-c17 test(N1,N2,N3,N6,N7,N22,N23);
-
-initial
-    begin
-
-    N0=0;
-    N1=0;
-    N2=0;
-    N3=0;
-    N6=0;
-    N7=0;
-
-#2
-    $display("Outputs are N22:%d N23:%d",N22,N23);
-end

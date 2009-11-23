@@ -246,6 +246,6 @@ int lexer(int argc, char** argv)
 yyerror(s)
 char *s;
 {
-	fprintf(stderr,"%s at lineNum %s %d %d\n",s,yytext,lineNum, YYMAXDEPTH);
+	fprintf(stderr,"%s at lineNum %d %s %d\n",s,lineNum,yytext, YYMAXDEPTH);
 }
 
