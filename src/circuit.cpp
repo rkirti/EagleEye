@@ -546,11 +546,14 @@ bool Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplication, Wir
      * instead. 
      */
 
+
     if (curGate->Evaluate() == curValue)
     {
         cout << "Gate evals to what we want. Implication to be resolved "
             << endl;
-        curWire->value = curValue;
+	// if it is the faulty wire, don't set the value
+	if ( curWire != (circuit.faultWire) )
+	     curWire->value = curValue;
         (circuit.ImpliQueue).pop();
         return true;
     } 
@@ -573,7 +576,10 @@ bool Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplication, Wir
                         << "value:  " <<  newVal << endl;
                     (circuit.ImpliQueue).push(newImply); 
                 }
-                (circuit.ImpliQueue).pop();
+		// if it is the faulty wire, don't set the value
+		if ( curWire != (circuit.faultWire) )
+		    curWire->value = curValue;
+		(circuit.ImpliQueue).pop();
                 return true;
             }
 
@@ -592,6 +598,7 @@ bool Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplication, Wir
 }
 
 
+// Total mess !! plz decorate it :)
 bool Handle_Output_Coming_From_Control_Value(Implication* curImplication, Wire* curWire,Value curValue)
 {
     Gate* curGate = dynamic_cast<Gate*>(curWire->input);
@@ -601,13 +608,13 @@ bool Handle_Output_Coming_From_Control_Value(Implication* curImplication, Wire* 
     list<Wire*>::iterator iter = (curGate->inputs).begin();
     int inputUCount = 0;
 
-
     for (;iter != (curGate->inputs).end();iter++)
     {
         if ((*iter)->value == U) inputUCount++;
     }
 
 
+    // TODO: The we need to propagate further
     if (curWire->value == curValue) 
     {
         cout << "Curvalue is what we want. Implication resolved by itself" << endl;
@@ -626,7 +633,9 @@ bool Handle_Output_Coming_From_Control_Value(Implication* curImplication, Wire* 
      * instead. */
     if ( curGate->Evaluate() == curValue)
     {
-        curWire->value = curValue;
+	// if it is the faulty wire, don't set the value
+	if ( curWire != (circuit.faultWire) )
+	     curWire->value = curValue;
         (circuit.ImpliQueue).pop();
         return true;
     } 
@@ -642,7 +651,10 @@ bool Handle_Output_Coming_From_Control_Value(Implication* curImplication, Wire* 
 
     if (inputUCount>1) 
     {
-        (*iter)->value = curValue;
+        //(*iter)->value = curValue; <-- DOUBT: ?
+	// if it is the faulty wire, don't set the value
+	if ( curWire != (circuit.faultWire) )
+	     curWire->value = curValue;
         cout << "Adding to J Frontier:  " << (*iter)->id << endl;
         circuit.Add_To_JFrontier((*iter),curValue);
         (circuit.ImpliQueue).pop();
@@ -651,7 +663,7 @@ bool Handle_Output_Coming_From_Control_Value(Implication* curImplication, Wire* 
 
     if (inputUCount == 1)
     {
-        for (;iter != (curGate->inputs).end();iter++)
+        for (iter = (curGate->inputs).begin();iter != (curGate->inputs).end();iter++)
         {
             if ((*iter)->value == U)
             {
@@ -664,6 +676,12 @@ bool Handle_Output_Coming_From_Control_Value(Implication* curImplication, Wire* 
 
             }
         }
+
+        (circuit.ImpliQueue).pop();
+	// if it is the faulty wire, don't set the value
+	if ( curWire != (circuit.faultWire) )
+	     curWire->value = curValue;
+	return true;
 
     }
 

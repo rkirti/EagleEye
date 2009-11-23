@@ -160,6 +160,9 @@ public:
     list<WireValuePair> DFrontier;
     list<WireValuePair> JFrontier;
 
+    // The current fault under consideration
+    Wire *faultWire;
+
     // Function, which adds a wire to the J frontier, along with it's value
     bool Add_To_JFrontier(Wire *wire,Value);
     bool Add_To_DFrontier(Wire *wire,Value);
@@ -181,12 +184,12 @@ public:
     void Update_Wire_Pair(Wire* oldwire,Wire* newwire);
     void  Update_Gate_Input(Gate* gate, Wire* oldwire,Wire* newwire);
 
-   string Check_Name_Present(string givenname);
-   string intToString(int inInt);
+    string Check_Name_Present(string givenname);
+    string intToString(int inInt);
 
-bool D_Algo();
-bool Evaluate();
-bool Wire_Not_Derived(Wire* wire);
+    bool D_Algo();
+    bool Evaluate();
+    bool Wire_Not_Derived(Wire* wire);
     bool Imply_And_Check();
 
 };
