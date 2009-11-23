@@ -333,7 +333,7 @@ static Value Nand(list<Wire*> inputs)
    for (iter=inputs.begin(); iter != inputs.end(); iter++ )
        output &= (*iter)->value;
    
-   if (output & U) return U;
+   if (output == U) return U; // if output == Unknow, just return unknown
    return (Value)((~output)&0xf);
 }
 
@@ -723,11 +723,12 @@ bool Resolve_Forward_Implication(Implication* curImplication,Wire* curWire, Valu
 
     // if it is a PO, set the value to the wire 
     // and pop off the implication 
-    if ((curWire->outputs).size() == 0)
+    if ((curWire->outputs).empty())
     {
         // set the value of the current wire
         curWire->value = curValue;
         (circuit.ImpliQueue).pop();
+        cout << __LINE__ << ": Success, po reached and po value set to:" << curValue << endl;
         return true;
     }
 
@@ -768,12 +769,14 @@ bool Resolve_Forward_Implication(Implication* curImplication,Wire* curWire, Valu
         cout << __LINE__ << ": Returning false" << endl;
         return false;
     }
-
+    
+    cout << __LINE__ << ": Debug: gateOldOutput = " << gateOldOutput << "new = " << gateNewOutput << endl;
     // Case - gate's old output is unknown or not completely known
-    if ( gateOldOutput == U ) 
+    if ( isNotKnown(gateOldOutput) ) 
     {
         // Case I - gate old value == new value = unknown
-        if (gateNewOutput == U)
+        //if (gateNewOutput == U)
+        if (isNotKnown(gateNewOutput))
         {
             // Add the gate to D frontier
             cout << "Adding gate to D frontier: " << curGate->id <<endl; 
@@ -801,6 +804,8 @@ bool Resolve_Forward_Implication(Implication* curImplication,Wire* curWire, Valu
         Implication* newImply= new Implication(curGate->output,gateNewOutput,true); /*bool true = 0 = forward*/
         cout << "Adding implication :  " << curGate->output->id << ". Line: " << __LINE__ << endl;
         (circuit.ImpliQueue).push(newImply); 
+
+	return true;
 
     }
 
@@ -831,6 +836,9 @@ bool Resolve_Forward_Implication(Implication* curImplication,Wire* curWire, Valu
         (circuit.ImpliQueue).push(newImply); 
         return true;
     }
+
+    cout << __LINE__ << ": Returning false" << endl;
+    return false;
 
 }
 
@@ -939,7 +947,12 @@ DFrontierWork:
                 
                 Implication* newImply= new Implication(*inputIter,(Value)((~cval)&0xf),false); /*bool false = 0 = backward*/
                 cout << __LINE__  << ":  " ;
-                cout << "Adding implication: " << (*inputIter)->id
+                cout << "Adding backward implication: " << (*inputIter)->id
+                     <<  ~(cval) << endl; 
+                (circuit.ImpliQueue).push(newImply);
+                newImply= new Implication(*inputIter,(Value)((~cval)&0xf),true); /*bool false = 0 = backward*/
+                cout << __LINE__  << ":  " ;
+                cout << "Adding forward implication: " << (*inputIter)->id
                      <<  ~(cval) << endl; 
                 (circuit.ImpliQueue).push(newImply);
             }         
@@ -1049,4 +1062,20 @@ bool Circuit::RemoveFromJ(Wire *wire)
     return result;
 }
 
-     
+// returns if the value is known or not
+// 
+bool isNotKnown(Value v)
+{
+    switch(v)
+     {
+	    case ONE:
+	    case ZERO:
+	    case D:
+	    case DBAR:
+	    return false;
+	
+	default:
+	    return true;
+     }
+     return true;
+}

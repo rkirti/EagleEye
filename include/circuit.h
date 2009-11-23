@@ -201,4 +201,5 @@ extern const GateEvaluate g_EvaluateTable[];
 /* The global circuit */
 extern Circuit circuit;
 
+bool isNotKnown(Value);
 #endif /* ifndef CIRCUIT_H */
