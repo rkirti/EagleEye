@@ -270,105 +270,6 @@ bool Circuit::Levelize()
 }
 
 
-    
-/*
- * Gate::methods
- */
-Value Gate::Evaluate()
-{
-    return g_EvaluateTable[gtype](inputs);
-}
-
-/*
- * The logic functions - AND, OR, NOT, NAND, NOR
- */
-static Value And(list<Wire*> inputs)
-{
-   int output=ONE;	// initially the ouput should be 1, so that it outputs sets to the starting value on doing the first and
-   list<Wire *>::iterator iter;
-   for (iter=inputs.begin(); iter != inputs.end(); iter++ )
-       output &= (*iter)->value;
-    return (Value)output;
-
-}
-
-
-static Value Or(list<Wire*> inputs)
-{
-   int output=ZERO;	// initially the ouput should be 0, so that it outputs sets to the starting value on doing the first or 
-   list<Wire *>::iterator iter;
-   for (iter=inputs.begin(); iter != inputs.end(); iter++ )
-       output |= (*iter)->value;
-    return (Value)output;
-
-}
-
-
-static Value Buf(list<Wire*> inputs)
-{
-   int output=ZERO;	// initially the ouput should be 0, so that it outputs sets to the starting value on doing the first or 
-   assert(inputs.size() == 1);
-   list<Wire *>::iterator iter;
-   for (iter=inputs.begin(); iter != inputs.end(); iter++ )
-       output = (*iter)->value;
-    return (Value)output;
-
-}
-
-
-
-
-static Value Not(list<Wire*> inputs)
-{
-   list<Wire *>::iterator iter;
-   iter=inputs.begin();
-   return (Value)((~((*iter)->value))&0xf);
-}
-
-static Value Nand(list<Wire*> inputs)
-{
-   int output=ONE;	// initially the ouput should be 1, so that it outputs sets to the starting value on doing the first and
-   Value result;
-   list<Wire *>::iterator iter;
-   for (iter=inputs.begin(); iter != inputs.end(); iter++ )
-       output &= (*iter)->value;
-   
-   if (output == U) return U; // if output == Unknow, just return unknown
-   return (Value)((~output)&0xf);
-}
-
-
-static Value Nor(list<Wire*> inputs)
-{
-   int output=ZERO;	// initially the ouput should be 0, so that it outputs sets to the starting value on doing the first or 
-   list<Wire *>::iterator iter;
-   for (iter=inputs.begin(); iter != inputs.end(); iter++ )
-       output |= (*iter)->value;
-    return (Value)((~output)&0xf);
-
-}
-
-static Value Xor(list<Wire *> inputs)
-{
-	int output=ZERO;
-	list<Wire *>::iterator iter;
-	for (iter=inputs.begin(); iter != inputs.end(); iter++)
-		output = ((output & (~(*iter)->value)) | ((~output) & ((*iter)->value)));
-	return (Value)output;
-}
-
-
-const GateEvaluate g_EvaluateTable[] = 
-{
-    And,
-    Or,
-    Not,
-    Nand,
-    Nor,
-    Xor,
-    Buf
-};
-
 
 void Circuit:: ResolveWire(Wire* wire)
 {
@@ -811,8 +712,11 @@ bool Resolve_Forward_Implication(Implication* curImplication,Wire* curWire, Valu
         // and remove the gate from it. Because it is resolved now
 
         if (circuit.RemoveFromD(curGate->output))
-            cout << "INFO: The gate is indeed in D and has been removed" << curGate->id << endl;
-        else cout << "INFO: The gate is not there in D frontier. report from " << __LINE__ << endl;
+           ;
+            // cout << "INFO: The gate is indeed in D and has been removed" << curGate->id << endl;
+        else 
+            ;
+            //cout << "INFO: The gate is not there in D frontier. report from " << __LINE__ << endl;
 
         // The last thing to do is to propagate the impli and
         // before that, popping off the current impli
@@ -1097,3 +1001,22 @@ bool isNotKnown(Value v)
      }
      return true;
 }
+
+
+    
+/*
+ * Gate Evaluation  
+ * We use a table of function pointers.
+ * The appropriate function is invoked by indexing 
+ * into the table using the gatetype field of the calling
+ * gate object
+ */
+
+Value Gate::Evaluate()
+{
+    return g_EvaluateTable[gtype](inputs);
+}
+
+
+
+

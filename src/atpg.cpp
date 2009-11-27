@@ -27,4 +27,30 @@ bool Do_ATPG()
     << "value:  " <<  newVal;
    result = circuit.D_Algo();
    cout << "Returning " << result << endl;
+   map<string,Wire*> ::iterator iter =  (circuit.PriInputs).begin();
+
+    cout << "Test vectors are : " << endl;
+    for (;iter != (circuit.PriInputs).end(); iter++)
+    {   
+        cout << (iter->second)->id << ":    " << (iter->second)->value << endl;
+    }
+
+   iter =  (circuit.PriOutputs).begin();
+    cout << "Output vectors are : " << endl;
+    for (;iter != (circuit.PriOutputs).end(); iter++)
+    {   
+        cout << (iter->second)->id << ":    " << (iter->second)->value << endl;
+    }
+
+   iter =  (circuit.Netlist).begin();
+    cout << "Netlist : " << endl;
+    for (;iter != (circuit.Netlist).end(); iter++)
+    {   
+        cout << (iter->second)->id << ":    " << (iter->second)->value << endl;
+    }
+
+
+
+
+
 }

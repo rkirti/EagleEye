@@ -22,10 +22,11 @@ int main(int argc,char **argv)
 
 	circuit.Levelize();
 	circuit.ResolveBranches();
-	Do_ATPG();	
+	
+    Do_ATPG();	
 
     //   circuit.Evaluate();
-      // cout << "finished evaluating" << endl;
+    // cout << "finished evaluating" << endl;
 
 	/*
 	 * print the circuit, just to test it

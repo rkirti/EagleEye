@@ -29,6 +29,21 @@ enum GateType{AND=0,OR,NOT,NAND,NOR,XOR,BUF};
 
 enum WireType{PI=0,PO=1,CONNECTION=2};
 
+class Wire;
+
+/*Generic Evaluate function table*/
+typedef Value (*GateEvaluate)(list<Wire*> inputs);
+
+
+
+/* The evaluate functions array */
+extern const GateEvaluate g_EvaluateTable[];
+
+
+
+
+
+
 class Element
 {
     public:
@@ -195,14 +210,11 @@ public:
 };
 
 
-/*Generic Evaluate function table*/
-typedef Value (*GateEvaluate)(list<Wire*> inputs);
-
-/* The evaluate functions array */
-extern const GateEvaluate g_EvaluateTable[];
-
 /* The global circuit */
 extern Circuit circuit;
 
 bool isNotKnown(Value);
+
+
+#include "evaluate.h"
 #endif /* ifndef CIRCUIT_H */
