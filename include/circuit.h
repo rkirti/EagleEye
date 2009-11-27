@@ -190,11 +190,11 @@ public:
     Wire *faultWire;
 
     // Function, which adds a wire to the J frontier, along with it's value
-    bool Add_To_JFrontier(Wire *wire,Value);
-    bool Add_To_DFrontier(Wire *wire,Value);
+ //   bool Add_To_JFrontier(Wire *wire,Value);
+  //  bool Add_To_DFrontier(Wire *wire,Value);
 
-    bool RemoveFromJ(Wire *wire);
-    bool RemoveFromD(Wire *wire);
+ //   bool RemoveFromJ(Wire *wire);
+  //  bool RemoveFromD(Wire *wire);
 
 
     /*this should move to a different header file*/
@@ -213,10 +213,10 @@ public:
     string Check_Name_Present(string givenname);
     string intToString(int inInt);
 
-    bool D_Algo();
+ //   bool D_Algo();
     bool Evaluate();
     bool Wire_Not_Derived(Wire* wire);
-    bool Imply_And_Check();
+   // bool Imply_And_Check();
 
 };
 
@@ -225,6 +225,8 @@ public:
 extern Circuit circuit;
 
 bool isNotKnown(Value);
+bool Do_Xor(bool val1, bool val2);
+int Translate_Value_To_Int(Value value);
 
 
 #include "evaluate.h"
