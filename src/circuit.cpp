@@ -8,12 +8,6 @@ static int cktDebug=1;
 #define DEBUG(...) {if (cktDebug) {printf(__VA_ARGS__); printf("\n")}
 
 
-Value ControlValues[7] = {ZERO,ONE,U,ZERO,ONE,U,U};
-
-Value InversionValues[7] = {ZERO,ZERO,U,ONE,ONE,U,U};
-
-
-
 
 
 void Circuit::Add_Gate_To_Wire_Output(Gate* gate,const char* wirename)
@@ -815,116 +809,6 @@ bool Circuit::Imply_And_Check()
 }
 
 
-bool Circuit::D_Algo()
-{ 
-     //Ensure all implications are made and they 
-     // are consistent
-    if (circuit.Imply_And_Check() == false) 
-    {
-
-        cout << __LINE__ << ": Returning false" << endl;
-        return false;
-    }
-     //Iterate through list of POs to see if any of them has 
-     //D or DBAR. If so, return true.   
-    
-    list<WireValuePair>::iterator checkIter = (circuit.DFrontier).begin();
-    map<string,Wire*>::iterator iter = (circuit.PriOutputs).begin();
-    
-    for (; iter!=(circuit.PriOutputs).end();iter++)
-    {
-        // D_Algo just takes care of returning true.
-        // The input vector should then be recorded 
-        // by the Do_ATPG function
-        if (iter->second->value == D ||  iter->second->value == DBAR )
-            goto JFrontierWork;
-    }
-
-DFrontierWork:
-    // Error is not at PO. Algo should execute :(
-    
-    // No means of propagating the error ahead
-    if (circuit.DFrontier.empty()) 
-    {
-
-        cout << __LINE__ << ": Returning false" << endl;
-        return false;
-    }
-    for (;checkIter !=(circuit.DFrontier).end();checkIter++)
-    {
-        /*Selecting a gate from the DFrontier*/
-       Gate* curGate=dynamic_cast<Gate*>(checkIter->iwire->input);
-       Value cval = ControlValues[curGate->gtype];
-        
-      cout << "Selected gate: " << curGate->id 
-           << "from the D Frontier" << endl;
-      cout << "Control value is: " << cval << endl;
-
-      list<Wire*>::iterator inputIter = (curGate->inputs).begin();
-      for (;inputIter != (curGate->inputs).end();inputIter++)
-      {
-          if ((*inputIter)->value == U)
-            {
-                // All implications backward
-                
-                Implication* newImply= new Implication(*inputIter,(Value)((~cval)&0xf),false); /*bool false = 0 = backward*/
-                cout << __LINE__  << ":  " ;
-                cout << "Adding backward implication: " << (*inputIter)->id
-                     <<  ~(cval) << endl; 
-                (circuit.ImpliQueue).push(newImply);
-                newImply= new Implication(*inputIter,(Value)((~cval)&0xf),true); /*bool false = 0 = backward*/
-                cout << __LINE__  << ":  " ;
-                cout << "Adding forward implication: " << (*inputIter)->id
-                     <<  ~(cval) << endl; 
-                (circuit.ImpliQueue).push(newImply);
-            }         
-          else
-              cout <<  "DEBUG: Wire: " << (*inputIter)->id << "value: " <<  (*inputIter)->value <<endl; 
-
-
-      }
-
-     if (D_Algo() == true) return true;
-     // Temporary resort
-     else assert(false);
-    
-    }
-
-JFrontierWork:
-    if (circuit.JFrontier.empty()) return true;
-    for (;checkIter !=(circuit.JFrontier).end();checkIter++)
-    {
-        /*Selecting a gate from the DFrontier*/
-       Gate* curGate=dynamic_cast<Gate*>(checkIter->iwire->input);
-       Value cval = ControlValues[curGate->gtype];
-        
-      cout << __LINE__ ;
-      cout << "Selected gate: " << curGate->id 
-           << "from the D Frontier" << endl;
-      cout << "Control value is: " << cval << endl;
-      cout << endl <<  endl;
-
-      list<Wire*>::iterator inputIter = (curGate->inputs).begin();
-      for (;inputIter != (curGate->inputs).end();inputIter++)
-      {
-          if ((*inputIter)->value == U)
-            {
-                // All implications backward
-                Implication* newImply= new Implication(*inputIter,(Value)(cval),false); /*bool false = 0 = backward*/
-                cout << "Adding implication: " << (*inputIter)->id
-                     <<  ~(cval) << endl; 
-              
-                (circuit.ImpliQueue).push(newImply);
-                break;
-            }         
-      }
-    
-    if (D_Algo() == true) return true;
-     // Temporary resort
-     else assert(false);
-    }
-    return false;
-}
 
 
 

@@ -11,6 +11,7 @@ Circuit circuit;
 int main(int argc,char **argv)
 {
 
+    ATPG curTest;
 	/*
 	 * Call the lexer now !
 	 */
@@ -23,7 +24,7 @@ int main(int argc,char **argv)
 	circuit.Levelize();
 	circuit.ResolveBranches();
 	
-    Do_ATPG();	
+    curTest.Do_ATPG();	
 
     //   circuit.Evaluate();
     // cout << "finished evaluating" << endl;

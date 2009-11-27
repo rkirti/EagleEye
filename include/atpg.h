@@ -8,9 +8,15 @@
 #include "lexer.h"
 #include "circuit.h"
 
-bool Do_ATPG();
+class ATPG{
 
+friend class Circuit;
 
+public:
+    bool Do_ATPG();
+    bool D_Algo();
+    void Update_PI_For_9V();
+};
 
 
 
