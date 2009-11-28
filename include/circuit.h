@@ -163,7 +163,7 @@ public:
     map<string,Wire *> Netlist;	// All wires in the circuit
     map<string,Gate *> Gates;   //All the gates in the circuit
 
-    queue<Implication*> ImpliQueue;
+    //queue<Implication*> ImpliQueue;
 
 
     /* This headache added to take care of a special case in renaming fanout

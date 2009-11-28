@@ -30,8 +30,16 @@ public:
     bool RemoveFromD(Wire *wire);
     bool RemoveFromJ(Wire *wire);
 
-
+    bool Compatible(Value oldval,Value newval);
+    bool  Check_Wire_Value(Wire* wire,Value val);
+    
+    void Make_Assignments();
     void Update_PI_For_9V();
+
+    void Failure();
+
+
+
 };
 
 

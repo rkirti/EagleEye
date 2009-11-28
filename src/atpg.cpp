@@ -1,6 +1,10 @@
 #include "circuit.h"
 #include "atpg.h"
 
+
+static list<Implication*> Intentions;
+static queue<Implication*> ImpliQueue;
+
 bool ATPG::Do_ATPG()
 {
    Value newVal = D;
@@ -9,18 +13,18 @@ bool ATPG::Do_ATPG()
 
     // n10 - backward ONE 
    Implication* newImply= new Implication(circuit.faultWire,ONE,false); 
-   (circuit.ImpliQueue).push(newImply); 
+   (ImpliQueue).push(newImply); 
 
     // n10 - forward D 
    newImply= new Implication(circuit.faultWire,D,true); 
-   (circuit.ImpliQueue).push(newImply); 
+   (ImpliQueue).push(newImply); 
 
 //    // n0 - backward 0
 //   newImply= new Implication(((circuit.Netlist).find("N0"))->second,ZERO,false); 
-//    (circuit.ImpliQueue).push(newImply); 
+//    (ImpliQueue).push(newImply); 
 //    // n1 - backward 0
 //   newImply= new Implication(((circuit.Netlist).find("N1"))->second,ZERO,false); 
-//    (circuit.ImpliQueue).push(newImply); 
+//    (ImpliQueue).push(newImply); 
 ////bool false = 0 = backward
 
 
@@ -69,19 +73,19 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
 
     for (;iter != (curGate->inputs).end();iter++)
     {
-        if ((*iter)->value == U) inputUCount++;
+        if  (Check_Wire_Value((*iter),U)) inputUCount++;
     }
 
 
     // TODO: The we need to propagate further
-    if (curWire->value == curValue) 
+    if (Check_Wire_Value(curWire,curValue)) 
     {
         cout << "Curvalue is what we want. Implication resolved by itself" << endl;
-        (circuit.ImpliQueue).pop();
+        (ImpliQueue).pop();
         return true;
     } 
 
-    if (curWire->value != U) 
+    if (Check_Wire_Value(curWire,U)) 
     {
         cout << __LINE__ << ": Returning false" << endl;
         return false;
@@ -94,8 +98,8 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
     {
 	// if it is the faulty wire, don't set the value
 	if ( curWire != (circuit.faultWire) )
-	     curWire->value = curValue;
-        (circuit.ImpliQueue).pop();
+	    Intentions.push_back(curImplication);
+        (ImpliQueue).pop();
         return true;
     } 
 
@@ -111,12 +115,12 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
     if (inputUCount>1) 
     {
         //(*iter)->value = curValue; <-- DOUBT: ?
-	// if it is the faulty wire, don't set the value
-	if ( curWire != (circuit.faultWire) )
-	     curWire->value = curValue;
+        // if it is the faulty wire, don't set the value
+        if ( curWire != (circuit.faultWire) )
+            Intentions.push_back(curImplication);
         cout << "Adding to J Frontier:  " << (*iter)->id << endl;
         Add_To_JFrontier((*iter),curValue);
-        (circuit.ImpliQueue).pop();
+        (ImpliQueue).pop();
         return true;
     }
 
@@ -124,27 +128,96 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
     {
         for (iter = (curGate->inputs).begin();iter != (curGate->inputs).end();iter++)
         {
-            if ((*iter)->value == U)
+            if (Check_Wire_Value((*iter),U))
             {
 
                 Value newVal = (ControlValues[curGate->gtype]);
                 Implication* newImply= new Implication(*iter,newVal,false); /*bool false = 0 = backward*/
                 cout << "Adding implication :  " << (*iter)->id 
                     << "value:  " <<  newVal << endl;
-                (circuit.ImpliQueue).push(newImply); 
+                (ImpliQueue).push(newImply); 
 
             }
         }
 
-        (circuit.ImpliQueue).pop();
+        (ImpliQueue).pop();
 	// if it is the faulty wire, don't set the value
 	if ( curWire != (circuit.faultWire) )
-	     curWire->value = curValue;
+        Intentions.push_back(curImplication);
 	return true;
 
     }
 
 }
+
+
+bool  ATPG::Check_Wire_Value(Wire* wire,Value val)
+{
+    bool flag=false;
+    list<Implication*>::iterator iter= Intentions.begin();
+    for (; iter!=Intentions.end();iter++)
+    {
+        if ((*iter)->wire->id == wire->id)
+        {
+            if (Compatible((*iter)->wire->value,val))
+            {
+                (*iter)->value = val; 
+                return true;         
+            }
+            else 
+            {
+                cout <<"Contradiction:  prev." <<  (*iter)->wire->value << " new: " << val << endl;
+                return false;
+            }
+         } 
+
+    }
+
+    if (Compatible(wire->value,val))
+        return true;
+   return false;
+}
+
+
+bool ATPG::Compatible(Value oldval,Value newval)
+{
+    if (oldval == newval) return true;
+
+    switch (oldval)
+    {
+        case U:
+            return true;
+        case UBYONE:
+            if (newval == UBYONE || newval == DBAR || newval == ONE)
+            return true;
+            else 
+            return false;    
+
+        case UBYZERO:
+            if (newval == UBYZERO || newval == D || newval == ZERO)
+            return true;
+            else 
+            return false;    
+
+      case ZEROBYU:
+            if (newval == ZERO || newval == DBAR || newval == ZEROBYU)
+            return true;
+            else 
+            return false;    
+
+
+      case ONEBYU:
+            if (newval == ONE || newval == D || newval == ONEBYU)
+            return true;
+            else 
+            return false;    
+    }
+    return false;
+}
+
+
+
+
 
 
 
@@ -166,7 +239,7 @@ bool ATPG::Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplicatio
     {
         cout << "Curvalue is what we want. Implication resolved by itself"
             << endl;
-        (circuit.ImpliQueue).pop();
+        (ImpliQueue).pop();
         // At this point, justifying the inputs may be pending
         // hence we dont return here
     } 
@@ -192,7 +265,7 @@ bool ATPG::Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplicatio
 	// if it is the faulty wire, don't set the value
 	if ( curWire != (circuit.faultWire) )
 	     curWire->value = curValue;
-        (circuit.ImpliQueue).pop();
+        (ImpliQueue).pop();
         return true;
     } 
 
@@ -212,12 +285,12 @@ bool ATPG::Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplicatio
                     Implication* newImply= new Implication(*iter,newVal,false); /*bool false = 0 = backward*/
                     cout << "Adding implication :  " << (*iter)->id 
                         << "value:  " <<  newVal << endl;
-                    (circuit.ImpliQueue).push(newImply); 
+                    (ImpliQueue).push(newImply); 
                 }
 		// if it is the faulty wire, don't set the value
 		if ( curWire != (circuit.faultWire) )
 		    curWire->value = curValue;
-		(circuit.ImpliQueue).pop();
+		(ImpliQueue).pop();
                 return true;
             }
 
@@ -298,12 +371,16 @@ bool ATPG::RemoveFromJ(Wire *wire)
 bool ATPG::Imply_And_Check()
 {
     cout << "Imply_And_Check called" << endl;
- 
-    while (!circuit.ImpliQueue.empty())
+    
+    assert(Intentions.empty());
+
+
+
+    while (!ImpliQueue.empty())
     {
 
         //  Step 1: Get Details of current implication 
-        Implication*  curImplication = (circuit.ImpliQueue).front();
+        Implication*  curImplication = (ImpliQueue).front();
         Wire* curWire = curImplication->wire;
         Value curValue = curImplication->value;
         cout << __LINE__ << ": ";
@@ -338,10 +415,30 @@ bool ATPG::Imply_And_Check()
         }
 
     }
+
+    Make_Assignments();
     return true;
 }
 
 
+void ATPG::Make_Assignments()
+{
+   list<Implication*>::iterator iter= Intentions.begin();
+   for (; iter!=Intentions.end();iter++)
+    {
+        // Intended value is on the RHS
+        (*iter)->wire->value = (*iter)->value;
+    }
+}
+
+
+
+void ATPG::Failure()
+{
+    Intentions.clear();
+    while (!ImpliQueue.empty())
+        ImpliQueue.pop();
+}
 
 
 
@@ -395,18 +492,17 @@ DFrontierWork:
       {
           if ((*inputIter)->value == U)
             {
-                // All implications backward
                 
                 Implication* newImply= new Implication(*inputIter,(Value)((~cval)&0xf),false); /*bool false = 0 = backward*/
                 cout << __LINE__  << ":  " ;
                 cout << "Adding backward implication: " << (*inputIter)->id
                      <<  ~(cval) << endl; 
-                (circuit.ImpliQueue).push(newImply);
+                (ImpliQueue).push(newImply);
                 newImply= new Implication(*inputIter,(Value)((~cval)&0xf),true); /*bool false = 0 = backward*/
                 cout << __LINE__  << ":  " ;
                 cout << "Adding forward implication: " << (*inputIter)->id
                      <<  ~(cval) << endl; 
-                (circuit.ImpliQueue).push(newImply);
+                (ImpliQueue).push(newImply);
             }         
           else
               cout <<  "DEBUG: Wire: " << (*inputIter)->id << "value: " <<  (*inputIter)->value <<endl; 
@@ -444,7 +540,7 @@ JFrontierWork:
                 cout << "Adding implication: " << (*inputIter)->id
                      <<  ~(cval) << endl; 
               
-                (circuit.ImpliQueue).push(newImply);
+                (ImpliQueue).push(newImply);
                 break;
             }         
       }
@@ -486,7 +582,7 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
     {
         // set the value of the current wire
         curWire->value = curValue;
-        (circuit.ImpliQueue).pop();
+        (ImpliQueue).pop();
         cout << __LINE__ << ": Success, po reached and po value set to:" << curValue << endl;
         return true;
     }
@@ -498,7 +594,7 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
        if ( curEle->type ==  WIRE )
        {
        Wire* iwire = dynamic_cast<Wire*> curEle;
-       (circuit.ImpliQueue).push(newImply); 
+       (ImpliQueue).push(newImply); 
     // do something for the wire 
     //
     }*/
@@ -543,7 +639,7 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
             // Set the value of the value (useful in 9V)
             // curGate->output->value = gateNewOutput;
             // pop off the implication and proceed !
-            circuit.ImpliQueue.pop();
+            ImpliQueue.pop();
             return true;
         }
 
@@ -562,10 +658,10 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
         // before that, popping off the current impli
 
         // pop off the current impli
-        (circuit.ImpliQueue).pop();
+        (ImpliQueue).pop();
         Implication* newImply= new Implication(curGate->output,gateNewOutput,true); /*bool true = 0 = forward*/
         cout << "Adding implication :  " << curGate->output->id << ". Line: " << __LINE__ << endl;
-        (circuit.ImpliQueue).push(newImply); 
+        (ImpliQueue).push(newImply); 
 
 	return true;
 
@@ -578,8 +674,8 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
     {
         if ( gateNewOutput == U )
         {
-            // pop off the current impli
-            (circuit.ImpliQueue).pop();
+            // pop off the current implication
+            (ImpliQueue).pop();
             return true;
         }
 
@@ -592,10 +688,10 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
         // before that, popping off the current impli
 
         // pop off the current impli
-        (circuit.ImpliQueue).pop();
+        (ImpliQueue).pop();
         Implication* newImply= new Implication(curGate->output,gateNewOutput,true); /*bool true = 0 = forward*/
         cout << "Adding implication :  " << curGate->id << ". Line: " << __LINE__ << endl;
-        (circuit.ImpliQueue).push(newImply); 
+        (ImpliQueue).push(newImply); 
         return true;
     }
 
@@ -619,7 +715,7 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
     {
         cout << "Reached PI." << endl;
         curWire->value = curValue;
-        (circuit.ImpliQueue).pop();
+        (ImpliQueue).pop();
         return true;
     }
 
