@@ -37,7 +37,7 @@ bool ATPG::Do_ATPG()
 {
    Value newVal = D;
    bool result;
-   (circuit.faultWire) = ((circuit.Netlist).find("N10")->second);
+   (circuit.faultWire) = ((circuit.Netlist).find("N11")->second);
 
     // n10 - backward ONE 
    Implication* newImply= new Implication(circuit.faultWire,ONE,false); 
@@ -332,7 +332,7 @@ bool ATPG::Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplicatio
                 for (;iter != (curGate->inputs).end();iter++)
                 {
                     // All inputs should be cbar
-                    Value newVal = (Value)(!(ControlValues[curGate->gtype]));
+                    Value newVal = (Value)( (~(ControlValues[curGate->gtype])) & 0xf);
                     Implication* newImply= new Implication(*iter,newVal,false); /*bool false = 0 = backward*/
                     cout<<__FILE__<<__LINE__ << "    " << "Adding implication :  " << (*iter)->id 
                         << "value:  " <<  newVal << endl;
@@ -696,21 +696,29 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
     }
 
 
+    Element *curEle = *((curWire->outputs).begin());
 
-    // Handle the fanout case
-    /*
+    // Handle the fanout case - forward implication
        if ( curEle->type ==  WIRE )
        {
-       Wire* iwire = dynamic_cast<Wire*> curEle;
-       (ImpliQueue).push(newImply); 
-    // do something for the wire 
-    //
-    }*/
+	       // first set the value of the current wire
+	       cout << __LINE__ << ":FANOUT HANDLING IN FORWARD IMPLI" << endl;
+	       Intentions.push_back(curImplication);
+	       list<Element*>::iterator iter=(curWire->outputs).begin();
+	       for (; iter != (curWire->outputs).end(); iter++)
+	       {
+		       Wire *owire = dynamic_cast<Wire *> (*iter);
+		       assert(owire != NULL);
+		       Implication* newImply = new Implication(owire, curImplication->value,true); /*bool true = 0 = forward*/
+		       (ImpliQueue).push(newImply); 
+	       }
+	       // pop off the current implication and return
+	       (ImpliQueue).pop();
+	       return true;
+       }
 
-    /*Temporarily avoid fanout*/
-    
-    Element *curEle = *((curWire->outputs).begin());
     Gate *curGate = dynamic_cast<Gate*>(curEle);
+    assert(curGate);
     
     Value gateOldOutput = curGate->output->value;
     Value wireOldValue = curWire->value;
@@ -829,17 +837,46 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
     if ((curWire->input) == NULL)
     {
         cout<<__FILE__<<__LINE__ << "    " << "Reached PI." << endl;
-         cout<<__FILE__<<__LINE__ << "    " << "New intention:  " <<  curImplication->wire->id << "  " 
-            <<  curImplication->value << endl; 
-        
+         cout<<__FILE__<<__LINE__ << "    " << "New intention:  " <<  curImplication->wire->id << "  " 	<<  curImplication->value << endl; 
         ImpliQueue.pop();
         Intentions.push_back(curImplication);
         return true;
     }
 
     // Handle two cases. Fanout and no fanout. Right now,
-    // we evade the fanout case. Hence the assert.
     // Each wire has only a gate for an input.
+    if ((curWire->input)->type == WIRE)
+    {
+	    cout << __LINE__ << " Handline fanout from backward implication" << endl;
+	    // first set the value of the current wire
+	    Intentions.push_back(curImplication);
+
+	    Wire *stemWire = dynamic_cast<Wire *> (curWire->input);
+	    // add a new implication for the stem - backward
+	    Implication* newImply = new Implication(stemWire, curImplication->value,false); /*bool false= 1 = backward*/
+	    (ImpliQueue).push(newImply); 
+
+	    // add implications for the remaining branches of the input
+	    list<Element*>::iterator iter=(stemWire->outputs).begin();
+	    for (; iter != (stemWire->outputs).end(); iter++)
+	    {
+		    Wire *owire = dynamic_cast<Wire *> (*iter);
+		    // if this assert fails == resolve branches failure
+		    assert(owire != NULL);
+		    if ( owire != curWire )
+		    {
+			 // add forward implications for the remaining branches, other than the current one
+		    	 newImply = new Implication(owire, curImplication->value,true); /*bool true = 0 = forward*/
+		    	(ImpliQueue).push(newImply); 
+			cout << __LINE__ << " added this wire to the impli queue: " << owire->id << endl;
+		    }
+	    }
+
+	    // pop off the current implication and return
+	    ImpliQueue.pop();
+	    return true;
+    }
+
     Gate* curGate = dynamic_cast<Gate*>(curWire->input);
     assert(curGate);
     
@@ -848,8 +885,8 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
    // cout<<__FILE__<<__LINE__ << "    " << "Value to be implied is : " <<  curValue << endl;
 
 
- //   cout<<__FILE__<<__LINE__ << "    " << __LINE__ << "    " << ":   " << curValue << endl;
-   // cout<<__FILE__<<__LINE__ << "    " << __LINE__ << "    " << ":   " << Do_Xor(ControlValues[curGate->gtype],InversionValues[curGate->gtype])  << endl;
+    cout<<__FILE__<<__LINE__ << "    " << __LINE__ << "    " << ":   " << curValue << endl;
+    cout<<__FILE__<<__LINE__ << "    " << __LINE__ << "    " << ":   " << Do_Xor(ControlValues[curGate->gtype],InversionValues[curGate->gtype])  << endl;
 
     if ( curValue == Do_Xor(ControlValues[curGate->gtype],InversionValues[curGate->gtype]))
     {
