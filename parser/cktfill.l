@@ -46,7 +46,7 @@ NOR[0-9]+_[0-9]+  {  Pass_Gate_Name(); return T_NOR_NAME;}
 NOT[0-9]*_[0-9]+  { Pass_Gate_Name(); return T_NOT_NAME;}
 BUFF[0-9]+_[0-9]+  { Pass_Gate_Name(); return T_BUF_NAME;}
 XOR[0-9]+_[0-9]+  { Pass_Gate_Name();return T_XOR_NAME;}
-[A-Za-z]+[0-9]+   { Pass_Gen_Name(); return T_NAME;}
+[A-Za-z]+[0-9]*   { Pass_Gen_Name(); return T_NAME;}
 
 
 %%

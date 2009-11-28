@@ -37,15 +37,15 @@ bool ATPG::Do_ATPG()
 {
    Value newVal = D;
    bool result;
-   (circuit.faultWire) = ((circuit.Netlist).find("N3")->second); 	// cups !
-   //(circuit.faultWire) = ((circuit.Netlist).find("N11")->second);
+   (circuit.faultWire) = ((circuit.Netlist).find("c_NAND3_1")->second); 	
+ //  (circuit.faultWire) = ((circuit.Netlist).find("N3")->second); 	// Yay ! works now..... used to cup previously (for c17)
 
-    // n10 - backward ONE 
-   Implication* newImply= new Implication(circuit.faultWire,ONE,false); 
+    // n10 - backward ZERO
+   Implication* newImply= new Implication(circuit.faultWire,ZERO,false); 
    (ImpliQueue).push(newImply); 
 
-    // n10 - forward D 
-   newImply= new Implication(circuit.faultWire,D,true); 
+    // n10 - forward DBAR 
+   newImply= new Implication(circuit.faultWire,DBAR,true); 
    (ImpliQueue).push(newImply); 
 
 //    // n0 - backward 0
@@ -123,6 +123,7 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
     /*Check if all inputs of the gate are unknown or cbar*/
     /*TODO:You might want to iterate through the input list
      * instead. */
+    // better use compatable function , instead of == 
     if (curGate->Evaluate() == curValue)
     {
 	// if it is the faulty wire, don't set the value
@@ -137,7 +138,9 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
     } 
 
     /*Some input has value c */
-    if (curGate->Evaluate() != U) 
+    // ^^^ is wrong in 9Valued one ! 
+   // if (curGate->Evaluate() != U) 
+    if ( !isNotKnown( curGate->Evaluate() ) )
     {
 
         cout<<__FILE__<<__LINE__ << "    " << __LINE__ << "    " << ": Returning false" << endl;
@@ -508,6 +511,7 @@ void ATPG::Make_Assignments()
 
 void ATPG::Failure()
 {
+    cout << " Ha Ha Ha ! I am failing :) " << endl;
     Intentions.clear();
     while (!ImpliQueue.empty())
         ImpliQueue.pop();
@@ -690,11 +694,7 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
         //curWire->value = curValue;
         //dont set the value, add an intention
         Intentions.push_back(curImplication);
-         cout<<__FILE__<<__LINE__ << "    " << "New intention:  " <<  curImplication->wire->id << "  " 
-            <<  curImplication->value << endl; 
-        
-        
-        
+         cout<<__FILE__<<__LINE__ << "    " << "New intention:  " <<  curImplication->wire->id << "  " <<  curImplication->value << endl; 
         (ImpliQueue).pop();
         cout<<__FILE__<<__LINE__ << "    " << __LINE__ << "    " << ": Success, po reached and po value set to:" << curValue << endl;
         return true;
@@ -758,11 +758,15 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
         //if (gateNewOutput == U)
         if (isNotKnown(gateNewOutput))
         {
-            // Add the gate to D frontier
-            cout<<__FILE__<<__LINE__ << "    " << "Adding gate to D frontier: " << curGate->id <<endl; 
-            cout<<__FILE__<<__LINE__ << "    " << "****************DEBUG***********"  << endl;
-            cout<<__FILE__<<__LINE__ << "    " << "Added gate to DFrontier with value: "  << gateNewOutput << endl;
-            Add_To_DFrontier(curGate->output, gateNewOutput);
+	    // add to the D frontier, only if there is error on the input line
+	    if ( (curValue == D) || (curValue == DBAR))
+	    {
+		    // Add the gate to D frontier
+		    cout<<__FILE__<<__LINE__ << "    " << "Adding gate to D frontier: " << curGate->id <<endl; 
+		    cout<<__FILE__<<__LINE__ << "    " << "****************DEBUG***********"  << endl;
+		    cout<<__FILE__<<__LINE__ << "    " << "Added gate to DFrontier with value: "  << gateNewOutput << endl;
+		    Add_To_DFrontier(curGate->output, gateNewOutput);
+	    }
             // Set the value of the value (useful in 9V)
             // curGate->output->value = gateNewOutput;
             // pop off the implication and proceed !
