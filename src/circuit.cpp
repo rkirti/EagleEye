@@ -385,12 +385,14 @@ bool Circuit::Wire_Not_Derived(Wire* wire)
 }
 
 /*Use only to check if value is c xor i or  cbar xor i*/
-bool Do_Xor(bool val1, bool val2)
+Value Do_Xor(Value val1, Value val2)
 {
 
-    bool output;
-    output = (val1 & (~(val2)) | ((~val1) & (val2)));
-    return output&(0xf);
+    Value output;
+    Value negval1 =  (Value) (val1 != U)?(Value)(~(val1)&0xf):U;
+    Value negval2 =  (Value) (val2 != U)?(Value)(~(val2)&0xf):U;
+    output = (Value)((( (val1 & negval2) | (negval1 & val2)))&0xf);
+    return output;
 }
 
 

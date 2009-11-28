@@ -31,7 +31,7 @@ public:
     bool RemoveFromJ(Wire *wire);
 
     bool Compatible(Value oldval,Value newval);
-    bool  Check_Wire_Value(Wire* wire,Value val);
+    bool  Check_Wire_Value_For_Assignment(Wire* wire,Value val);
     
     void Make_Assignments();
     void Update_PI_For_9V();
@@ -39,6 +39,7 @@ public:
     void Failure();
 
 
+    Implication* Find_In_Intentions_List(Wire* wire);
 
 };
 

@@ -225,7 +225,7 @@ public:
 extern Circuit circuit;
 
 bool isNotKnown(Value);
-bool Do_Xor(bool val1, bool val2);
+Value Do_Xor(Value val1, Value val2);
 int Translate_Value_To_Int(Value value);
 
 

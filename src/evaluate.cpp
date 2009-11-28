@@ -34,10 +34,14 @@ Value And(list<Wire*> inputs)
    // Note: output is set to type int and 
    // not Value to keep the compiler happy
    int output=ONE;	
+   Implication* intention=NULL;
    list<Wire*>::iterator iter;
    
    for (iter=inputs.begin(); iter != inputs.end(); iter++ )
    {
+       if ( (intention = Find_In_Intentions_List((*iter))) != NULL)
+            output &= intention->value;
+       else
        output &= (*iter)->value;
    }
    return (Value)output;
@@ -46,32 +50,43 @@ Value And(list<Wire*> inputs)
 
 
 
-
 Value Or(list<Wire*> inputs)
 {
-   // Initial value must be U
-   // Note: output is set to type int and 
-   // not Value to keep the compiler happy
-   int  output=ZERO;	
-   list<Wire *>::iterator iter;
-   
-   for (iter=inputs.begin(); iter != inputs.end(); iter++ )
-       output |= (*iter)->value;
+    // Initial value must be U
+    // Note: output is set to type int and 
+    // not Value to keep the compiler happy
+    int  output=ZERO;	
+    Implication* intention=NULL;
+    list<Wire*>::iterator iter;
+
+    for (iter=inputs.begin(); iter != inputs.end(); iter++ )
+    {
+        if ( (intention = Find_In_Intentions_List((*iter))) != NULL)
+            output |= intention->value;
+        else
+            output |= (*iter)->value;
+    }
     return (Value)output;
 
 }
 
 
+
 Value Buf(list<Wire*> inputs)
 {
    Value output=U;
+   Implication* intention=NULL;
+   list<Wire*>::iterator iter;
    assert(inputs.size() == 1);
 
-   list<Wire *>::iterator iter;
    for (iter=inputs.begin(); iter != inputs.end(); iter++ )
-       output = (*iter)->value;
+    {
+        if ( (intention = Find_In_Intentions_List((*iter))) != NULL)
+            output = intention->value;
+        else
+            output = (*iter)->value;
+    }
     return output;
-
 }
 
 
@@ -79,14 +94,17 @@ Value Buf(list<Wire*> inputs)
 
 Value Not(list<Wire*> inputs)
 {
-  
+   Implication* intention=NULL;
    Value output=U;
    list<Wire*>::iterator iter;
    
    assert(inputs.size() == 1);
    iter=inputs.begin();
     
-   output = (Value) ((*iter)->value != U)?(Value)(~((*iter)->value)&0xf):U;
+   if ( (intention = Find_In_Intentions_List((*iter))) != NULL)
+            output =(Value) (intention->value != U)?(Value)(~(intention->value)&0xf):U;
+   else
+            output = (Value) ((*iter)->value != U)?(Value)(~((*iter)->value)&0xf):U;
     
    return output;
 }
@@ -101,18 +119,32 @@ Value Not(list<Wire*> inputs)
 Value Nand(list<Wire*> inputs)
 {
    int output=ZERO;
+   Implication* intention=NULL;
    list<Wire *>::iterator iter;
-   
+   Value curValue;
+
    // Use DeMorgan's laws. They help maintain accuracy here
    // since the negation in the end loses the Value information
    
+  cout << "****************DEBUG***********"  << endl;
    for (iter=inputs.begin(); iter != inputs.end(); iter++ )
    {    
        // Take care of the fact that UBAR is U
-       Value curValue = ((*iter)->value != U)?(Value)(~((*iter)->value)&0xf):U;
-       output |= curValue;
+     if ( (intention = Find_In_Intentions_List((*iter))) != NULL)
+     { 
+        cout << "Intention selected as curValue"<< endl; 
+         curValue =(Value) (intention->value != U)?(Value)(~(intention->value)&0xf):U;
+    } 
+        else
+        {
+
+            cout << "Wire value selected as curValue"<< endl; 
+            curValue = (Value) ((*iter)->value != U)?(Value)(~((*iter)->value)&0xf):U;
+        } 
+    cout << "neg curValue for " << (*iter)->id  << "is " << curValue << endl; 
+     output |= curValue;
    }
-       
+   cout << "Output is "  <<  (Value) output << endl;
    return (Value) output; 
 }
 
@@ -120,7 +152,10 @@ Value Nand(list<Wire*> inputs)
 Value Nor(list<Wire*> inputs)
 {
    int output=ONE;
+   Implication* intention=NULL;
    list<Wire *>::iterator iter;
+   Value curValue;
+   
    
    
    // Use DeMorgan's laws. They help maintain accuracy here
@@ -129,8 +164,10 @@ Value Nor(list<Wire*> inputs)
    for (iter=inputs.begin(); iter != inputs.end(); iter++ )
    {    
        // Take care of the fact that UBAR is U
-       Value curValue = ((*iter)->value != U)?(Value)(~((*iter)->value)&0xf):U;
-       cout << "Input value: " << (*iter)->value << endl;
+      if ( (intention = Find_In_Intentions_List((*iter))) != NULL)
+            curValue =(Value) (intention->value != U)?(Value)(~(intention->value)&0xf):U;
+     else
+            curValue = (Value) ((*iter)->value != U)?(Value)(~((*iter)->value)&0xf):U;
        output &= curValue;
    }
    
@@ -143,20 +180,35 @@ Value Nor(list<Wire*> inputs)
 Value Xor(list<Wire *> inputs)
 {
 	int output=ZERO;
+   Implication* intention=NULL;
 	list<Wire *>::iterator iter;
+    Value curOutput;
+    Value curNegOutput;
+    Value curValue;
+    Value curNegValue;
 
 
-
-	for (iter=inputs.begin(); iter != inputs.end(); iter++)
+    for (iter=inputs.begin(); iter != inputs.end(); iter++)
     {
-        Value curValue = (*iter)->value;
-        Value curNegValue =  ((*iter)->value != U)?(Value)(~((*iter)->value)&0xf):U;
-        Value curOutput = (Value)output;
-        Value curNegOutput =(output != U)?(Value)(~output&0xf):U;
 
-		output = ((output & curNegValue) | (curNegOutput & curNegValue));
+
+        if ( (intention = Find_In_Intentions_List((*iter))) != NULL)
+        {
+            curValue = (intention)->value;
+            curNegValue =(Value) (intention->value != U)?(Value)(~(intention->value)&0xf):U;
+        }
+        else
+        {
+            curValue = (*iter)->value;   
+            curNegValue = (Value) ((*iter)->value != U)?(Value)(~((*iter)->value)&0xf):U;
+        }  
+
+        curOutput = (Value)output;
+        curNegOutput =(output != U)?(Value)(~output&0xf):U;
+
+        output = ((output & curNegValue) | (curNegOutput & curNegValue));
     }
-	return (Value)output;
+    return (Value)output;
 }
 
 

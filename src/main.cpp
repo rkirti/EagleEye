@@ -7,18 +7,30 @@ using namespace std;
 /* The global circuit */
 Circuit circuit;
 
+FILE* ATPG_DFILE;
+
 
 int main(int argc,char **argv)
 {
 
     ATPG curTest;
+
+    if (argc != 3)
+    {
+        cout << "Usage: ./bin/atpg <benchmarkfile>  <atpgdebugfile>" << endl;
+        exit(0);
+    }
+
+    ATPG_DFILE = fopen(argv[2],"w");
+
 	/*
 	 * Call the lexer now !
 	 */
+
 	if( !lexer(argc,argv) )
 	{
 		cout << ":(" << endl;
-		exit(0);
+	    exit(0);
 	}
 
 	circuit.Levelize();
@@ -32,6 +44,7 @@ int main(int argc,char **argv)
 	/*
 	 * print the circuit, just to test it
 	 */
+
 /*	
     map<string,Wire*>::iterator iter=(circuit.Netlist).begin();
 	

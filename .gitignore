@@ -9,3 +9,4 @@ tags
 *.tab.h
 lex.yy.c
 depend.mak
+cscope.out

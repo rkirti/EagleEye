@@ -6,8 +6,9 @@
 #define EVALUATE_H
 
 #include "circuit.h"
+#include "atpg.h"
 
-
+Implication* Find_In_Intentions_List(Wire* wire);
 
 
 Value And(list<Wire *> inputs);
