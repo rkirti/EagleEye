@@ -37,7 +37,8 @@ bool ATPG::Do_ATPG()
 {
    Value newVal = D;
    bool result;
-   (circuit.faultWire) = ((circuit.Netlist).find("N11")->second);
+   (circuit.faultWire) = ((circuit.Netlist).find("N3")->second); 	// cups !
+   //(circuit.faultWire) = ((circuit.Netlist).find("N11")->second);
 
     // n10 - backward ONE 
    Implication* newImply= new Implication(circuit.faultWire,ONE,false); 
@@ -378,7 +379,8 @@ bool ATPG::Add_To_JFrontier(Wire *wire,Value value)
 }
 bool ATPG::Add_To_DFrontier(Wire *wire,Value value)
 {
-    circuit.DFrontier.push_back(WireValuePair(wire,value));
+    //circuit.DFrontier.push_back(WireValuePair(wire,value));
+    circuit.DFrontier.push_front(WireValuePair(wire,value));
     ATPGPRINT(ATPG_DFILE,"Added a gate to DFrontier. DFrontier is now:");
     PRINTDFRONTIER;
     return true;
@@ -551,16 +553,19 @@ DFrontierWork:
     }
 
     PRINTDFRONTIER;
-    for (;checkIter !=(circuit.DFrontier).end();checkIter++)
+    //for (;checkIter !=(circuit.DFrontier).end();checkIter++)
+    // Remember a stack and understand how this works
+    // Add to D frontier function, now always pushes into 
+    // this stack. And we choose and set the implications, which will pop off the 
+    // top one. A few more will be added on the top.
+    while ( !circuit.DFrontier.empty() )
     {
+	checkIter = (circuit.DFrontier).begin();
         /*Selecting a gate from the DFrontier*/
+	cout << __LINE__ << "Current size of D = " << circuit.DFrontier.size() <<  "About to take " << checkIter->iwire->id << "  from D" << endl;
        Gate* curGate=dynamic_cast<Gate*>(checkIter->iwire->input);
        Value cval = ControlValues[curGate->gtype];
         
-      cout<<__FILE__<<__LINE__ << "    " << "Selected gate: " << curGate->id 
-           << "from the D Frontier" << endl;
-      cout<<__FILE__<<__LINE__ << "    " << "Control value is: " << cval << endl;
-
       list<Wire*>::iterator inputIter = (curGate->inputs).begin();
       for (;inputIter != (curGate->inputs).end();inputIter++)
       {
@@ -770,11 +775,9 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
         // and remove the gate from it. Because it is resolved now
 
         if (RemoveFromD(curGate->output))
-           ;
-            // cout<<__FILE__<<__LINE__ << "    " << "INFO: The gate is indeed in D and has been removed" << curGate->id << endl;
+             cout<<__FILE__<<__LINE__ << "    " << "INFO: The gate is indeed in D and has been removed" << curGate->id << endl;
         else 
-            ;
-            //cout<<__FILE__<<__LINE__ << "    " << "INFO: The gate is not there in D frontier. report from " << __LINE__ << "    " << endl;
+            cout<<__FILE__<<__LINE__ << "    " << "INFO: The gate is not there in D frontier. report from " << __LINE__ << "    " << endl;
 
         // The last thing to do is to propagate the impli and
         // before that, popping off the current impli
@@ -839,7 +842,8 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
         cout<<__FILE__<<__LINE__ << "    " << "Reached PI." << endl;
          cout<<__FILE__<<__LINE__ << "    " << "New intention:  " <<  curImplication->wire->id << "  " 	<<  curImplication->value << endl; 
         ImpliQueue.pop();
-        Intentions.push_back(curImplication);
+	if (curWire != circuit.faultWire) 	// Did we forget this ?
+            Intentions.push_back(curImplication);
         return true;
     }
 
@@ -849,7 +853,8 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
     {
 	    cout << __LINE__ << " Handline fanout from backward implication" << endl;
 	    // first set the value of the current wire
-	    Intentions.push_back(curImplication);
+	    if (curWire != circuit.faultWire )
+	        Intentions.push_back(curImplication);
 
 	    Wire *stemWire = dynamic_cast<Wire *> (curWire->input);
 	    // add a new implication for the stem - backward
