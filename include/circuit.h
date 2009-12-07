@@ -82,11 +82,16 @@ class Wire: public Element
         Element* input;
         list<Element*> outputs;
 
+	// This bit is set whenever the value is modified
+	// This will be useful to eliminate further logging 
+	// after it's first overwrite.
+	bool modified;
         Wire(const char *name, WireType givenWtype,Value val=U)
            :Element(name,WIRE) 
         {
 	        wtype = givenWtype;
-            value = val;
+            	value = val;
+		modified=false; 	// The wire value is not modified yet
         }
 };
 

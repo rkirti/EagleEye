@@ -102,6 +102,7 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
 
     for (;iter != (curGate->inputs).end();iter++)
     {
+	// bug: should not count Us, instead count which are not known. eg: D,U inputs. - only for 9V
         if  ( (*iter)->value  == U) inputUCount++;
     }
 
@@ -131,7 +132,7 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
     {
         cout<<__FILE__<<__LINE__ << "    " << "New intention:  " <<  curImplication->wire->id << "  " 
             <<  curImplication->value << endl; 
-        Intentions.push_back(curImplication);
+        Intentions_push_back(curImplication);
     }   
         (ImpliQueue).pop();
         return true;
@@ -157,7 +158,7 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
             cout<<__FILE__<<__LINE__ << "    " << "New intention:  " <<  curImplication->wire->id << "  " 
             <<  curImplication->value << endl; 
         
-            Intentions.push_back(curImplication);
+            Intentions_push_back(curImplication);
         
         }    
         cout<<__FILE__<<__LINE__ << "    " << "Adding to J Frontier:  " << (*iter)->id << endl;
@@ -189,7 +190,7 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
       cout<<__FILE__<<__LINE__ << "    " << "New intention:  " <<  curImplication->wire->id << "  " 
             <<  curImplication->value << endl; 
            
-        Intentions.push_back(curImplication);
+        Intentions_push_back(curImplication);
 	
     }    
     return true;
@@ -200,6 +201,13 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
 
 
 bool  ATPG::Check_Wire_Value_For_Assignment(Wire* wire,Value val)
+{
+    if (Compatible(wire->value,val))
+        return true;
+   return false;
+}
+
+/*
 {
     list<Implication*>::iterator iter= Intentions.begin();
     for (; iter!=Intentions.end();iter++)
@@ -224,7 +232,7 @@ bool  ATPG::Check_Wire_Value_For_Assignment(Wire* wire,Value val)
         return true;
    return false;
 }
-
+*/
 
 bool ATPG::Compatible(Value oldval,Value newval)
 {
@@ -317,7 +325,7 @@ bool ATPG::Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplicatio
         cout<<__FILE__<<__LINE__ << "    " << "New intention:  " <<  curImplication->wire->id << "  " 
             <<  curImplication->value << endl; 
         
-        Intentions.push_back(curImplication);
+        Intentions_push_back(curImplication);
     }   
     
     (ImpliQueue).pop();
@@ -348,7 +356,7 @@ bool ATPG::Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplicatio
             cout<<__FILE__<<__LINE__ << "    " << "New intention:  " <<  curImplication->wire->id << "  " 
             <<  curImplication->value << endl; 
         
-            Intentions.push_back(curImplication);
+            Intentions_push_back(curImplication);
 	    }
         (ImpliQueue).pop();
                 return true;
@@ -486,7 +494,8 @@ bool ATPG::Imply_And_Check()
         }
     }
 
-    Make_Assignments();
+    //Make_Assignments(); 	// Deprecated
+    Clean_Intentions(); 	// Clears the log
     return true;
 
 fail:
@@ -495,6 +504,7 @@ fail:
 }
 
 
+/*
 void ATPG::Make_Assignments()
 {
    assert(ImpliQueue.empty());
@@ -506,15 +516,37 @@ void ATPG::Make_Assignments()
     }
    Intentions.clear();
 }
+*/
 
+void ATPG::Clean_Intentions()
+{
+    assert(ImpliQueue.empty());
+    list<Implication*>::iterator iter= Intentions.begin();
+    for (; iter!=Intentions.end();iter++)
+    {
+	    // Old value is on the RHS
+	    (*iter)->wire->modified = false;
+    }
+    Intentions.clear();
+    return;
+}
 
 
 void ATPG::Failure()
 {
     cout << " Ha Ha Ha ! I am failing :) " << endl;
+    cout << __LINE__ << ": Undoing the changes " << endl;
+    list<Implication*>::iterator iter= Intentions.begin();
+    for (; iter!=Intentions.end();iter++)
+    {
+	    // Old value is on the RHS
+	    (*iter)->wire->value = (*iter)->value;
+    }
     Intentions.clear();
+    // remove all the implications thought of
     while (!ImpliQueue.empty())
-        ImpliQueue.pop();
+	    ImpliQueue.pop();
+
 }
 
 
@@ -678,7 +710,7 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
 {
     assert(curImplication->direction ==true);
 
-    // if the value of the wire is already set
+    // Check if the value of the wire is already set
     // And if it is the right value or not
     if (!Compatible(curWire->value,curValue))
     {
@@ -693,7 +725,7 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
         // set the value of the current wire
         //curWire->value = curValue;
         //dont set the value, add an intention
-        Intentions.push_back(curImplication);
+        Intentions_push_back(curImplication);
          cout<<__FILE__<<__LINE__ << "    " << "New intention:  " <<  curImplication->wire->id << "  " <<  curImplication->value << endl; 
         (ImpliQueue).pop();
         cout<<__FILE__<<__LINE__ << "    " << __LINE__ << "    " << ": Success, po reached and po value set to:" << curValue << endl;
@@ -708,7 +740,8 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
        {
 	       // first set the value of the current wire
 	       cout << __LINE__ << ":FANOUT HANDLING IN FORWARD IMPLI" << endl;
-	       Intentions.push_back(curImplication);
+	       // bug: check the value before setting - Already done in the start
+	       Intentions_push_back(curImplication);
 	       list<Element*>::iterator iter=(curWire->outputs).begin();
 	       for (; iter != (curWire->outputs).end(); iter++)
 	       {
@@ -729,9 +762,9 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
     Value wireOldValue = curWire->value;
 
     // set the value for the wire, ie curValue to wire->value
-    Intentions.push_back(curImplication);
      cout<<__FILE__<<__LINE__ << "    " << "New intention:  " <<  curImplication->wire->id << "  " 
             <<  curImplication->value << endl; 
+    Intentions_push_back(curImplication);
         
     Value gateNewOutput = curGate->Evaluate();
 
@@ -848,7 +881,7 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
          cout<<__FILE__<<__LINE__ << "    " << "New intention:  " <<  curImplication->wire->id << "  " 	<<  curImplication->value << endl; 
         ImpliQueue.pop();
 	if (curWire != circuit.faultWire) 	// Did we forget this ?
-            Intentions.push_back(curImplication);
+            Intentions_push_back(curImplication);
         return true;
     }
 
@@ -857,10 +890,12 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
     if ((curWire->input)->type == WIRE)
     {
 	    cout << __LINE__ << " Handling fanout from backward implication" << endl;
+	    // first check if the curr value is compatable with current
+	    if ( !Compatible(curWire->value, curImplication->value) )
+	    	return false;
 	    // first set the value of the current wire
 	    if (curWire != circuit.faultWire )
-		// check if the values agree or not before setting them
-	        Intentions.push_back(curImplication);
+	        Intentions_push_back(curImplication);
 
 	    Wire *stemWire = dynamic_cast<Wire *> (curWire->input);
 	    // add a new implication for the stem - backward
@@ -917,7 +952,10 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
 		{
 			cout << __LINE__ << ": Setting the value of current wire:" << curWire->id  << endl;
 			// bug: check if the value is already set and is not compatible with new one
-        		Intentions.push_back(curImplication);
+			// first check if the curr value is compatable with current
+			if ( !Compatible(curWire->value, curImplication->value) )
+				return false;
+			Intentions_push_back(curImplication);
 		}
 		Wire *iwire = *( (curGate->inputs).begin() );
 		cout << __LINE__ << ": added new wire to impli queue - " << iwire->id << " to value: " << (Value)((~curImplication->value)&0xf) << endl;
@@ -947,6 +985,35 @@ Implication* Find_In_Intentions_List(Wire* wire)
             return (*iter);
     }
     return NULL;
+}
+
+// TODO: Create a new class for log, which doesn't contain the bool direction
+bool Intentions_push_back (Implication *curImpli)
+{
+	// You have a intention, I make it true :) Enjoy !
+	// But before I have to log it :P
+
+	if (!curImpli->wire->modified)
+	{
+
+		// now it's modified
+		curImpli->wire->modified = true;
+
+		// Save the old value of the wire
+		Value oldValue = (curImpli->wire)->value;
+
+		// create a new implication
+		Implication *newImpli = new Implication(curImpli->wire, oldValue, curImpli->direction);
+
+		// push the new intention
+		Intentions.push_back(newImpli);
+
+	}
+	// change the curr value
+	(curImpli->wire)->value = curImpli->value;
+
+
+	return true;
 }
 
 

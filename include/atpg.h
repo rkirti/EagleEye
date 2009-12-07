@@ -33,7 +33,8 @@ public:
     bool Compatible(Value oldval,Value newval);
     bool  Check_Wire_Value_For_Assignment(Wire* wire,Value val);
     
-    void Make_Assignments();
+//    void Make_Assignments();
+    void Clean_Intentions();
     void Update_PI_For_9V();
 
     void Failure();
@@ -43,6 +44,7 @@ public:
 
 };
 
+bool Intentions_push_back (Implication *);
 
 
 #endif /* ifndef ATPG_H */
