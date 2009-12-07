@@ -7,7 +7,8 @@ output n;
 wire g,d,e,f,dh,eh,fh,h,i,j,k,l,m;
 
 nand NAND3_1 (g, a, b, c);
-nand  NAND2_7 (dh,d,d);
+
+not  NOT1_1 (dh,d);
 nand  NAND2_8 (eh,e,e);
 nand  NAND2_9 (fh,f,f);
 

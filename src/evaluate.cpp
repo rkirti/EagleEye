@@ -102,9 +102,18 @@ Value Not(list<Wire*> inputs)
    iter=inputs.begin();
     
    if ( (intention = Find_In_Intentions_List((*iter))) != NULL)
+	{
+	    cout << __LINE__ << " found not gate in impli queue, value : " << intention->value  << endl;
             output =(Value) (intention->value != U)?(Value)(~(intention->value)&0xf):U;
+	}
    else
+   { 
+            cout << __LINE__ <<  " not found Not gate in impli queue " << endl;
             output = (Value) ((*iter)->value != U)?(Value)(~((*iter)->value)&0xf):U;
+   }
+
+   cout << __LINE__ << " output from not gate = " << output << endl;
+   //cout << __LINE__ << " current output from not gate = " << ( (*iter)->outputs.begin())->value << endl;
     
    return output;
 }

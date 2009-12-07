@@ -57,7 +57,7 @@ bool ATPG::Do_ATPG()
 ////bool false = 0 = backward
 
 
-   cout<<__FILE__<<__LINE__ << "    " << "Adding implication :  " << "N10" 
+   cout<<__FILE__<<__LINE__ << "    " << "Adding implication :  " << (circuit.faultWire)->id  
     << "value:  " <<  newVal;
    result = D_Algo();
    
@@ -90,7 +90,7 @@ bool ATPG::Do_ATPG()
 }
 
 
-// Total mess !! plz decorate it :)
+// Total mess !! plz decorate it :) - HAHAHA. My crazy comment now is that the whole code is a mess :P
 bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, Wire* curWire,Value curValue)
 {
     cout<<__FILE__<<__LINE__ << "    " << "$$$$$$$$$$$$$$$$$$$Came here$$$$$$$$$$$$$$$$$$$$$" << endl;
@@ -497,7 +497,7 @@ fail:
 
 void ATPG::Make_Assignments()
 {
-    assert(ImpliQueue.empty());
+   assert(ImpliQueue.empty());
    list<Implication*>::iterator iter= Intentions.begin();
    for (; iter!=Intentions.end();iter++)
     {
@@ -739,10 +739,11 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
     // the new value doesn't agree with old 
     // ( eg: 1 and u/0 don't agree, but D and u/0 or D and 1/u agree )
     //if ( (~(gateOldOutput & U)) && (gateNewOutput & geteOldOutput) )
-    if ((curGate->output != circuit.faultWire) && !Compatible(gateOldOutput,gateNewOutput))
    // if ( (gateOldOutput != U) && (gateNewOutput != U)  
      //       && ( ((gateNewOutput&gateOldOutput) != gateNewOutput) 
        //         ||   ((gateNewOutput|gateOldOutput) != gateOldOutput) ))
+       
+    if ((curGate->output != circuit.faultWire) && !Compatible(gateOldOutput,gateNewOutput))
     {
         // revert back !
         cout<<__FILE__<<__LINE__ << "    " << __LINE__ << "    " << ": Returning false" << endl;
@@ -855,9 +856,10 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
     // Each wire has only a gate for an input.
     if ((curWire->input)->type == WIRE)
     {
-	    cout << __LINE__ << " Handline fanout from backward implication" << endl;
+	    cout << __LINE__ << " Handling fanout from backward implication" << endl;
 	    // first set the value of the current wire
 	    if (curWire != circuit.faultWire )
+		// check if the values agree or not before setting them
 	        Intentions.push_back(curImplication);
 
 	    Wire *stemWire = dynamic_cast<Wire *> (curWire->input);
@@ -877,7 +879,7 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
 			 // add forward implications for the remaining branches, other than the current one
 		    	 newImply = new Implication(owire, curImplication->value,true); /*bool true = 0 = forward*/
 		    	(ImpliQueue).push(newImply); 
-			cout << __LINE__ << " added this wire to the impli queue: " << owire->id << endl;
+			cout << __LINE__ << " added this wire to the impli queue: " << owire->id << " with value: " << curImplication->value << endl;
 		    }
 	    }
 
@@ -908,8 +910,29 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
     }
     else 
     {
-        cout<<__FILE__<<__LINE__ << "    " <<"Something wrong"<< endl;
-        assert(false);
+	if (curGate->gtype == NOT)
+	{
+		// Damn ! we have to take care of every small thing again
+		if (curWire != circuit.faultWire)
+		{
+			cout << __LINE__ << ": Setting the value of current wire:" << curWire->id  << endl;
+			// bug: check if the value is already set and is not compatible with new one
+        		Intentions.push_back(curImplication);
+		}
+		Wire *iwire = *( (curGate->inputs).begin() );
+		cout << __LINE__ << ": added new wire to impli queue - " << iwire->id << " to value: " << (Value)((~curImplication->value)&0xf) << endl;
+                Implication* newImply= new Implication(iwire,(Value)((~curImplication->value)&0xf),false); /*bool false = 0 = backward*/
+		(ImpliQueue).push(newImply);
+		// pop off the current implication and return
+		ImpliQueue.pop();
+		//assert(false);
+		return true;
+	}
+	else { 
+		// TODO: A similar thing for XOR
+		cout<<__FILE__<<__LINE__ << "    " <<"Something wrong"<< endl;
+		assert(false);
+	}
     }
 }
 
