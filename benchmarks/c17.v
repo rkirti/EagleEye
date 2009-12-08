@@ -13,6 +13,5 @@ nand NAND2_4 (N19, N11, N7);
 nand NAND2_5 (N22, N10, N16);
 nand NAND2_6 (N23, N16, N19);
 
-
 endmodule
 

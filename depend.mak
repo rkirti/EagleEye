@@ -116,7 +116,7 @@ obj/main.o: src/main.cpp include/circuit.h \
   /usr/lib/gcc/x86_64-redhat-linux/4.3.2/../../../../include/c++/4.3.2/sstream \
   /usr/lib/gcc/x86_64-redhat-linux/4.3.2/../../../../include/c++/4.3.2/bits/sstream.tcc \
   include/evaluate.h include/circuit.h include/atpg.h include/lexer.h \
-  include/lexer.h
+  include/atpg.h include/lexer.h
 obj/evaluate.o: src/evaluate.cpp \
   /usr/lib/gcc/x86_64-redhat-linux/4.3.2/../../../../include/c++/4.3.2/iostream \
   /usr/lib/gcc/x86_64-redhat-linux/4.3.2/../../../../include/c++/4.3.2/x86_64-redhat-linux/bits/c++config.h \
@@ -235,7 +235,8 @@ obj/evaluate.o: src/evaluate.cpp \
   /usr/include/string.h \
   /usr/lib/gcc/x86_64-redhat-linux/4.3.2/../../../../include/c++/4.3.2/sstream \
   /usr/lib/gcc/x86_64-redhat-linux/4.3.2/../../../../include/c++/4.3.2/bits/sstream.tcc \
-  include/evaluate.h include/circuit.h include/evaluate.h
+  include/evaluate.h include/circuit.h include/atpg.h include/lexer.h \
+  include/evaluate.h
 obj/circuit.o: src/circuit.cpp include/circuit.h \
   /usr/lib/gcc/x86_64-redhat-linux/4.3.2/../../../../include/c++/4.3.2/iostream \
   /usr/lib/gcc/x86_64-redhat-linux/4.3.2/../../../../include/c++/4.3.2/x86_64-redhat-linux/bits/c++config.h \
@@ -353,7 +354,7 @@ obj/circuit.o: src/circuit.cpp include/circuit.h \
   /usr/include/string.h \
   /usr/lib/gcc/x86_64-redhat-linux/4.3.2/../../../../include/c++/4.3.2/sstream \
   /usr/lib/gcc/x86_64-redhat-linux/4.3.2/../../../../include/c++/4.3.2/bits/sstream.tcc \
-  include/evaluate.h include/circuit.h
+  include/evaluate.h include/circuit.h include/atpg.h include/lexer.h
 obj/lexer.o: src/lexer.cpp include/circuit.h \
   /usr/lib/gcc/x86_64-redhat-linux/4.3.2/../../../../include/c++/4.3.2/iostream \
   /usr/lib/gcc/x86_64-redhat-linux/4.3.2/../../../../include/c++/4.3.2/x86_64-redhat-linux/bits/c++config.h \
@@ -471,7 +472,8 @@ obj/lexer.o: src/lexer.cpp include/circuit.h \
   /usr/include/string.h \
   /usr/lib/gcc/x86_64-redhat-linux/4.3.2/../../../../include/c++/4.3.2/sstream \
   /usr/lib/gcc/x86_64-redhat-linux/4.3.2/../../../../include/c++/4.3.2/bits/sstream.tcc \
-  include/evaluate.h include/circuit.h include/lexer.h
+  include/evaluate.h include/circuit.h include/atpg.h include/lexer.h \
+  include/lexer.h
 obj/atpg.o: src/atpg.cpp include/circuit.h \
   /usr/lib/gcc/x86_64-redhat-linux/4.3.2/../../../../include/c++/4.3.2/iostream \
   /usr/lib/gcc/x86_64-redhat-linux/4.3.2/../../../../include/c++/4.3.2/x86_64-redhat-linux/bits/c++config.h \
@@ -589,4 +591,5 @@ obj/atpg.o: src/atpg.cpp include/circuit.h \
   /usr/include/string.h \
   /usr/lib/gcc/x86_64-redhat-linux/4.3.2/../../../../include/c++/4.3.2/sstream \
   /usr/lib/gcc/x86_64-redhat-linux/4.3.2/../../../../include/c++/4.3.2/bits/sstream.tcc \
-  include/evaluate.h include/circuit.h include/atpg.h include/lexer.h
+  include/evaluate.h include/circuit.h include/atpg.h include/lexer.h \
+  include/atpg.h

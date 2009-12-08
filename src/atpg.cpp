@@ -35,62 +35,176 @@ static queue<Implication*> ImpliQueue;
 
 bool ATPG::Do_ATPG()
 {
-   Value newVal = D;
-   bool result;
-   (circuit.faultWire) = ((circuit.Netlist).find("c_NAND3_1")->second); 	
- //  (circuit.faultWire) = ((circuit.Netlist).find("N3")->second); 	// Yay ! works now..... used to cup previously (for c17)
-
-    // n10 - backward ZERO
-   Implication* newImply= new Implication(circuit.faultWire,ZERO,false); 
-   (ImpliQueue).push(newImply); 
-
-    // n10 - forward DBAR 
-   newImply= new Implication(circuit.faultWire,DBAR,true); 
-   (ImpliQueue).push(newImply); 
-
-//    // n0 - backward 0
-//   newImply= new Implication(((circuit.Netlist).find("N0"))->second,ZERO,false); 
-//    (ImpliQueue).push(newImply); 
-//    // n1 - backward 0
-//   newImply= new Implication(((circuit.Netlist).find("N1"))->second,ZERO,false); 
-//    (ImpliQueue).push(newImply); 
-////bool false = 0 = backward
+    Value newVal = D;
+    bool result;
+    
+    
+    //set FautltWire
+    map<string,Wire *>::iterator it = circuit.Netlist.find("N388");
+    if ( it == circuit.Netlist.end())
+    {
+        cout << "Wire not found" << endl; 
+        exit(0);
+    }
+    (circuit.faultWire) = (it->second); 
+    
 
 
-   cout<<__FILE__<<__LINE__ << "    " << "Adding implication :  " << (circuit.faultWire)->id  
-    << "value:  " <<  newVal;
-   result = D_Algo();
-   
-   
-   
-   Update_PI_For_9V();
-   
-   cout<<__FILE__<<__LINE__ << "    " << "Returning " << result << endl;
-   map<string,Wire*> ::iterator iter =  (circuit.PriInputs).begin();
+    // fautlWire - backward 
+    Implication* newImply= new Implication(circuit.faultWire,ZERO,false); 
+    (ImpliQueue).push(newImply); 
 
-    cout<<__FILE__<<__LINE__ << "    " << "Test vectors are : " << endl;
+    // fautlWire - forward 
+    newImply= new Implication(circuit.faultWire,DBAR,true); 
+    (ImpliQueue).push(newImply); 
+
+
+    cout<< "Adding implication :  " << (circuit.faultWire)->id  
+        << "value:  " <<  newVal;
+    result = D_Algo();
+
+    Update_PI_For_9V();
+
+
+    // Print out the primary inputs
+    cout << "Returning " << result << endl;
+    map<string,Wire*> ::iterator iter =  (circuit.PriInputs).begin();
+
+    cout<< "Test vectors are : " << endl;
     for (;iter != (circuit.PriInputs).end(); iter++)
     {   
-        cout<<__FILE__<<__LINE__ << "    " << (iter->second)->id << ":    " << (iter->second)->value << endl;
+        cout<< (iter->second)->id << ":    " << (iter->second)->value << endl;
     }
 
-   iter =  (circuit.PriOutputs).begin();
-    cout<<__FILE__<<__LINE__ << "    " << "Output vectors are : " << endl;
+
+    // Print out the primary outputs
+    iter =  (circuit.PriOutputs).begin();
+    cout<< "Output vectors are : " << endl;
     for (;iter != (circuit.PriOutputs).end(); iter++)
     {   
-        cout<<__FILE__<<__LINE__ << "    " << (iter->second)->id << ":    " << (iter->second)->value << endl;
+        cout<< (iter->second)->id << ":    " << (iter->second)->value << endl;
     }
 
-   iter =  (circuit.Netlist).begin();
-    cout<<__FILE__<<__LINE__ << "    " << "Netlist : " << endl;
+
+    // Print out the netlist
+
+    iter =  (circuit.Netlist).begin();
+    cout<< "Netlist : " << endl;
     for (;iter != (circuit.Netlist).end(); iter++)
     {   
-        cout<<__FILE__<<__LINE__ << "    " << (iter->second)->id << ":    " << (iter->second)->value << endl;
+        cout<< (iter->second)->id << ":    " << (iter->second)->value << endl;
     }
+
+    cout << " And the result is ....... " << result << endl;
+
+    return result;
+
 }
 
 
-// Total mess !! plz decorate it :) - HAHAHA. My crazy comment now is that the whole code is a mess :P
+
+
+
+bool ATPG::Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplication, Wire* curWire,Value curValue)
+{
+    Gate* curGate = dynamic_cast<Gate*>(curWire->input);
+    cout<< "Value to be implied" << curValue << endl;
+    cout<< "Value by Xor" << Do_Xor((Value)((~ControlValues[curGate->gtype])&0xf),(Value)InversionValues[curGate->gtype])  << endl;
+    assert(curValue == Do_Xor((Value)((~ControlValues[curGate->gtype])&0xf),(Value)InversionValues[curGate->gtype]));
+    assert(curGate);
+
+
+    /* Check if the gate output value is either unknown
+     * or what we want i.e. cbar xor i
+     */
+
+    /* This implication resolved if wire is already what we want */
+    if (curWire->value == curValue) 
+    {
+        cout<<__FILE__<<__LINE__ << "    " << "Curvalue is what we want. Implication resolved by itself"
+            << endl;
+        (ImpliQueue).pop();
+        // At this point, justifying the inputs may be pending
+        // hence we dont return here
+    } 
+
+/*    if (curWire->value != U) 
+    {
+        cout<<__FILE__<<__LINE__ << "    " << "curWire->value is : " << curWire->value << endl;
+        cout<<__FILE__<<__LINE__ << "    " << "Returning false" << endl;
+        return false;
+    }
+*/
+
+    /*Check if all inputs of the gate are unknown or cbar*/
+    /*TODO:You might want to iterate through the input list
+     * instead. 
+     */
+
+
+    if (curGate->Evaluate() == curValue)
+    {
+        cout<<__FILE__<<__LINE__ << "    " << "Gate evals to what we want. Implication to be resolved "
+            << endl;
+	// if it is the faulty wire, don't set the value
+	if ( curWire != (circuit.faultWire) )
+    {
+        cout<<__FILE__<<__LINE__ << "    " << "New intention:  " <<  curImplication->wire->id << "  " 
+            <<  curImplication->value << endl; 
+        
+        Intentions_push_back(curImplication);
+    }   
+    
+    (ImpliQueue).pop();
+        return true;
+    } 
+
+
+
+    
+    
+    switch (curGate->Evaluate())
+    {   
+             case U:
+            {
+                list<Wire*>::iterator iter = (curGate->inputs).begin();
+                for (;iter != (curGate->inputs).end();iter++)
+                {
+                    // All inputs should be cbar
+                    Value newVal = (Value)( (~(ControlValues[curGate->gtype])) & 0xf);
+                    Implication* newImply= new Implication(*iter,newVal,false); /*bool false = 0 = backward*/
+                    cout<<__FILE__<<__LINE__ << "    " << "Adding implication :  " << (*iter)->id 
+                        << "value:  " <<  newVal << endl;
+                    (ImpliQueue).push(newImply); 
+                }
+		// if it is the faulty wire, don't set the value
+		if ( curWire != (circuit.faultWire) )
+        {
+            cout<<__FILE__<<__LINE__ << "    " << "New intention:  " <<  curImplication->wire->id << "  " 
+            <<  curImplication->value << endl; 
+        
+            Intentions_push_back(curImplication);
+	    }
+        (ImpliQueue).pop();
+                return true;
+            }
+
+
+        default:
+            /*Some input has value c */
+            {
+
+                cout<<__FILE__<<__LINE__ << "    " << "Evaluate of " << curGate->id << " gives:" << curGate->Evaluate() << endl;
+                cout<<__FILE__<<__LINE__ << "    " << __LINE__ << "    " << endl ;
+                cout<<__FILE__<<__LINE__ << "    " << "Returning false" << endl;
+                return false;
+            }
+    }
+
+}
+
+
+
 bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, Wire* curWire,Value curValue)
 {
     cout<<__FILE__<<__LINE__ << "    " << "$$$$$$$$$$$$$$$$$$$Came here$$$$$$$$$$$$$$$$$$$$$" << endl;
@@ -102,12 +216,10 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
 
     for (;iter != (curGate->inputs).end();iter++)
     {
-	// bug: should not count Us, instead count which are not known. eg: D,U inputs. - only for 9V
         if  ( (*iter)->value  == U) inputUCount++;
     }
 
 
-    // TODO: The we need to propagate further
     if (curWire->value == curValue) 
     {
         cout<<__FILE__<<__LINE__ << "    " << "Curvalue is what we want. Implication resolved by itself" << endl;
@@ -115,6 +227,8 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
         return true;
     } 
 
+    // Check is the old value is compatible with the old one. And we don't need
+    // to take care about the further calls
     if (!Check_Wire_Value_For_Assignment(curWire,curValue)) 
     {
         cout<<__FILE__<<__LINE__ << "    " << __LINE__ << "    " << ": Returning false" << endl;
@@ -278,103 +392,7 @@ bool ATPG::Compatible(Value oldval,Value newval)
 
 
 
-bool ATPG::Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplication, Wire* curWire,Value curValue)
-{
-    Gate* curGate = dynamic_cast<Gate*>(curWire->input);
-    cout<<__FILE__<<__LINE__ << "    " << "Value to be implied" << curValue << endl;
-    cout<<__FILE__<<__LINE__ << "    " << "Value by Xor" << Do_Xor((Value)((~ControlValues[curGate->gtype])&0xf),(Value)InversionValues[curGate->gtype])  << endl;
-    assert(curValue == Do_Xor((Value)((~ControlValues[curGate->gtype])&0xf),(Value)InversionValues[curGate->gtype]));
-    assert(curGate);
 
-
-    /* Check if the gate output value is either unknown
-     * or what we want i.e. cbar xor i
-     */
-
-    /* This implication resolved if wire is already what we want */
-    if (curWire->value == curValue) 
-    {
-        cout<<__FILE__<<__LINE__ << "    " << "Curvalue is what we want. Implication resolved by itself"
-            << endl;
-        (ImpliQueue).pop();
-        // At this point, justifying the inputs may be pending
-        // hence we dont return here
-    } 
-
-/*    if (curWire->value != U) 
-    {
-        cout<<__FILE__<<__LINE__ << "    " << "curWire->value is : " << curWire->value << endl;
-        cout<<__FILE__<<__LINE__ << "    " << "Returning false" << endl;
-        return false;
-    }
-*/
-
-    /*Check if all inputs of the gate are unknown or cbar*/
-    /*TODO:You might want to iterate through the input list
-     * instead. 
-     */
-
-
-    if (curGate->Evaluate() == curValue)
-    {
-        cout<<__FILE__<<__LINE__ << "    " << "Gate evals to what we want. Implication to be resolved "
-            << endl;
-	// if it is the faulty wire, don't set the value
-	if ( curWire != (circuit.faultWire) )
-    {
-        cout<<__FILE__<<__LINE__ << "    " << "New intention:  " <<  curImplication->wire->id << "  " 
-            <<  curImplication->value << endl; 
-        
-        Intentions_push_back(curImplication);
-    }   
-    
-    (ImpliQueue).pop();
-        return true;
-    } 
-
-
-
-    
-    
-    switch (curGate->Evaluate())
-    {   
-             case U:
-            {
-                list<Wire*>::iterator iter = (curGate->inputs).begin();
-                for (;iter != (curGate->inputs).end();iter++)
-                {
-                    // All inputs should be cbar
-                    Value newVal = (Value)( (~(ControlValues[curGate->gtype])) & 0xf);
-                    Implication* newImply= new Implication(*iter,newVal,false); /*bool false = 0 = backward*/
-                    cout<<__FILE__<<__LINE__ << "    " << "Adding implication :  " << (*iter)->id 
-                        << "value:  " <<  newVal << endl;
-                    (ImpliQueue).push(newImply); 
-                }
-		// if it is the faulty wire, don't set the value
-		if ( curWire != (circuit.faultWire) )
-        {
-            cout<<__FILE__<<__LINE__ << "    " << "New intention:  " <<  curImplication->wire->id << "  " 
-            <<  curImplication->value << endl; 
-        
-            Intentions_push_back(curImplication);
-	    }
-        (ImpliQueue).pop();
-                return true;
-            }
-
-
-        default:
-            /*Some input has value c */
-            {
-
-                cout<<__FILE__<<__LINE__ << "    " << "Evaluate of " << curGate->id << " gives:" << curGate->Evaluate() << endl;
-                cout<<__FILE__<<__LINE__ << "    " << __LINE__ << "    " << endl ;
-                cout<<__FILE__<<__LINE__ << "    " << "Returning false" << endl;
-                return false;
-            }
-    }
-
-}
 
 
 
@@ -541,6 +559,8 @@ void ATPG::Failure()
     {
 	    // Old value is on the RHS
 	    (*iter)->wire->value = (*iter)->value;
+	    // reset the modified flag anyways
+	    (*iter)->wire->modified = false;
     }
     Intentions.clear();
     // remove all the implications thought of
@@ -872,6 +892,10 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
 bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWire, Value curValue)
 {
 
+    // first check if the curr value is compatable with current
+    if ( (curWire != circuit.faultWire) && (!Compatible(curWire->value, curImplication->value) ) )
+            return false;
+
     // Check if the wire is a PI.
     // If yes just set the value and
     // we are done with the implication 
@@ -891,7 +915,7 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
     {
 	    cout << __LINE__ << " Handling fanout from backward implication" << endl;
 	    // first check if the curr value is compatable with current
-	    if ( !Compatible(curWire->value, curImplication->value) )
+	    if ( (curWire != circuit.faultWire) && (!Compatible(curWire->value, curImplication->value) ) )
 	    	return false;
 	    // first set the value of the current wire
 	    if (curWire != circuit.faultWire )
@@ -945,7 +969,8 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
     }
     else 
     {
-	if (curGate->gtype == NOT)
+	// NOT & BUF GATE are almost identical
+	if ((curGate->gtype == NOT) || (curGate->gtype == BUF))
 	{
 		// Damn ! we have to take care of every small thing again
 		if (curWire != circuit.faultWire)
@@ -959,7 +984,7 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
 		}
 		Wire *iwire = *( (curGate->inputs).begin() );
 		cout << __LINE__ << ": added new wire to impli queue - " << iwire->id << " to value: " << (Value)((~curImplication->value)&0xf) << endl;
-                Implication* newImply= new Implication(iwire,(Value)((~curImplication->value)&0xf),false); /*bool false = 0 = backward*/
+                Implication* newImply= new Implication(iwire,(curGate->gtype == NOT)?(Value)((~curImplication->value)&0xf):(curImplication->value),false); /*bool false = 0 = backward*/
 		(ImpliQueue).push(newImply);
 		// pop off the current implication and return
 		ImpliQueue.pop();
@@ -968,7 +993,8 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
 	}
 	else { 
 		// TODO: A similar thing for XOR
-		cout<<__FILE__<<__LINE__ << "    " <<"Something wrong"<< endl;
+		cout << "Gate type is :" << curGate->gtype << endl;
+        cout<<__FILE__<<__LINE__ << "    " <<"Something wrong"<< endl;
 		assert(false);
 	}
     }
