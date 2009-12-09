@@ -34,17 +34,17 @@ public:
     bool  Check_Wire_Value_For_Assignment(Wire* wire,Value val);
     
 //    void Make_Assignments();
-    void Clean_Intentions();
+    void Clean_Logs();
     void Update_PI_For_9V();
 
     void Failure();
 
 
-    Implication* Find_In_Intentions_List(Wire* wire);
+    Implication* Find_In_Logs_List(Wire* wire);
 
 };
 
-bool Intentions_push_back (Implication *);
+bool Change_Value_And_Update_Log (Implication *);
 
 
 #endif /* ifndef ATPG_H */

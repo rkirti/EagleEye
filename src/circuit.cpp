@@ -380,7 +380,7 @@ string Circuit::Check_Name_Present(string givenname)
 
 bool Circuit::Wire_Not_Derived(Wire* wire)
 {
-    if (strstr((wire->id).c_str(),"_")) return false;
+    if (wire->id.find("_")) return false;
     else return true;
 }
 
@@ -453,4 +453,38 @@ Value Gate::Evaluate()
 
 
 
+
+
+void Circuit::Print_All_Wires()
+{
+
+    // Print out the primary inputs
+    map<string,Wire*> ::iterator iter =  (circuit.PriInputs).begin();
+
+    cout<< "Test vectors are : " << endl;
+    for (;iter != (circuit.PriInputs).end(); iter++)
+    {   
+        cout<< (iter->second)->id << ":    " << (iter->second)->value << endl;
+    }
+
+
+    // Print out the primary outputs
+    iter =  (circuit.PriOutputs).begin();
+    cout<< "Output vectors are : " << endl;
+    for (;iter != (circuit.PriOutputs).end(); iter++)
+    {   
+        cout<< (iter->second)->id << ":    " << (iter->second)->value << endl;
+    }
+
+
+    // Print out the netlist
+    iter =  (circuit.Netlist).begin();
+    cout<< "Netlist : " << endl;
+    for (;iter != (circuit.Netlist).end(); iter++)
+    {   
+        cout<< (iter->second)->id << ":    " << (iter->second)->value << endl;
+    }
+
+
+}
 

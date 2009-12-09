@@ -13,7 +13,6 @@
 #include <cstdlib>                                                
 #include <cassert>
 #include <cstdlib>
-#include <cstring>
 #include <sstream>
 
 
@@ -221,6 +220,7 @@ public:
  //   bool D_Algo();
     bool Evaluate();
     bool Wire_Not_Derived(Wire* wire);
+    void Print_All_Wires();
    // bool Imply_And_Check();
 
 };
@@ -232,7 +232,6 @@ extern Circuit circuit;
 bool isNotKnown(Value);
 Value Do_Xor(Value val1, Value val2);
 int Translate_Value_To_Int(Value value);
-
 
 #include "evaluate.h"
 #endif /* ifndef CIRCUIT_H */
