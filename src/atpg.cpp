@@ -386,7 +386,7 @@ bool ATPG::Add_To_DFrontier(Wire *wire,Value value)
 
 
 
-bool ATPG::RemoveFromD(Wire *wire)
+bool ATPG::Remove_From_D(Wire *wire)
 {
     bool result=false;
     list<WireValuePair>::iterator iter = circuit.DFrontier.begin();
@@ -409,7 +409,7 @@ bool ATPG::RemoveFromD(Wire *wire)
 
 
 
-bool ATPG::RemoveFromJ(Wire *wire)
+bool ATPG::Remove_From_J(Wire *wire)
 {
     cout<<__FILE__<<__LINE__ << "    " << "Kashyap: Called remove from J" << endl;
     bool result=false;
@@ -815,7 +815,7 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
         // But before that check if the gate is in D frontier 
         // and remove the gate from it. Because it is resolved now
 
-        if (RemoveFromD(curGate->output))
+        if (Remove_From_D(curGate->output))
              cout<<__FILE__<<__LINE__ << "    " << "INFO: The gate is indeed in D and has been removed" << curGate->id << endl;
         else 
             cout<<__FILE__<<__LINE__ << "    " << "INFO: The gate is not there in D frontier. report from " << __LINE__ << "    " << endl;
@@ -846,7 +846,7 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
             return true;
         }
 
-        if (RemoveFromJ(curGate->output))
+        if (Remove_From_J(curGate->output))
             cout<<__FILE__<<__LINE__ << "    " << "INFO: The gate is indeed in J and has been removed" << curGate->id << endl;
         else 
             cout<<__FILE__<<__LINE__ << "    " << "INFO: The gate is not there in J frontier. report from " << __LINE__ << "    " << endl;

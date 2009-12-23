@@ -197,8 +197,8 @@ public:
  //   bool Add_To_JFrontier(Wire *wire,Value);
   //  bool Add_To_DFrontier(Wire *wire,Value);
 
- //   bool RemoveFromJ(Wire *wire);
-  //  bool RemoveFromD(Wire *wire);
+ //   bool Remove_From_J(Wire *wire);
+  //  bool Remove_From_D(Wire *wire);
 
 
     /*this should move to a different header file*/

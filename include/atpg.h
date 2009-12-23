@@ -27,8 +27,8 @@ public:
     bool Add_To_JFrontier(Wire *wire,Value value);
     bool Add_To_DFrontier(Wire *wire,Value value);
     
-    bool RemoveFromD(Wire *wire);
-    bool RemoveFromJ(Wire *wire);
+    bool Remove_From_D(Wire *wire);
+    bool Remove_From_J(Wire *wire);
 
     bool Compatible(Value oldval,Value newval);
     bool  Check_Wire_Value_For_Assignment(Wire* wire,Value val);
