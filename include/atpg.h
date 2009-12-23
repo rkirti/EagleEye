@@ -8,6 +8,9 @@
 #include "lexer.h"
 #include "circuit.h"
 
+
+
+
 class ATPG{
 
 friend class Circuit;

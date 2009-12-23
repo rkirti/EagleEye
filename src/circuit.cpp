@@ -1,12 +1,31 @@
 #include "circuit.h"
 #include <queue>
+#include  <fstream>
 using namespace std;
 
 
+ofstream CIRCUIT_DFILE;
 static int cktDebug=1;
 #define ERROR(...) {if (cktDebug) {printf(__VA_ARGS__); printf("\n");exit(0);}  else exit(0);}
 #define DEBUG(...) {if (cktDebug) {printf(__VA_ARGS__); printf("\n")}
 
+
+
+
+
+#define STRHELPER(x) #x
+#define STRING(x) STRHELPER(x)
+#define JOIN(x,y) STRING(x##y)
+
+
+
+
+#define DERROR      {printf("Error.Cannot open debug file\n"); exit(0);}
+
+static inline void Dprint_Helper(FILE* fp,char* message)
+{
+    fprintf(fp,"%s",message);
+}
 
 
 
@@ -197,15 +216,19 @@ bool Circuit::Evaluate()
 
 bool Circuit::Levelize()
 {
+
     int level=0;
     map<string,Wire*>::iterator iter =  (circuit.PriInputs).begin();
     multimap<int,Element*>:: iterator levelIter;
 
+    CIRCUIT_DFILE << "Starting Levelize" << endl;
 
     // Adding the primary inputs to level zero
+    CIRCUIT_DFILE <<  "Adding all primary inputs" << endl;
+    
     for (;iter != (circuit.PriInputs).end(); iter++)
     {   
-        cout << "Adding  " << iter->second->id << "at level 0" << endl;
+        CIRCUIT_DFILE << "Adding  " << iter->second->id << " at level 0 " << endl;
         (circuit.Levels).insert(pair<int,Element*>(0,(Element*)iter->second));
     }
 
@@ -214,13 +237,11 @@ bool Circuit::Levelize()
         for (levelIter = ((circuit.Levels).equal_range(level)).first; 
                 levelIter !=((circuit.Levels).equal_range(level)).second; levelIter++)
         {
-         //   cout <<"Iter is now at" << levelIter->second->id  <<endl;
             if ( (levelIter->second)->type == GATE)
             {
                 Gate* curGate = dynamic_cast<Gate*>(levelIter->second);
                 Wire* curWire = curGate->output;
                 
-               // cout << "Found gate" << curGate->id << "for search at level " << level<< endl; 
                 list<Element*>::iterator iter = (curWire->outputs).begin();
                 for (;iter != (curWire->outputs).end(); iter++)
                 {
@@ -230,7 +251,7 @@ bool Circuit::Levelize()
                     if (curGate->tempInputs == 0) 
                     {
 
-                        cout << "Adding  " << curGate->id << "at level" << level+1 << endl;
+                        CIRCUIT_DFILE << "Adding  " << curGate->id << " at level  " << level+1 << endl;
                         (circuit.Levels).insert(pair<int,Element*>(level+1,(Element*)curGate));
                     }
                 }
@@ -238,7 +259,6 @@ bool Circuit::Levelize()
             else if  ( (dynamic_cast<Wire*>(levelIter->second))->wtype == PI )
             {
                 Wire* curWire =   dynamic_cast<Wire*>(levelIter->second);
-             //   cout << "Found PI" << curWire->id << "for search at level " << level<< endl; 
                 list<Element*>::iterator iter = (curWire->outputs).begin();
                 for (;iter != (curWire->outputs).end(); iter++)
                 {
@@ -248,7 +268,7 @@ bool Circuit::Levelize()
                     if (curGate->tempInputs == 0) 
                     {
 
-                        cout << "Adding  " << curGate->id << "at level" << level+1 << endl;
+                        CIRCUIT_DFILE << "Adding  " << curGate->id << " at level  " << level+1 << endl;
                         (circuit.Levels).insert(pair<int,Element*>(level+1,(Element*)curGate));
                     }
                 }
@@ -260,7 +280,7 @@ bool Circuit::Levelize()
 
         }
     }while (   (circuit.Levels).find(++level) != (circuit.Levels).end() ); 
-    cout << "Levelization completed" << endl;
+    CIRCUIT_DFILE << "Levelization completed" << endl << endl;
 }
 
 
@@ -484,5 +504,11 @@ void Circuit::Print_All_Wires()
     {   
         cout<< (iter->second)->id << ":    " << (iter->second)->value << endl;
     }
+}
+
+
+void Circuit::Init_Debug()
+{
+    CIRCUIT_DFILE.open("debug/ckt.debug",ios::out);   
 }
 

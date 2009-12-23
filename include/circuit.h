@@ -222,7 +222,7 @@ public:
     bool Wire_Not_Derived(Wire* wire);
     void Print_All_Wires();
    // bool Imply_And_Check();
-
+    void Init_Debug();
 };
 
 

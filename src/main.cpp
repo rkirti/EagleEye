@@ -33,6 +33,8 @@ int main(int argc,char **argv)
 	    exit(0);
 	}
 
+    circuit.Init_Debug();
+
 	circuit.Levelize();
 	circuit.ResolveBranches();
 	
