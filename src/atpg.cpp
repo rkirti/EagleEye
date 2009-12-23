@@ -11,13 +11,18 @@ static queue<Implication*> ImpliQueue;
 
 
 
-bool ATPG::Do_ATPG()
+bool ATPG::Do_ATPG(string name)
 {
     Value newVal = D;
     bool result;
-    
-   //set FautltWire
-    map<string,Wire *>::iterator it = circuit.Netlist.find("N10");
+    string faultWireName;
+    //set FaultWire
+   
+
+    //cout << "Enter the name of the faulty wire" << endl;
+    //cin >>  faultWireName;
+   
+    map<string,Wire *>::iterator it = circuit.Netlist.find(name);
     if ( it == circuit.Netlist.end())
     {
         cout << "Wire not found" << endl; 
@@ -43,15 +48,18 @@ bool ATPG::Do_ATPG()
     result = D_Algo();
 
     // Useless for now, as only D is implemented
-    Update_PI_For_9V();
+    //Update_PI_For_9V();
 
 
     // Display results
     cout << "Returning from D Algo" << result << endl;
-    circuit.Print_All_Wires();
+   // circuit.Print_All_Wires();
     CircuitGraphPrint();
     
     cout << " And the result is ....... " << result << endl;
+    cout << endl << "************************";
+    cout << "Wire name is :" << name  << "   result  " << result;
+    cout << "************************" << endl  << endl;
     return result;
 
 }
@@ -360,7 +368,7 @@ bool ATPG::Compatible(Value oldval,Value newval)
 bool ATPG::Add_To_JFrontier(Wire *wire,Value value)
 {
     circuit.JFrontier.push_back(WireValuePair(wire,value));
-    ATPGPRINT(ATPG_DFILE,"Added a gate to JFrontier. JFrontier is now:");
+   // ATPGPRINT(ATPG_DFILE,"Added a gate to JFrontier. JFrontier is now:");
     cout<<__FILE__<<__LINE__ << "    " << "Added a gate to JFrontier." << endl;
     PRINTJFRONTIER;
     return true;
@@ -370,7 +378,7 @@ bool ATPG::Add_To_DFrontier(Wire *wire,Value value)
 {
     //circuit.DFrontier.push_back(WireValuePair(wire,value));
     circuit.DFrontier.push_front(WireValuePair(wire,value));
-    ATPGPRINT(ATPG_DFILE,"Added a gate to DFrontier. DFrontier is now:");
+    //ATPGPRINT(ATPG_DFILE,"Added a gate to DFrontier. DFrontier is now:");
     PRINTDFRONTIER;
     return true;
     
@@ -393,7 +401,7 @@ bool ATPG::RemoveFromD(Wire *wire)
         }
         iter ++;
     }
-    ATPGPRINT(ATPG_DFILE,"Removed a gate from DFrontier. DFrontier is now:");
+//    ATPGPRINT(ATPG_DFILE,"Removed a gate from DFrontier. DFrontier is now:");
     PRINTDFRONTIER;
   
     return result;
@@ -417,7 +425,7 @@ bool ATPG::RemoveFromJ(Wire *wire)
         }
         iter ++;
     }
-    ATPGPRINT(ATPG_DFILE,"Removed a gate from JFrontier. JFrontier is now:");
+    //ATPGPRINT(ATPG_DFILE,"Removed a gate from JFrontier. JFrontier is now:");
     PRINTJFRONTIER;
   
     return result;

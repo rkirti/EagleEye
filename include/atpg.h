@@ -13,7 +13,7 @@ class ATPG{
 friend class Circuit;
 
 public:
-    bool Do_ATPG();
+    bool Do_ATPG(string name);
     bool D_Algo();
 
 

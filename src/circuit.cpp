@@ -330,12 +330,13 @@ void Circuit:: ResolveWire(Wire* wire)
 bool Circuit::ResolveBranches()
 {
    map<string,Wire*>:: iterator iter = (circuit.Netlist).begin();
+   cout << __LINE__ << " Resolving Branches..............." << endl;
     while (iter != (circuit.Netlist).end())
     {
         Wire* iwire = iter->second;
         
         if (  ( (int)(iwire->outputs).size() > 1 
-            || ( (int) (iwire->outputs).size() > 0  && iwire->wtype == PO)) 
+            || ( (int) (iwire->outputs).size() > 0  && (iwire->wtype == PO))) 
             && (Wire_Not_Derived(iwire)))
                 ResolveWire(iwire);
         iter++;
@@ -457,7 +458,6 @@ Value Gate::Evaluate()
 
 void Circuit::Print_All_Wires()
 {
-
     // Print out the primary inputs
     map<string,Wire*> ::iterator iter =  (circuit.PriInputs).begin();
 
@@ -484,7 +484,5 @@ void Circuit::Print_All_Wires()
     {   
         cout<< (iter->second)->id << ":    " << (iter->second)->value << endl;
     }
-
-
 }
 
