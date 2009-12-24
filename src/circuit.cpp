@@ -222,11 +222,6 @@ bool Circuit::Simulate_Good()
 }
 
 
-
-
-
-
-
 bool Circuit::Evaluate()
 {
     int level=1;
@@ -270,8 +265,6 @@ bool Circuit::Evaluate()
                     }
 
                 }
-
-
 
             }
             else cout << "something wrong" << endl;
