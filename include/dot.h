@@ -9,10 +9,6 @@
 
 #include "circuit.h"
 
-
-
-
-void DefineGraphNodes(FILE* file);
 void CircuitGraphPrint ();
 
 

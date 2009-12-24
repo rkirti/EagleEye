@@ -213,6 +213,7 @@ bool Circuit::Evaluate()
     return true;
 }
 
+// NOTE:  We add only PIs, POs, and intermediate gates to the levels
 
 bool Circuit::Levelize()
 {
@@ -350,18 +351,29 @@ void Circuit:: ResolveWire(Wire* wire)
 bool Circuit::ResolveBranches()
 {
    map<string,Wire*>:: iterator iter = (circuit.Netlist).begin();
-   cout << __LINE__ << " Resolving Branches..............." << endl;
-    while (iter != (circuit.Netlist).end())
+   CIRCUIT_DFILE << "Resolve Branches started" << endl;
+   while (iter != (circuit.Netlist).end())
     {
         Wire* iwire = iter->second;
         
+        // Condition for stemout
+        // 1. If the wire is not a PO, output size is > 1
+        // 2. If the wire is a PO output size is > 0
         if (  ( (int)(iwire->outputs).size() > 1 
             || ( (int) (iwire->outputs).size() > 0  && (iwire->wtype == PO))) 
             && (Wire_Not_Derived(iwire)))
+        {
+
+                CIRCUIT_DFILE << "Calling resolve wire for  " << iwire->id << endl;
                 ResolveWire(iwire);
+        }
+        else 
+        {
+            CIRCUIT_DFILE << "No need to resolve wire " << iwire->id << endl;
+        }
         iter++;
     }
-    cout << "Resolve branches completed successfully" << endl;
+    CIRCUIT_DFILE << "Resolve branches completed successfully" << endl << endl;
     return true;
 }
 
@@ -401,7 +413,7 @@ string Circuit::Check_Name_Present(string givenname)
 
 bool Circuit::Wire_Not_Derived(Wire* wire)
 {
-    if (wire->id.find("_")) return false;
+    if (wire->id.find("_") != string::npos ) return false;
     else return true;
 }
 

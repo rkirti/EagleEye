@@ -59,17 +59,9 @@ void CircuitGraphPrint ()
     list<Element*>::iterator innerIter;
     multimap<int,Element*>:: iterator levelIter;
 
-
     ofstream graphFile;
-
-    cout << endl;
-    
-    
     graphFile.open("trial.dot");
    
-    
-
-
 
     // Print .dot header
     graphFile << "digraph ckt { \n";
@@ -78,9 +70,6 @@ void CircuitGraphPrint ()
     //Set the common properties for each node
     graphFile << "node [label=\"\" style=filled fixedsize=true width=1.6 height=1.6];\n";
 
-    
-   
-    
     // define all the wire nodes
     iter =  (circuit.Netlist).begin();
     for (;iter != (circuit.Netlist).end(); iter++)
@@ -92,7 +81,6 @@ void CircuitGraphPrint ()
 
     
     // define all the gate nodes
-    
     do
     {
         for (levelIter = ((circuit.Levels).equal_range(level)).first; 
@@ -107,68 +95,36 @@ void CircuitGraphPrint ()
             }
         }
     }while ((circuit.Levels).find(++level) != (circuit.Levels).end() ); 
-   
-    // Printing the primary input nodes
-    iter =  (circuit.PriInputs).begin();
-    for (;iter != (circuit.PriInputs).end(); iter++)
+
+
+
+
+
+
+
+
+    
+    // Logic: For every wire in the circuit, print its output
+    // If the wire's input is a Gate, then print that connection
+    // i.e gate going to that wire
+    iter =  (circuit.Netlist).begin();
+    for (;iter != (circuit.Netlist).end(); iter++)
     {
         curWire = iter->second;
+       
+        // First print the input if needed
+        if ( curWire->input && curWire->input->type == GATE)
+            graphFile <<  (curWire->input->id) << "->" <<  ( curWire->id) << ";" << endl;
+
+
+        // Take care of outputs now
         innerIter = curWire->outputs.begin();
         for ( ;innerIter != curWire->outputs.end();innerIter++)
             graphFile <<  (curWire->id) << "->" <<  ((*innerIter)->id) << ";" << endl;
            
     }
-
+ 
+    // End the graph printing routine 
+    graphFile << " \n } \n";
     graphFile.close();
 }
-
-
-
-
-
-void DefineGraphNodes(FILE* file)
-{
-    map<string,Wire*>::iterator iter;
-    Wire* curWire;
-
-    //Define all wire nodes
-    iter =  (circuit.Netlist).begin();
-
-    for (;iter != (circuit.PriInputs).end(); iter++)
-    {
-        curWire = iter->second;
-        const char* name = (curWire->id).c_str();
-        fprintf (file, "node [label = \"%s\n%d\" shape = circle fillcolor=\"#44AA44\"];\n",name,curWire->value);
-    }
-}
-
-/*
-
-    file = fopen (filename, "w");
-
-    fprintf (file, "digraph %s { \n",circuitname);
-    fprintf (file, "rankdir = LR;\n");
-    fprintf (file, "node [label=\"\" style=filled fixedsize=true width=1.6 height=1.6];\n");
-
-
-
-    if (!root->lcp)
-        fprintf (file, "node [label=\"%d\" shape = circle fillcolor=\"#44AA44\"]; N%d;\n", root->key, i++);
-    else 
-        fprintf (file, "node [label=\"%d:%d:%d\" shape = circle fillcolor=\"#44AA44\"]; N%d;\n", root->max1, root->max2, root->max3, i++);
-
-    // Start traversal
-    if (root->lcp) {
-        NodePrint (root->lcp, root, file, 0, &i); 
-    }
-    if (root->ccp) {
-        NodePrint (root->ccp, root, file, 0, &i);
-    }
-    if (root->rcp) {
-        NodePrint (root->rcp, root, file, 0, &i);
-    }
-
-    fprintf (file, "} \n");
-    fclose (file);
-}
-*/
