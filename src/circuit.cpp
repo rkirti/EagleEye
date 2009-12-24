@@ -140,7 +140,7 @@ bool Circuit::AddGate(GateType type, char *name,char* output,char **inputs,int n
 
 
 
-bool Circuit::Simulate()
+bool Circuit::Simulate_Good()
 {
     ifstream inputFile;
     ofstream outputFile;

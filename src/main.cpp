@@ -54,7 +54,7 @@ int main(int argc,char **argv)
 
 
 
-      circuit.Simulate();
+      circuit.Simulate_Good();
     // cout << "finished evaluating" << endl;
 
 	/*

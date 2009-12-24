@@ -70,7 +70,7 @@ void CircuitGraphPrint ()
                 graphFile << "node [label = " << name <<  " shape = record ];  " << curGate->id <<  "  ;\n";
             }
         }
-    }while ((circuit.Levels).find(++level) != (circuit.Levels).end() ); 
+    }while ((circuit.Levels).find(++level) != (circuit.Levels).end()); 
 
 
     
