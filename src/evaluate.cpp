@@ -4,10 +4,12 @@
 
 
 #include <iostream>
+#include <fstream>
 #include "circuit.h"
 #include "evaluate.h"
 using namespace std;
 
+ofstream EVALUATE_DFILE;
 
 const GateEvaluate g_EvaluateTable[] = 
 {
@@ -99,25 +101,25 @@ Value Not(list<Wire*> inputs)
 
 Value Nand(list<Wire*> inputs)
 {
-   int output=ZERO;
-   Implication* intention=NULL;
-   list<Wire *>::iterator iter;
-   Value curValue;
+    int output=ZERO;
+    Implication* intention=NULL;
+    list<Wire *>::iterator iter;
+    Value curValue;
 
-   // Use DeMorgan's laws. They help maintain accuracy here
-   // since the negation in the end loses the Value information
-   
-  cout << "****************DEBUG***********"  << endl;
-   for (iter=inputs.begin(); iter != inputs.end(); iter++ )
-   {    
-            cout << __LINE__ << "Wire value selected as curValue"<< endl; 
-            curValue = (Value) ((*iter)->value != U)?(Value)(~((*iter)->value)&0xf):U;
+    // Use DeMorgan's laws. They help maintain accuracy here
+    // since the negation in the end loses the Value information
 
-    cout << "neg curValue for " << (*iter)->id  << "is " << curValue << endl; 
-     output |= curValue;
-   }
-   cout << "Output is "  <<  (Value) output << endl;
-   return (Value) output; 
+    EVALUATE_DFILE << "Nand Evaluate called "  << endl;
+    for (iter=inputs.begin(); iter != inputs.end(); iter++ )
+    {    
+        EVALUATE_DFILE << "Input wire is  " << (*iter)->id << " with value  " << (*iter)->value << endl; 
+        curValue = (Value) ((*iter)->value != U)?(Value)(~((*iter)->value)&0xf):U;
+
+        output |= curValue;
+    }
+    EVALUATE_DFILE << "Output is "  <<  (Value) output << endl;
+    EVALUATE_DFILE << endl << endl;
+    return (Value) output; 
 }
 
 

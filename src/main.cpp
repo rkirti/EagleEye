@@ -40,18 +40,21 @@ int main(int argc,char **argv)
 	
 
     circuit.Print_All_Wires();
+    
+    
+    
     // Try to run ATPG for each wire in the ckt
-    map<string,Wire*> ::iterator iter =  (circuit.Netlist).begin();
-    for (;iter != (circuit.Netlist).end(); iter++)
-    {   
-        curTest.Do_ATPG((iter->second)->id);	
-    }
+    //map<string,Wire*> ::iterator iter =  (circuit.Netlist).begin();
+    //for (;iter != (circuit.Netlist).end(); iter++)
+    //{   
+    //    curTest.Do_ATPG((iter->second)->id);	
+    //}
 
 
 
 
 
-    //   circuit.Evaluate();
+      circuit.Simulate();
     // cout << "finished evaluating" << endl;
 
 	/*

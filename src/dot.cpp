@@ -24,31 +24,7 @@
 #include <fstream>
 #include "dot.h"
 using namespace std;
-/*
-static void NodePrint (Node* child, Node* parent, FILE* file, int parent_i, int *i) 
-{
-    int cur_i = (*i)++;
 
-    assert (parent == child->p);
-    if (!child->lcp)
-        fprintf (file, "node [label=\"%d\" shape = circle fillcolor=\"#44AA44\"]; N%d;\n", child->key, cur_i);
-    else 
-        fprintf (file, "node [label=\"%d:%d:%d\" shape = circle fillcolor=\"#44AA44\"]; N%d;\n", child->max1, child->max2, child->max3, cur_i);
-    fprintf (file, "N%d -> N%d;\n", parent_i, cur_i);
-    if (child->lcp) {
-        // Print pointer from parent
-        NodePrint (child->lcp, child, file, cur_i, i); 
-    }
-    if (child->ccp) {
-        // Print pointer from parent
-        NodePrint (child->ccp, child, file, cur_i, i);
-    }
-    if (child->rcp) {
-        // Print pointer from parent 
-        NodePrint (child->rcp, child, file, cur_i, i);
-    }
-}
-*/
 
 void CircuitGraphPrint () 
 {
@@ -95,12 +71,6 @@ void CircuitGraphPrint ()
             }
         }
     }while ((circuit.Levels).find(++level) != (circuit.Levels).end() ); 
-
-
-
-
-
-
 
 
     

@@ -5,6 +5,7 @@ using namespace std;
 
 
 ofstream CIRCUIT_DFILE;
+extern ofstream EVALUATE_DFILE;
 static int cktDebug=1;
 #define ERROR(...) {if (cktDebug) {printf(__VA_ARGS__); printf("\n");exit(0);}  else exit(0);}
 #define DEBUG(...) {if (cktDebug) {printf(__VA_ARGS__); printf("\n")}
@@ -21,12 +22,6 @@ static int cktDebug=1;
 
 
 #define DERROR      {printf("Error.Cannot open debug file\n"); exit(0);}
-
-static inline void Dprint_Helper(FILE* fp,char* message)
-{
-    fprintf(fp,"%s",message);
-}
-
 
 
 void Circuit::Add_Gate_To_Wire_Output(Gate* gate,const char* wirename)
@@ -145,19 +140,100 @@ bool Circuit::AddGate(GateType type, char *name,char* output,char **inputs,int n
 
 
 
+bool Circuit::Simulate()
+{
+    ifstream inputFile;
+    ofstream outputFile;
+    string inName;
+    string outName;
+    int inputval;
+
+    list<Element*>::iterator innerIter;
+
+    CIRCUIT_DFILE << "Starting simulation" << endl;
+    cout << "Please enter the name of the file with input vectors " << endl;
+    
+    // Input vectors can be only 0,15,5 standing for 0,1,unknown
+    cin >> inName;
+    inputFile.open(inName.c_str(),ios::in);
+    
+
+    CIRCUIT_DFILE << "Reading input values from file " << inName <<  endl;
+        
+    map<string,Wire*> ::iterator iter =  (circuit.PriInputs).begin();
+    for (;iter != (circuit.PriInputs).end(); iter++)
+    {   
+        if ( inputFile >> inputval && (inputval == 0 || inputval == 15 || inputval == 5) )
+        {
+            iter->second->value = (Value) inputval;
+            CIRCUIT_DFILE << "Setting  value of " <<  iter->second->id << " to  "  << inputval <<  endl;   
+            
+            // If the PI has fanout, then all branches should also be set to the
+            // same value
+            if (iter->second->outputs.size() > 1 )
+            {
+                innerIter = iter->second->outputs.begin();
+                for ( ;innerIter != iter->second->outputs.end();innerIter++)
+                {
+
+                    CIRCUIT_DFILE << "Setting  value of branch " <<  (*innerIter)->id  << " of  stem "<<  iter->second->id << " to  "  << inputval <<  endl;   
+                   ((Wire*) (*innerIter))->value = (Value) inputval; 
+                }
+
+
+            }
+
+
+        }
+        else 
+        {
+            CIRCUIT_DFILE << "Unacceptable  value of " <<  iter->second->id << " is  "  << inputval <<  endl;   
+            CIRCUIT_DFILE << "Exiting" << endl;
+            cout << "Unacceptable  value of " <<  iter->second->id << " is  "  << inputval <<  endl;   
+            exit(0);
+        }
+    }
+
+    CIRCUIT_DFILE << "Accepted all inputs, now calling circuit evaluate" << endl;
+    CIRCUIT_DFILE << endl << endl;
+    
+    circuit.Evaluate();
+    CIRCUIT_DFILE << "Evaluation done. Now printing outputs" << endl;
+    cout << "Please enter the name of the file to print output vectors " << endl;
+    
+    // Input vectors can be only 0,15,5 standing for 0,1,unknown
+    cin >> outName;
+    outputFile.open(outName.c_str(),ios::out);
+    
+    
+    iter =  (circuit.PriOutputs).begin();
+    for (;iter != (circuit.PriOutputs).end(); iter++)
+    {
+       outputFile << iter->second->value << endl;   
+    }
+
+
+    CIRCUIT_DFILE << endl << endl;
+    
+    outputFile.close();
+    inputFile.close();
+
+    return true;
+}
+
+
+
+
+
+
+
 bool Circuit::Evaluate()
 {
     int level=1;
     multimap<int,Element*>:: iterator levelIter;
     map<string,Wire*> ::iterator iter =  (circuit.PriInputs).begin();
 
-
-    // Adding gen. values to the primary inputs 
-    for (;iter != (circuit.PriInputs).end(); iter++)
-    {   
-        (iter->second)->value=ZERO;
-    }
-
+    CIRCUIT_DFILE << "Circuit evaluation called for" << endl;
 
     do
     {
@@ -173,12 +249,12 @@ bool Circuit::Evaluate()
                 Gate* curGate = dynamic_cast<Gate*>(levelIter->second);
                 Value curValue = curGate->Evaluate();
                 Wire* outputWire = curGate->output;
+                CIRCUIT_DFILE << "Setting value of wire " << outputWire->id << " to " << (int)curValue << endl; 
                 outputWire->value = curValue;
                 if  ((outputWire->outputs).size() > 1) 
                 {
                     list<Element*>::iterator iter = (outputWire->outputs).begin();
-                    cout << "printing output list of wire: " << outputWire->id<< endl;
-
+                    CIRCUIT_DFILE << "Evaluating stemouts of wire " << outputWire->id << endl;
                     /* Reasons for the dynamic cast: 
                      * If the output wire has > 1 output, they are all bound to
                      * be wires.
@@ -188,6 +264,7 @@ bool Circuit::Evaluate()
                         cout << "output: " << (*iter)->id << endl;
                         Wire* check = (dynamic_cast<Wire*>(*iter));
                         assert(check);
+                        CIRCUIT_DFILE << "Setting value of branch " <<  check->id <<   " of wire " << outputWire->id << " to "  << (int) curValue << endl;
                         check->value = curValue;
 
                     }
@@ -207,7 +284,7 @@ bool Circuit::Evaluate()
     
     for (;iter != (circuit.PriOutputs).end(); iter++)
     {   
-        cout << "PO: " << (iter->second)->id << "value:  " << (iter->second)->value << endl;
+         cout << "PO: " << (iter->second)->id << "value:  " << (iter->second)->value << endl;
     }
 
     return true;
@@ -522,5 +599,6 @@ void Circuit::Print_All_Wires()
 void Circuit::Init_Debug()
 {
     CIRCUIT_DFILE.open("debug/ckt.debug",ios::out);   
+    EVALUATE_DFILE.open("debug/eval.debug",ios::out);   
 }
 
