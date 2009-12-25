@@ -595,3 +595,22 @@ void Circuit::Init_Debug()
     EVALUATE_DFILE.open("debug/eval.debug",ios::out);   
 }
 
+
+void Circuit::Clear_Wire_Values()
+{
+
+    // Print out the netlist
+    // Clear the values of all the wires. Set the value to U
+    map<string,Wire*> ::iterator iter =  (circuit.Netlist).begin();
+    for (;iter != (circuit.Netlist).end(); iter++)
+    {   
+        (iter->second)->value = U;
+    }
+}
+
+
+
+
+
+
+

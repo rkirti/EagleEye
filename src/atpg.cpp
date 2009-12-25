@@ -537,8 +537,6 @@ void ATPG::Failure()
 
 }
 
-
-
 bool ATPG::D_Algo()
 { 
      //Ensure all implications are made and they 
@@ -552,7 +550,9 @@ bool ATPG::D_Algo()
      //Iterate through list of POs to see if any of them has 
      //D or DBAR. If so, return true.   
     
-    list<WireValuePair>::iterator checkIter = (circuit.DFrontier).begin();
+    WireValuePair DFront = (circuit.DFrontier).front();
+    WireValuePair *checkIter = &DFront;
+    list<WireValuePair>::iterator checkIterator;
     map<string,Wire*>::iterator iter = (circuit.PriOutputs).begin();
     
     for (; iter!=(circuit.PriOutputs).end();iter++)
@@ -579,12 +579,16 @@ DFrontierWork:
     PRINTDFRONTIER;
     //for (;checkIter !=(circuit.DFrontier).end();checkIter++)
     // Remember a stack and understand how this works
-    // Add to D frontier function, now always pushes into 
-    // this stack. And we choose and set the implications, which will pop off the 
-    // top one. A few more will be added on the top.
+    // Add_to_D_frontier function always pushes into 
+    // this stack. We will pop off the top one from the D frontier
+    // set the implications.
+    // On calling D again, few more gates will be added on the top of the D frontier.
     while ( !circuit.DFrontier.empty() )
     {
-	checkIter = (circuit.DFrontier).begin();
+	// take the first element off the D frontier
+	DFront = (circuit.DFrontier).front();
+	checkIter = &DFront;
+	(circuit.DFrontier).pop_front();
         /*Selecting a gate from the DFrontier*/
 	cout << __LINE__ << "Current size of D = " << circuit.DFrontier.size() <<  "About to take " << checkIter->iwire->id << "  from D" << endl;
        Gate* curGate=dynamic_cast<Gate*>(checkIter->iwire->input);
@@ -619,9 +623,13 @@ DFrontierWork:
      if (D_Algo() == true) return true;
     }
 
+// For J frontier, we need not pop off the element.
+// When we set the implications, Imply_And_Check will remove the gate
+// from the D frontier. This is the only difference between DFrontierWork and JFrontierWork
+//
 JFrontierWork:
     if (circuit.JFrontier.empty()) return true;
-    checkIter = (circuit.JFrontier).begin();
+    checkIterator = (circuit.JFrontier).begin();
 
     PRINTJFRONTIER;
     
@@ -632,9 +640,9 @@ JFrontierWork:
     //  2. more than input has value x
     //  3. none of the inputs which currently have
     //  known values have value c
-    for (;checkIter !=(circuit.JFrontier).end();checkIter++)
+    for (;checkIterator !=(circuit.JFrontier).end();checkIterator++)
     {
-       Gate* curGate=dynamic_cast<Gate*>(checkIter->iwire->input);
+       Gate* curGate=dynamic_cast<Gate*>(checkIterator->iwire->input);
        Value cval = ControlValues[curGate->gtype];
         
       cout<<__FILE__<<__LINE__ << "    " << __LINE__ << "    " ;
@@ -678,6 +686,8 @@ JFrontierWork:
     }
     return false;
 }
+
+
 
 void ATPG::Update_PI_For_9V()
 {

@@ -1,7 +1,7 @@
-
 /*
  * ATPG Related functions for class Circuit
  */
+
 #ifndef ATPG_H
 #define ATPG_H
 

@@ -221,6 +221,7 @@ public:
     bool Evaluate();
     bool Wire_Not_Derived(Wire* wire);
     void Print_All_Wires();
+    void Clear_Wire_Values();
    // bool Imply_And_Check();
     void Init_Debug();
     bool Simulate_Good();
