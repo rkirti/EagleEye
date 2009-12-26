@@ -14,6 +14,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <sstream>
+#include <fstream>
 
 
 using namespace std;

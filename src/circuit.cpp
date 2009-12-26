@@ -6,6 +6,10 @@ using namespace std;
 
 ofstream CIRCUIT_DFILE;
 extern ofstream EVALUATE_DFILE;
+extern ofstream ATPG_DFILE;
+
+
+
 static int cktDebug=1;
 #define ERROR(...) {if (cktDebug) {printf(__VA_ARGS__); printf("\n");exit(0);}  else exit(0);}
 #define DEBUG(...) {if (cktDebug) {printf(__VA_ARGS__); printf("\n")}
@@ -593,6 +597,7 @@ void Circuit::Init_Debug()
 {
     CIRCUIT_DFILE.open("debug/ckt.debug",ios::out);   
     EVALUATE_DFILE.open("debug/eval.debug",ios::out);   
+    ATPG_DFILE.open("debug/atpg.debug",ios::out);   
 }
 
 

@@ -8,26 +8,28 @@ static list<Implication*> Logs;
 static queue<Implication*> ImpliQueue;
 
 
+ofstream ATPG_DFILE;
 
 
 
-bool ATPG::Do_ATPG(string name)
+bool ATPG::Do_ATPG(string name, Value faultval)
 {
-    Value newVal = D;
     bool result;
     string faultWireName;
-    //set FaultWire
    
-
-    //cout << "Enter the name of the faulty wire" << endl;
-    //cin >>  faultWireName;
+    ATPG_DFILE << "ATPG called for faulty wire " <<  name << endl;
+    ATPG_DFILE << "Faulty value of the wire is " <<  faultval << endl;
    
-    map<string,Wire *>::iterator it = circuit.Netlist.find(name);
+    map<string,Wire*>::iterator it = circuit.Netlist.find(name);
+    
     if ( it == circuit.Netlist.end())
     {
+
+        ATPG_DFILE << "Given wire " <<  name << " not found " << endl;
         cout << "Wire not found" << endl; 
         exit(0);
     }
+    
     (circuit.faultWire) = (it->second); 
     
 
@@ -35,15 +37,17 @@ bool ATPG::Do_ATPG(string name)
     // Push two implications for the faulty wire.
     // One backward to justify vbar on the line stuck
     // at v. One forward to propagate the stuck at v error.
-    Implication* newImply= new Implication(circuit.faultWire,ZERO,false); 
+    Implication* newImply= new Implication(circuit.faultWire,(faultval == D)?ONE:ZERO ,false); 
     (ImpliQueue).push(newImply); 
-    newImply= new Implication(circuit.faultWire,DBAR,true); 
+    newImply= new Implication(circuit.faultWire,faultval,true); 
     (ImpliQueue).push(newImply); 
 
+    ATPG_DFILE << "Adding implication: " <<  (circuit.faultWire)->id  
+        << "value:  " <<  faultval <<  endl;
+ 
+    ATPG_DFILE << "Calling D_Algo from DO_ATPG" << endl;
 
-    cout<< "Adding implication :  " << (circuit.faultWire)->id  
-        << "value:  " <<  newVal;
-    
+
     // Run the D Algorithm to find the test vectors.
     result = D_Algo();
 
@@ -52,15 +56,11 @@ bool ATPG::Do_ATPG(string name)
 
 
     // Display results
-    cout << "Returning from D Algo" << result << endl;
-   // circuit.Print_All_Wires();
+    ATPG_DFILE << "Returning from D Algo for wire "  <<  name << " with " << result << endl;
+    circuit.Print_All_Wires();
     CircuitGraphPrint();
     
-    cout << " And the result is ....... " << result << endl;
-    cout << endl << "************************";
-    cout << "Wire name is :" << name  << "   result  " << result;
-    cout << "************************" << endl  << endl;
-    return result;
+   return result;
 
 }
 
@@ -544,7 +544,7 @@ bool ATPG::D_Algo()
     if (Imply_And_Check() == false) 
     {
 
-        cout<<__FILE__<<__LINE__ << "    " << __LINE__ << "    " << ": Returning false" << endl;
+        ATPG_DFILE << " Imply_And_Check returned false. Returning false from D_Algo " << endl;
         return false;
     }
      //Iterate through list of POs to see if any of them has 

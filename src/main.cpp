@@ -6,8 +6,8 @@ using namespace std;
 
 /* The global circuit */
 Circuit circuit;
+extern ofstream ATPG_DFILE;
 
-FILE* ATPG_DFILE;
 
 
 int main(int argc,char **argv)
@@ -15,13 +15,12 @@ int main(int argc,char **argv)
 
     ATPG curTest;
 
-    if (argc != 3)
+    if (argc != 2)
     {
-        cout << "Usage: ./bin/atpg <benchmarkfile>  <atpgdebugfile>" << endl;
+        cout << "Usage: ./bin/atpg <benchmarkfile> " << endl;
         exit(0);
     }
 
-    ATPG_DFILE = fopen(argv[2],"w");
 
 	/*
 	 * Call the lexer now !
@@ -43,18 +42,14 @@ int main(int argc,char **argv)
     
     
     
-    // Try to run ATPG for each wire in the ckt
-    //map<string,Wire*> ::iterator iter =  (circuit.Netlist).begin();
-    //for (;iter != (circuit.Netlist).end(); iter++)
-    //{   
-    //    curTest.Do_ATPG((iter->second)->id);	
-    //}
+    //Try to run ATPG for each wire in the ckt
+    curTest.Do_ATPG("N388",D);	
 
 
 
 
 
-      circuit.Simulate_Good();
+     // circuit.Simulate_Good();
     // cout << "finished evaluating" << endl;
 
 	/*
