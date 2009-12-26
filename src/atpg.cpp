@@ -43,7 +43,7 @@ bool ATPG::Do_ATPG(string name, Value faultval)
     (ImpliQueue).push(newImply); 
 
     ATPG_DFILE << "Adding implication: " <<  (circuit.faultWire)->id  
-        << "value:  " <<  faultval <<  endl;
+        << "  value:  " <<  faultval <<  endl;
  
     ATPG_DFILE << "Calling D_Algo from DO_ATPG" << endl;
 
@@ -56,7 +56,7 @@ bool ATPG::Do_ATPG(string name, Value faultval)
 
 
     // Display results
-    ATPG_DFILE << "Returning from D Algo for wire "  <<  name << " with " << result << endl;
+    ATPG_DFILE << "Returning from D Algo for wire "  <<  name << " with result " << result << endl;
     circuit.Print_All_Wires();
     CircuitGraphPrint();
     
@@ -327,6 +327,7 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
 }
 
 
+
 bool ATPG::Compatible(Value oldval,Value newval)
 {
     if (oldval == newval) return true;
@@ -368,18 +369,22 @@ bool ATPG::Compatible(Value oldval,Value newval)
 bool ATPG::Add_To_JFrontier(Wire *wire,Value value)
 {
     circuit.JFrontier.push_back(WireValuePair(wire,value));
-   // ATPGPRINT(ATPG_DFILE,"Added a gate to JFrontier. JFrontier is now:");
-    cout<<__FILE__<<__LINE__ << "    " << "Added a gate to JFrontier." << endl;
+    ATPG_DFILE  << "Added a gate with output wire " <<  wire->id << " to JFrontier." << endl;
+    ATPG_DFILE <<  "JFrontier is now  " << endl; 
     PRINTJFRONTIER;
+    ATPG_DFILE << endl << endl;
     return true;
     
 }
+
+
 bool ATPG::Add_To_DFrontier(Wire *wire,Value value)
 {
-    //circuit.DFrontier.push_back(WireValuePair(wire,value));
     circuit.DFrontier.push_front(WireValuePair(wire,value));
-    //ATPGPRINT(ATPG_DFILE,"Added a gate to DFrontier. DFrontier is now:");
+    ATPG_DFILE  << "Added a gate with output wire " <<  wire->id << " to DFrontier." << endl;
+    ATPG_DFILE <<  "DFrontier is now  " << endl; 
     PRINTDFRONTIER;
+    ATPG_DFILE << endl << endl;
     return true;
     
 }
@@ -401,9 +406,10 @@ bool ATPG::Remove_From_D(Wire *wire)
         }
         iter ++;
     }
-//    ATPGPRINT(ATPG_DFILE,"Removed a gate from DFrontier. DFrontier is now:");
+    ATPG_DFILE  << "Removed a gate with output wire " <<  wire->id << " from DFrontier." << endl;
+    ATPG_DFILE <<  "DFrontier is now  " << endl; 
     PRINTDFRONTIER;
-  
+    ATPG_DFILE << endl << endl;
     return result;
 }
 
@@ -411,7 +417,6 @@ bool ATPG::Remove_From_D(Wire *wire)
 
 bool ATPG::Remove_From_J(Wire *wire)
 {
-    cout<<__FILE__<<__LINE__ << "    " << "Kashyap: Called remove from J" << endl;
     bool result=false;
     list<WireValuePair>::iterator iter = circuit.JFrontier.begin();
 
@@ -425,9 +430,10 @@ bool ATPG::Remove_From_J(Wire *wire)
         }
         iter ++;
     }
-    //ATPGPRINT(ATPG_DFILE,"Removed a gate from JFrontier. JFrontier is now:");
+    ATPG_DFILE  << "Removed a gate with output wire " <<  wire->id << " from JFrontier." << endl;
+    ATPG_DFILE <<  "JFrontier is now  " << endl; 
     PRINTJFRONTIER;
-  
+    ATPG_DFILE << endl << endl;
     return result;
 }
 
