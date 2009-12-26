@@ -6,6 +6,7 @@
 #define CIRCUIT_H
 
 #include <iostream>                                               
+#include <iomanip>                                               
 #include <list>                                                   
 #include <queue>                                                   
 #include <map>

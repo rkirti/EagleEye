@@ -564,32 +564,37 @@ Value Gate::Evaluate()
 
 void Circuit::Print_All_Wires()
 {
+    CIRCUIT_DFILE << "Print_All_Wires called"  << endl;
+
+
     // Print out the primary inputs
+    CIRCUIT_DFILE << "Printing all the PIs "   << endl << endl;
     map<string,Wire*> ::iterator iter =  (circuit.PriInputs).begin();
 
-    cout<< "Test vectors are : " << endl;
     for (;iter != (circuit.PriInputs).end(); iter++)
     {   
-        cout<< (iter->second)->id << ":    " << (iter->second)->value << endl;
+        CIRCUIT_DFILE << setw(20) << (iter->second)->id << ":    " << (iter->second)->value << endl;
     }
 
 
     // Print out the primary outputs
     iter =  (circuit.PriOutputs).begin();
-    cout<< "Output vectors are : " << endl;
+    CIRCUIT_DFILE << "Printing all POs " << endl << endl;
     for (;iter != (circuit.PriOutputs).end(); iter++)
     {   
-        cout<< (iter->second)->id << ":    " << (iter->second)->value << endl;
+        CIRCUIT_DFILE  << setw(20) << (iter->second)->id << ":    " << (iter->second)->value << endl;
     }
 
 
     // Print out the netlist
     iter =  (circuit.Netlist).begin();
-    cout<< "Netlist : " << endl;
+    CIRCUIT_DFILE << "Printing out the netlist " << endl << endl;
     for (;iter != (circuit.Netlist).end(); iter++)
     {   
-        cout<< (iter->second)->id << ":    " << (iter->second)->value << endl;
+        CIRCUIT_DFILE << setw(20) << (iter->second)->id << ":    " << (iter->second)->value << endl;
     }
+
+    CIRCUIT_DFILE <<  endl << endl;
 }
 
 
