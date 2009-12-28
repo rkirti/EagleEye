@@ -43,7 +43,7 @@ int main(int argc,char **argv)
     
     
     //Try to run ATPG for each wire in the ckt
-    curTest.Do_ATPG("N388",D);	
+    curTest.Do_ATPG("N16",D);	
 
 
 

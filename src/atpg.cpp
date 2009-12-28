@@ -208,14 +208,26 @@ bool ATPG::Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplicatio
 bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, Wire* curWire,Value impliedValue)
 {
 
+    Gate* curGate = dynamic_cast<Gate*>(curWire->input);
+    Value xorValue =  Do_Xor((Value)((ControlValues[curGate->gtype])&0xf),(Value)InversionValues[curGate->gtype]);
+    
+ 
+    ATPG_DFILE << "Handling implication on wire " << curWire->id
+               << " controlling value on gate inputs needed" << endl; 
+
+
+    ATPG_DFILE << "Value to be implied" << impliedValue << endl;
+    ATPG_DFILE << "Value by Xor" <<  xorValue << endl;
+    ATPG_DFILE << "Current value of the wire is " << curWire->value << endl;
+    ATPG_DFILE << "Current gate's output evaluated is " << curGate->Evaluate();
+
+
     // Assumption: 
     // The implication is on a wire
     // that isn't a PI or a fanout branch
     // They are taken care of separately and 
     // not in this function
     
-    Gate* curGate = dynamic_cast<Gate*>(curWire->input);
-    Value xorValue =  Do_Xor(ControlValues[curGate->gtype],InversionValues[curGate->gtype]);
     int inputUCount = 0;
     list<Wire*>::iterator iter;
     
@@ -232,10 +244,10 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
 
     if (!Compatible(curWire->value,impliedValue))
     {
-        cout << "Implied value contradicts the current value of the wire." << endl;
-        cout << "Wire in question is :" << curWire->id << endl;
-        cout << "Returning false , need to backtrack" << endl;
-        cout << endl;
+        ATPG_DFILE << "Implied value contradicts the current value of the wire." << endl;
+        ATPG_DFILE << "Wire in question is :" << curWire->id << endl;
+        ATPG_DFILE << "Returning false , need to backtrack" << endl;
+        ATPG_DFILE << endl;
         return false;
     }
 
@@ -248,10 +260,10 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
     // fragment.
     if (curWire->value == impliedValue) 
     {
-        cout << "Implied value equals the current value of the wire." << endl;
-        cout << "Wire in question is :" << curWire->id << endl;
-        cout << "Popping off the implication" << endl;
-        cout << endl;
+        ATPG_DFILE << "Implied value equals the current value of the wire." << endl;
+        ATPG_DFILE << "Wire in question is :" << curWire->id << endl;
+        ATPG_DFILE << "Popping off the implication" << endl;
+        ATPG_DFILE << endl;
         ImpliQueue.pop();
     } 
 
@@ -262,7 +274,7 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
     // are c. Thus, no need to go backward.
     // Return true.
     
-    if (Compatible(curGate->Evaluate(),impliedValue))
+    if ((curGate->Evaluate() == impliedValue) && (curWire->id == ImpliQueue.front()->wire->id) )
     {
         // if it is the faulty wire, don't set the value
         if (curWire != (circuit.faultWire))
@@ -290,6 +302,7 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
         if  ( (*iter)->value  == U) inputUCount++;
     }
 
+    ATPG_DFILE << "Input UCount is " << inputUCount << " for gate " << curGate->id << endl;
 
     if (inputUCount>1) 
     {
@@ -309,6 +322,7 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
 
         // Iterate again to find out which wire
         // has unknown value and imply C on it.
+        ATPG_DFILE << "Hunting for the only input wire with value U" << endl; 
 
         for (iter = (curGate->inputs).begin();iter != (curGate->inputs).end();iter++)
         {
@@ -319,7 +333,8 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
                 Value newVal = (ControlValues[curGate->gtype]);
                 // false indicates backward direction
                 Implication* newImply= new Implication(*iter,newVal,false);
-                cout << (*iter)->id << "value:  " <<  newVal << endl;
+                ATPG_DFILE << (*iter)->id << "is the sole input wire with Value U" << endl;  
+                ATPG_DFILE << "Adding implication on that wire with  value:  " <<  newVal << endl;
                 ImpliQueue.push(newImply); 
 
             }
