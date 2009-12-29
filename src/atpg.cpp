@@ -781,7 +781,7 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
     {
         Change_Value_And_Update_Log(curImplication);
         ImpliQueue.pop();
-        ATPG_DFILE<< "Success, po reached and po value set to:" << impliedValue << endl;
+        ATPG_DFILE << "Success, po reached and po value set to:" << impliedValue << endl;
         return true;
     }
 
@@ -805,7 +805,7 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
 
     // set the value for the wire, ie impliedValue to wire->value
     ATPG_DFILE << "Setting the value of the wire " << curImplication->wire->id  
-     <<  " to the implied value " <<  curImplication->value << endl; 
+               << " to the implied value " <<  curImplication->value << endl; 
     Change_Value_And_Update_Log(curImplication);
         
 
@@ -934,9 +934,9 @@ bool  ATPG::Handle_Forward_Implication_On_Stem(Implication* curImplication, Wire
     }
 
 
-    // pop off the current implication and return
+    // Pop off the current implication and return
     ATPG_DFILE << "Popping off the implication on the stem " << endl;
-    assert( ImpliQueue.front()->wire->id  == curWire->id);
+    assert(ImpliQueue.front()->wire->id  == curWire->id);
     ImpliQueue.pop();
     return true;
 }
@@ -1072,6 +1072,7 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
         { 
             // TODO: Handle XOR
             cout << "Gate type is :" << curGate->gtype << endl;
+            cout << "Value implied is " << impliedValue << endl;
             cout<<__FILE__<<__LINE__ << "    " <<"Something wrong"<< endl;
             assert(false);
         }

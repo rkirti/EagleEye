@@ -7,6 +7,7 @@ using namespace std;
 ofstream CIRCUIT_DFILE;
 extern ofstream EVALUATE_DFILE;
 extern ofstream ATPG_DFILE;
+extern ofstream MAIN_DFILE;
 
 
 
@@ -603,6 +604,7 @@ void Circuit::Init_Debug()
     CIRCUIT_DFILE.open("debug/ckt.debug",ios::out);   
     EVALUATE_DFILE.open("debug/eval.debug",ios::out);   
     ATPG_DFILE.open("debug/atpg.debug",ios::out);   
+    MAIN_DFILE.open("debug/main.debug",ios::out);   
 }
 
 

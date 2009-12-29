@@ -7,7 +7,7 @@ using namespace std;
 /* The global circuit */
 Circuit circuit;
 extern ofstream ATPG_DFILE;
-
+ofstream MAIN_DFILE;
 
 
 int main(int argc,char **argv)
@@ -43,8 +43,13 @@ int main(int argc,char **argv)
     
     
     //Try to run ATPG for each wire in the ckt
-    curTest.Do_ATPG("N16",D);	
-
+    
+    map<string,Wire*>::iterator iter=(circuit.Netlist).begin();
+    for(;iter != (circuit.Netlist).end(); iter++)
+    {
+        curTest.Do_ATPG(iter->second->id,D);	
+        MAIN_DFILE << "Ran algo for wire" << iter->second->id << endl;
+    }
 
 
 
