@@ -26,6 +26,7 @@ public:
 
     bool Handle_Output_Coming_From_Control_Value(Implication* curImplication, Wire* curWire,Value curValue);
     bool Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplication, Wire* curWire,Value curValue);
+    bool Handle_Forward_Implication_On_Stem (Implication* curImplication, Wire* curWire,Value curValue);
 
     bool Add_To_JFrontier(Wire *wire,Value value);
     bool Add_To_DFrontier(Wire *wire,Value value);

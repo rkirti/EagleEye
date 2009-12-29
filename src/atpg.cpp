@@ -760,7 +760,7 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
 {
    
  
-    ATPG_DFILE << "Handling implication on wire " << curWire->id << endl;
+    ATPG_DFILE << "Handling forward implication on wire " << curWire->id << endl;
     assert(curImplication->direction == true);
 
     // Check if the value of the wire is already set
@@ -774,7 +774,7 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
         return false;
     }
 
-
+    // CASE 0:
     // If it is a PO, set the value to the wire 
     // and pop off the implication 
     if ((curWire->outputs).empty())
@@ -790,37 +790,9 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
 
     // CASE 1: If there is a stemout, just
     // do the needful and return.
-
+    
     if ( curEle->type ==  WIRE )
-    {
-
-        Implication* newImply; 
-        ATPG_DFILE << "The forward implication is on a wire which is a stem" << endl;
-
-        // First set the value of the current wire 
-        // ie.the stem
-        Change_Value_And_Update_Log(curImplication);
-
-
-
-        list<Element*>::iterator iter=(curWire->outputs).begin();
-        for (;iter != (curWire->outputs).end(); iter++)
-        {
-            Wire *owire = dynamic_cast<Wire*>(*iter);
-            assert(owire != NULL);
-
-            newImply = new Implication(owire, curImplication->value,true); 
-            ATPG_DFILE << "Adding new implication on the branch" << owire->id  << " of stem " << curWire->id << endl;
-            ImpliQueue.push(newImply); 
-        }
-
-
-        // pop off the current implication and return
-        ATPG_DFILE << "Popping off the  implication on the stem " << endl;
-        assert( ImpliQueue.front()->wire->id  == curWire->id);
-        ImpliQueue.pop();
-        return true;
-    }
+        return Handle_Forward_Implication_On_Stem(curImplication,curWire,impliedValue);
 
     // Case 2:  The wire has only one output
     // and it is a gate.
@@ -841,39 +813,41 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
     // gate again.
     Value gateNewOutput = curGate->Evaluate();
 
-    // if the old gate output is not unknown and 
-    // the new value doesn't agree with old 
-    // ( eg: 1 and u/0 don't agree, but D and u/0 or D and 1/u agree )
-    //if ( (~(gateOldOutput & U)) && (gateNewOutput & geteOldOutput) )
-    // if ( (gateOldOutput != U) && (gateNewOutput != U)  
-    //       && ( ((gateNewOutput&gateOldOutput) != gateNewOutput) 
-    //         ||   ((gateNewOutput|gateOldOutput) != gateOldOutput) ))
-       
-    if ((curGate->output != circuit.faultWire) && !Compatible(gateOldOutput,gateNewOutput))
+
+
+    // This is *some* logic. (The use of the || instead of just checking
+    // for the first condition)
+    // TODO: @Kashyap: Please put explanatory comments :-P
+
+
+    if ((curGate->output != circuit.faultWire) && !(Compatible(gateOldOutput,gateNewOutput)|| Compatible(gateNewOutput,gateOldOutput)))
     {
         // revert back !
-        cout<<__FILE__<<__LINE__ << "    " << __LINE__ << "    " << ": Returning false" << endl;
-        cout<<__FILE__<<__LINE__ << "    " << "gateOldOutput: " << gateOldOutput << "gateNewOutput: " << gateNewOutput << endl;
+        ATPG_DFILE << "Gate's old output, without setting the value of the wire was" << gateOldOutput << endl;
+        ATPG_DFILE << "Gate's new output, after setting the value of the wire is" << gateNewOutput << endl;
+        ATPG_DFILE << "Not compatible,Returning false" << endl;
         return false;
     }
     
-    cout<<__FILE__<<__LINE__ << "    " << __LINE__ << "    " << ": Debug: gateOldOutput = " << gateOldOutput << "new = " << gateNewOutput << endl;
+    ATPG_DFILE << "GateOldOutput = " << gateOldOutput << " NewOutput = " << gateNewOutput << endl;
+    
+    
+    
     // Case - gate's old output is unknown or not completely known
     if ( isNotKnown(gateOldOutput) ) 
     {
-        // Case I - gate old value == new value = unknown
-        //if (gateNewOutput == U)
+        // Case I - gate old value == new value = U / partially known
         if (isNotKnown(gateNewOutput))
         {
-	    // add to the D frontier, only if there is error on the input line
-	    if ( (impliedValue == D) || (impliedValue == DBAR))
-	    {
-		    // Add the gate to D frontier
-		    cout<<__FILE__<<__LINE__ << "    " << "Adding gate to D frontier: " << curGate->id <<endl; 
-		    cout<<__FILE__<<__LINE__ << "    " << "****************DEBUG***********"  << endl;
-		    cout<<__FILE__<<__LINE__ << "    " << "Added gate to DFrontier with value: "  << gateNewOutput << endl;
-		    Add_To_DFrontier(curGate->output, gateNewOutput);
-	    }
+            // Add to the D frontier, only if there is error on the input line
+            if ( (impliedValue == D) || (impliedValue == DBAR))
+            {
+                // Add the gate to D frontier
+                 ATPG_DFILE << "Adding gate to D frontier: " << curGate->id  
+                            << " with value: "  << gateNewOutput << endl;
+                 Add_To_DFrontier(curGate->output, gateNewOutput);
+            }
+
             // Set the value of the value (useful in 9V)
             // curGate->output->value = gateNewOutput;
             // pop off the implication and proceed !
@@ -881,23 +855,23 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
             return true;
         }
 
-        // Now just propage the value further
+        // Now just propagate the value further
         // But before that check if the gate is in D frontier 
         // and remove the gate from it. Because it is resolved now
 
         if (Remove_From_D(curGate->output))
-             cout<<__FILE__<<__LINE__ << "    " << "INFO: The gate is indeed in D and has been removed" << curGate->id << endl;
+             ATPG_DFILE << "The gate is indeed in D and has been removed" << curGate->id << endl;
         else 
-            cout<<__FILE__<<__LINE__ << "    " << "INFO: The gate is not there in D frontier. report from " << __LINE__ << "    " << endl;
+             ATPG_DFILE << "The gate is not there in D frontier. report from " << __LINE__ << endl;
 
         // The last thing to do is to propagate the impli and
         // before that, popping off the current impli
 
         // pop off the current impli
-        (ImpliQueue).pop();
+        ImpliQueue.pop();
         Implication* newImply= new Implication(curGate->output,gateNewOutput,true); /*bool true = 0 = forward*/
-        cout<<__FILE__<<__LINE__ << "    " << "Adding implication :  " << curGate->output->id << ". Line: " << __LINE__ << "    " << endl;
-        (ImpliQueue).push(newImply); 
+        ATPG_DFILE << "Adding implication on wire " << curGate->output->id << "  Line: " << __LINE__ << "    " << endl;
+        ImpliQueue.push(newImply); 
 
 	return true;
 
@@ -908,7 +882,7 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
     // gate to J frontier  
     else 
     {
-        cout<<__FILE__<<__LINE__ << "    " << "Kashyap: Hey I am going to remove from J " << endl;
+       ATPG_DFILE << "Removing from J frontier" << endl;
         if ( gateNewOutput == U )
         {
             // pop off the current implication
@@ -917,26 +891,55 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
         }
 
         if (Remove_From_J(curGate->output))
-            cout<<__FILE__<<__LINE__ << "    " << "INFO: The gate is indeed in J and has been removed" << curGate->id << endl;
+            ATPG_DFILE << "The gate is indeed in J and has been removed  " << curGate->id << endl;
         else 
-            cout<<__FILE__<<__LINE__ << "    " << "INFO: The gate is not there in J frontier. report from " << __LINE__ << "    " << endl;
+            ATPG_DFILE << "The gate is not there in J frontier. report from " << __LINE__  << endl;
 
         // The last thing to do is to propagate the impli and
         // before that, popping off the current impli
 
         // pop off the current impli
-        (ImpliQueue).pop();
+        ImpliQueue.pop();
 //        Implication* newImply= new Implication(curGate->output,gateNewOutput,true); /*bool true = 0 = forward*/
 //        cout<<__FILE__<<__LINE__ << "    " << "Adding implication :  " << curGate->id << ". Line: " << __LINE__ << "    " << endl;
 //        (ImpliQueue).push(newImply); 
         return true;
     }
 
-    cout<<__FILE__<<__LINE__ << "    " << __LINE__ << "    " << ": Returning false" << endl;
+    ATPG_DFILE<< "Returning false from end of function Resolve_Forward_Implication" << endl;
     return false;
 
 }
 
+
+bool  ATPG::Handle_Forward_Implication_On_Stem(Implication* curImplication, Wire* curWire, Value impliedValue)
+{
+
+    Implication* newImply; 
+    ATPG_DFILE << "The forward implication is on a wire which is a stem" << endl;
+
+    // First set the value of the current wire 
+    // ie.the stem
+    Change_Value_And_Update_Log(curImplication);
+
+    list<Element*>::iterator iter=(curWire->outputs).begin();
+    for (;iter != (curWire->outputs).end(); iter++)
+    {
+        Wire *owire = dynamic_cast<Wire*>(*iter);
+        assert(owire != NULL);
+
+        newImply = new Implication(owire, curImplication->value,true); 
+        ATPG_DFILE << "Adding new implication on the branch" << owire->id  << " of stem " << curWire->id << endl;
+        ImpliQueue.push(newImply); 
+    }
+
+
+    // pop off the current implication and return
+    ATPG_DFILE << "Popping off the implication on the stem " << endl;
+    assert( ImpliQueue.front()->wire->id  == curWire->id);
+    ImpliQueue.pop();
+    return true;
+}
 
 
 
