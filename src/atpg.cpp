@@ -575,7 +575,7 @@ void ATPG::Failure()
 
 bool ATPG::D_Algo()
 { 
-     //Ensure all implications are made and they 
+     // Ensure all implications are made and they 
      // are consistent
     if (Imply_And_Check() == false) 
     {
@@ -583,9 +583,7 @@ bool ATPG::D_Algo()
         ATPG_DFILE << " Imply_And_Check returned false. Returning false from D_Algo " << endl;
         return false;
     }
-     //Iterate through list of POs to see if any of them has 
-     //D or DBAR. If so, return true.   
-    
+   
 
     // The declarations needed later are made here,
     // even though we are not sure they will be 
@@ -596,7 +594,10 @@ bool ATPG::D_Algo()
     WireValuePair *checkIter = &DFront;
     list<WireValuePair>::iterator checkIterator;
     map<string,Wire*>::iterator iter = (circuit.PriOutputs).begin();
-    
+  
+
+    // Iterate through list of POs to see if any of them has 
+    // D or DBAR. If so, return true.   
     for (; iter!=(circuit.PriOutputs).end();iter++)
     {
         // D_Algo just takes care of returning true.
@@ -631,14 +632,17 @@ DFrontierWork:
     
     while ( !circuit.DFrontier.empty() )
     {
+         
+        ATPG_DFILE << "Current size of D = " << circuit.DFrontier.size() 
+                   << " About to take " << checkIter->iwire->id << "  from D" << endl;
+     
         // Take the first element off the D frontier
         DFront = (circuit.DFrontier).front();
         checkIter = &DFront;
         (circuit.DFrontier).pop_front();
+        
+        
         /*Selecting a gate from the DFrontier*/
-        ATPG_DFILE << "Current size of D = " << circuit.DFrontier.size() 
-            << " About to take " << checkIter->iwire->id << "  from D" << endl;
-
         Gate* curGate=dynamic_cast<Gate*>(checkIter->iwire->input);
         Value cval = ControlValues[curGate->gtype];
 
@@ -649,16 +653,16 @@ DFrontierWork:
             {
 
                 Implication* newImply= new Implication(*inputIter,(Value)((~cval)&0xf),false); /*bool false = 0 = backward*/
-                cout<<__FILE__<<__LINE__ << "    " << "Adding backward implication: " << (*inputIter)->id
+                ATPG_DFILE << "Adding backward implication: " << (*inputIter)->id
                     <<  ~(cval) << endl; 
                 (ImpliQueue).push(newImply);
                 newImply= new Implication(*inputIter,(Value)((~cval)&0xf),true); /*bool false = 0 = backward*/
-                cout<<__FILE__<<__LINE__ << "    " << "Adding forward implication: " << (*inputIter)->id
+                ATPG_DFILE << "Adding forward implication: " << (*inputIter)->id
                     <<  ~(cval) << endl; 
                 (ImpliQueue).push(newImply);
             }         
             else
-                cout<<__FILE__<<__LINE__ << "    " <<  "DEBUG: Wire: " << (*inputIter)->id << "value: " <<  (*inputIter)->value <<endl; 
+              ATPG_DFILE << "Wire: " << (*inputIter)->id << "value: " <<  (*inputIter)->value <<endl; 
 
 
         }
@@ -754,16 +758,19 @@ void ATPG::Update_PI_For_9V()
 
 bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire, Value impliedValue)
 {
+   
+ 
+    ATPG_DFILE << "Handling implication on wire " << curWire->id << endl;
     assert(curImplication->direction == true);
 
     // Check if the value of the wire is already set
     // And if it is the right value or not
     if (!Compatible(curWire->value,impliedValue))
     {
-        cout << "Implied value contradicts the current value of the wire." << endl;
-        cout << "Wire in question is :" << curWire->id << endl;
-        cout << "Returning false , need to backtrack" << endl;
-        cout << endl;
+        ATPG_DFILE << "Implied value contradicts the current value of the wire." << endl;
+        ATPG_DFILE << "Wire in question is :" << curWire->id << endl;
+        ATPG_DFILE << "Returning false , need to backtrack" << endl;
+        ATPG_DFILE << endl;
         return false;
     }
 
@@ -774,7 +781,7 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
     {
         Change_Value_And_Update_Log(curImplication);
         ImpliQueue.pop();
-        cout<<"Success, po reached and po value set to:" << impliedValue << endl;
+        ATPG_DFILE<< "Success, po reached and po value set to:" << impliedValue << endl;
         return true;
     }
 
@@ -788,7 +795,7 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
     {
 
         Implication* newImply; 
-
+        ATPG_DFILE << "The forward implication is on a wire which is a stem" << endl;
 
         // First set the value of the current wire 
         // ie.the stem
@@ -803,14 +810,20 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
             assert(owire != NULL);
 
             newImply = new Implication(owire, curImplication->value,true); 
+            ATPG_DFILE << "Adding new implication on the branch" << owire->id  << " of stem " << curWire->id << endl;
             ImpliQueue.push(newImply); 
         }
 
 
         // pop off the current implication and return
+        ATPG_DFILE << "Popping off the  implication on the stem " << endl;
+        assert( ImpliQueue.front()->wire->id  == curWire->id);
         ImpliQueue.pop();
         return true;
     }
+
+    // Case 2:  The wire has only one output
+    // and it is a gate.
 
     Gate *curGate = dynamic_cast<Gate*>(curEle);
     assert(curGate);
@@ -819,10 +832,13 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
     Value wireOldValue = curWire->value;
 
     // set the value for the wire, ie impliedValue to wire->value
-    cout<<__FILE__<<__LINE__ << "    " << "New intention:  " <<  curImplication->wire->id << "  " 
-            <<  curImplication->value << endl; 
+    ATPG_DFILE << "Setting the value of the wire " << curImplication->wire->id  
+     <<  " to the implied value " <<  curImplication->value << endl; 
     Change_Value_And_Update_Log(curImplication);
         
+
+    // Now that the value of the wire implied on is set, evaluate the 
+    // gate again.
     Value gateNewOutput = curGate->Evaluate();
 
     // if the old gate output is not unknown and 
