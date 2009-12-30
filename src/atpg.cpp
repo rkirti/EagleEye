@@ -712,6 +712,10 @@ DoneXor:
      if (D_Algo() == true) return true;
     }
 
+    // We have tried all the gates, but couldn't propagate the error ( if we come here, it means that we couldn't propagate throught any gate in D frontier )
+    // Hence we return false;
+    return false;
+
 // For J frontier, we need not pop off the element.
 // When we set the implications, Imply_And_Check will remove the gate
 // from the D frontier. This is the only difference between DFrontierWork and JFrontierWork

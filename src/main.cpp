@@ -50,12 +50,13 @@ int main(int argc,char **argv)
 //        while (!ImpliQueue.empty())
 //            ImpliQueue.pop();
 //        Logs.clear();
-//    	curTest.Do_ATPG(it->second->id,DBAR);	
-//        MAIN_DFILE << "Ran algo for wire" << it->second->id << endl;
+//    	bool result = curTest.Do_ATPG(it->second->id,DBAR);
+//        cout << "Ran D algo for wire " << it->second->id << " and the result is " << result << endl;
+//
 //    }
 
 
-    map<string,Wire *>::iterator it = circuit.Netlist.find("N203");
+    map<string,Wire *>::iterator it = circuit.Netlist.find("N1_AND2_1");
   	curTest.Do_ATPG(it->second->id,D);	
 
      // circuit.Simulate_Good();

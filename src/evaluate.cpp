@@ -149,9 +149,8 @@ Value Nor(list<Wire*> inputs)
 
 Value Xor(list<Wire *> inputs)
 {
-	int output=ZERO;
-   Implication* intention=NULL;
-	list<Wire *>::iterator iter;
+    int output=ZERO;
+    list<Wire *>::iterator iter;
     Value curOutput;
     Value curNegOutput;
     Value curValue;
@@ -167,7 +166,7 @@ Value Xor(list<Wire *> inputs)
         curOutput = (Value)output;
         curNegOutput =(output != U)?(Value)(~output&0xf):U;
 
-        output = ((output & curNegValue) | (curNegOutput & curNegValue));
+        output = ((output & curNegValue) | (curNegOutput & curValue));
     }
     return (Value)output;
 }
