@@ -760,6 +760,8 @@ JFrontierWork:
           // iterator to the second input wire
           list<Wire*>::iterator inputIter2 = ++((curGate->inputs).begin());
 
+          ATPG_DFILE << "in1 = " << ((*inputIter)->value) << " in2 = " << ((*inputIter2)->value) << " want to justify value=" << checkIterator->value << endl;
+
           // Case I - both the inputs are unknown
           if  ( ((*inputIter)->value == U) && ((*inputIter2)->value == U) )
           {
@@ -821,6 +823,11 @@ JFrontierWork:
               }
               
               // TODO:put some error checks
+
+              // Error check 1: if we have d or dbar on any inputs, we cannot justify a full value(0 or 1) on the output of an xor
+#define       ISDORDBAR(X)  ((X == D) || (X == DBAR))
+              if (ISDORDBAR((*inputIter)->value) || ISDORDBAR((*inputIter2)->value))
+                  return false;
 
 #define       V_XOR(x,y)     (Value)((((int)(x) & (~(int)(y))) | ( (~(int)(x)) & (int)(y)))&0xf)
 
@@ -985,7 +992,8 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
                 // Add the gate to D frontier
                  ATPG_DFILE << "Adding gate to D frontier: " << curGate->id  
                             << " with value: "  << gateNewOutput << endl;
-                 Add_To_DFrontier(curGate->output, gateNewOutput);
+                 //bug: Add_To_DFrontier(curGate->output, gateNewOutput);
+                 Add_To_DFrontier(curGate->output, U);
             }
 
             // Set the value of the value (useful in 9V)
