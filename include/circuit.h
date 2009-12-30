@@ -119,8 +119,24 @@ class Gate: public Element
 
 
 class Fault{
-    Element *FaultSite;
+    public:
+    Wire *FaultSite;
     bool faultType;     // s-a-0 or s-a-1
+    int level;
+
+    //Constructor
+    Fault(Wire *faultwire,int type)
+    {
+        if ((type != 0) && (type != 1))
+        {
+            cout << "Unknown fault type" << endl;
+            assert(false);
+        }
+        FaultSite = faultwire;
+        faultType = type;
+        level = 0;
+    }
+
 };
 
 
@@ -184,9 +200,7 @@ public:
 
     multimap<int,Element*> Levels;
 
-    Value*  testVector; // Array of values to be assigned to the pri inputs 
-    //list<TestVector*> TestSet; // Final result  of test vectors generated
-    list<Fault*> FaultSet; // Set of faults we need to run ATPG for
+    list<Fault> FaultSet; // Set of faults we need to run ATPG for
     
 
     list<WireValuePair> DFrontier;
@@ -227,6 +241,7 @@ public:
    // bool Imply_And_Check();
     void Init_Debug();
     bool Simulate_Good();
+    bool ReadFaults();
 
 };
 
@@ -237,6 +252,7 @@ extern Circuit circuit;
 bool isNotKnown(Value);
 Value Do_Xor(Value val1, Value val2);
 int Translate_Value_To_Int(Value value);
+
 
 #include "evaluate.h"
 #endif /* ifndef CIRCUIT_H */

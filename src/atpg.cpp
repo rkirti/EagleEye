@@ -8,26 +8,16 @@ ofstream ATPG_DFILE;
 
 
 
-bool ATPG::Do_ATPG(string name, Value faultval)
+bool ATPG::Do_ATPG(Wire *faultwire, Value faultval)
 {
     bool result;
-    string faultWireName;
     Implication* newImply;
 
-    ATPG_DFILE << "ATPG called for faulty wire " <<  name << endl;
+    ATPG_DFILE << "ATPG called for faulty wire " <<  faultwire->id << endl;
     ATPG_DFILE << "Faulty value of the wire is " <<  faultval << endl;
    
-    map<string,Wire*>::iterator it = circuit.Netlist.find(name);
-    
-    if ( it == circuit.Netlist.end())
-    {
-
-        ATPG_DFILE << "Given wire " <<  name << " not found " << endl;
-        cout << "Wire not found" << endl; 
-        exit(0);
-    }
-    
-    (circuit.faultWire) = (it->second); 
+    // set the fault wire
+    (circuit.faultWire) = faultwire; 
     
 
 
@@ -53,7 +43,7 @@ bool ATPG::Do_ATPG(string name, Value faultval)
 
 
     // Display results
-    ATPG_DFILE << "Returning from D Algo for wire "  <<  name << " with result " << result << endl;
+    ATPG_DFILE << "Returning from D Algo for wire "  <<  faultwire->id << " with result " << result << endl;
     circuit.Print_All_Wires();
     CircuitGraphPrint();
     
@@ -667,7 +657,7 @@ DFrontierWork:
             {
                 // Pushing backward impli
                 Implication* newImply= new Implication(*inputIter,(Value)(i*0xf),false); /*bool false = 0 = backward*/ // remember to push 0 or 15
-                ATPG_DFILE << "Adding backward implication: " << (*inputIter)->id << " value "<< i*15 << endl; 
+                ATPG_DFILE << "Adding backward implication: " << (*inputIter)->id << " value "<< i*0xf << endl; 
                 (ImpliQueue).push(newImply);
 
                 // Pushing forward impli

@@ -22,37 +22,31 @@ int main(int argc,char **argv)
     }
 
 
-	/*
-	 * Call the lexer now !
-	 */
+    /*
+     * Call the lexer now !
+     */
 
-	if( !lexer(argc,argv) )
-	{
-		cout << ":(" << endl;
-	    exit(0);
-	}
+    if( !lexer(argc,argv) )
+    {
+        cout << ":(" << endl;
+        exit(0);
+    }
 
     circuit.Init_Debug();
+    circuit.Levelize();
+    circuit.ResolveBranches();
+    circuit.ReadFaults(); 
 
-	circuit.Levelize();
-	circuit.ResolveBranches();
-	
-
-    circuit.Print_All_Wires();
-    
-    
-    
-    //Try to run ATPG for each wire in the ckt
-    map<string,Wire *>::iterator it = circuit.Netlist.begin();
-    for (; it != circuit.Netlist.end(); it++)
+    // Run ATPG on the fault set
+    list<Fault>::iterator it = circuit.FaultSet.begin();
+    for (; it != circuit.FaultSet.end(); it++)
     {
         circuit.Clear_Wire_Values();	
         while (!ImpliQueue.empty())
             ImpliQueue.pop();
         Logs.clear();
-    	bool result = curTest.Do_ATPG(it->second->id,DBAR);
-        cout << "Ran D algo for wire " << it->second->id << " and the result is " << result << endl;
-
+    	bool result = curTest.Do_ATPG(it->FaultSite,(it->faultType == 0) ? D : DBAR);
+        cout << "Ran D algo for wire " << it->FaultSite->id << " for the fault s-a-" << it->faultType <<  " and the result is " << result << endl;
     }
 
 

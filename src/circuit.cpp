@@ -5,6 +5,7 @@ using namespace std;
 
 
 ofstream CIRCUIT_DFILE;
+ifstream faultsFile;
 extern ofstream EVALUATE_DFILE;
 extern ofstream ATPG_DFILE;
 extern ofstream MAIN_DFILE;
@@ -605,6 +606,7 @@ void Circuit::Init_Debug()
     EVALUATE_DFILE.open("debug/eval.debug",ios::out);   
     ATPG_DFILE.open("debug/atpg.debug",ios::out);   
     MAIN_DFILE.open("debug/main.debug",ios::out);   
+    faultsFile.open("faults.txt");
 }
 
 
@@ -620,7 +622,40 @@ void Circuit::Clear_Wire_Values()
     }
 }
 
+bool Circuit::ReadFaults()
+{
+    // Read faults from the faults.txt file
+    if (!faultsFile.good())
+    {
+        cout << "Couldn't open the file faults.txt" << endl;
+        assert (false);
+    }
 
+    char token[2][100];
+    bool start=0,flip=0;
+
+    while (faultsFile >> token[flip])
+    {
+        if ( flip && start )
+        {
+            map<string,Wire *>::iterator iter = Netlist.find(token[0]);
+            if (iter == Netlist.end())
+            {
+                cout << "Unknown wire in the faults.txt file, wire name: " << token[0] << endl;
+                assert(false);
+            }
+
+            Fault readFault(iter->second, atoi(token[1]));
+            FaultSet.push_back(readFault);
+        }
+
+        if (!start)
+            start = true;
+        flip = !flip;
+    }
+
+    return true;
+}
 
 
 

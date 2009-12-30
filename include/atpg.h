@@ -16,7 +16,7 @@ class ATPG{
 friend class Circuit;
 
 public:
-    bool Do_ATPG(string name, Value faultval);
+    bool Do_ATPG(Wire *faultwire, Value faultval);
     bool D_Algo();
 
 
