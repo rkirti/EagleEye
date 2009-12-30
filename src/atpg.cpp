@@ -641,8 +641,54 @@ DFrontierWork:
         /*Selecting a gate from the DFrontier*/
         Gate* curGate=dynamic_cast<Gate*>(checkIter->iwire->input);
         Value cval = ControlValues[curGate->gtype];
-
         list<Wire*>::iterator inputIter = (curGate->inputs).begin();
+
+        // Handle Xor here
+        if (curGate->gtype == XOR)
+        {
+            ATPG_DFILE << "Handling Xor in D frontier" << endl;
+
+            // Just lazy to handle mutiple input xor...For now, only 2 input xor
+            if ((curGate->inputs).size() != 2)
+                assert(false);
+
+            if ((*inputIter)->value != U)
+                inputIter++;
+
+            if ((*inputIter)->value != U)
+            {
+                ATPG_DFILE << __LINE__ << "  Something wrong ! this gate should not be in D frontier" << endl;
+                goto DoneXor;
+            }
+
+            // We got two bullets and if we can't shoot the balloon, we lose.
+            
+            // First attempt - Imply 0 on the unknown wire and observe
+            // Second attempt - Imply 1 on the unknown wire and observe
+
+            for (int i=0;i<2; i++)
+            {
+                // Pushing backward impli
+                Implication* newImply= new Implication(*inputIter,(Value)(i*0xf),false); /*bool false = 0 = backward*/ // remember to push 0 or 15
+                ATPG_DFILE << "Adding backward implication: " << (*inputIter)->id << " value "<< i << endl; 
+                (ImpliQueue).push(newImply);
+
+                // Pushing forward impli
+                newImply= new Implication(*inputIter,(Value)i,true); /*bool false = 0 = backward*/
+                ATPG_DFILE << "Adding forward implication: " << (*inputIter)->id << " value "<< i << endl;
+                (ImpliQueue).push(newImply);
+
+                // If the D-Drive succeeded through this gate, well and good, return true
+                // Else we have another trial - i e try ONE on the unknown wire 
+                if (D_Algo() == true) return true;
+            }
+
+DoneXor:
+            continue;
+        }
+
+
+
         for (;inputIter != (curGate->inputs).end();inputIter++)
         {
             if ((*inputIter)->value == U)
@@ -691,15 +737,112 @@ JFrontierWork:
        Gate* curGate=dynamic_cast<Gate*>(checkIterator->iwire->input);
        Value cval = ControlValues[curGate->gtype];
         
-      cout<<__FILE__<<__LINE__ << "    " << __LINE__ << "    " ;
-      cout<<__FILE__<<__LINE__ << "    " << "Selected gate: " << curGate->id 
-           << "from the J Frontier" << endl;
-      cout<<__FILE__<<__LINE__ << "    " << "Control value is: " << cval << endl;
-      cout<<__FILE__<<__LINE__ << "    " << endl <<  endl;
+      ATPG_DFILE <<__FILE__<<__LINE__ << "    " << __LINE__ << "    " ;
+      ATPG_DFILE <<__FILE__<<__LINE__ << "    " << "Selected gate: " << curGate->id 
+        << "from the J Frontier" << endl;
+      ATPG_DFILE <<__FILE__<<__LINE__ << "    " << "Control value is: " << cval << endl;
+      ATPG_DFILE <<__FILE__<<__LINE__ << "    " << endl <<  endl;
 
 
       /*Select an input with Value U*/
       list<Wire*>::iterator inputIter = (curGate->inputs).begin();
+
+      // Handle Xor here
+      if (curGate->gtype == XOR)
+      {
+          ATPG_DFILE << "Handling Xor in J frontier" << endl;
+
+          // Just lazy to handle mutiple input xor...For now, only 2 input xor
+          if ((curGate->inputs).size() != 2)
+              assert(false);
+
+          // iterator to the second input wire
+          list<Wire*>::iterator inputIter2 = ++((curGate->inputs).begin());
+
+          // Case I - both the inputs are unknown
+          if  ( ((*inputIter)->value == U) && ((*inputIter2)->value == U) )
+          {
+              // Here we try the two solutions to satisfy the
+              // output value
+
+              Value in1,in2;
+
+              // I hope that the implied value is either 0 or 1 and
+              // not other values.
+              if (checkIterator->value == ONE)
+              {
+                  in1 = ONE; in2 = ZERO;
+              }
+              else 
+                  in1 = in2 = ZERO;
+
+              // trying the two ways
+              for (int i=0;i<2; i++)
+              {
+                  // Pushing backward impli on in1
+                  Implication* newImply= new Implication(*inputIter,in1,false); /*bool false = 0 = backward*/
+                  ATPG_DFILE << "Adding backward implication: " << (*inputIter)->id << " value "<< i << endl; 
+                  (ImpliQueue).push(newImply);
+
+                  // Pushing forward impli on in1
+                  newImply= new Implication(*inputIter,in1,true); /*bool false = 0 = backward*/
+                  ATPG_DFILE << "Adding forward implication: " << (*inputIter)->id << " value "<< i << endl;
+                  (ImpliQueue).push(newImply);
+
+                  // Pushing backward impli on in2
+                  newImply= new Implication(*inputIter2,in2,false); /*bool false = 0 = backward*/
+                  ATPG_DFILE << "Adding backward implication: " << (*inputIter2)->id << " value "<< i << endl; 
+                  (ImpliQueue).push(newImply);
+
+                  // Pushing forward impli on in2
+                  newImply= new Implication(*inputIter2,in2,true); /*bool false = 0 = backward*/
+                  ATPG_DFILE << "Adding forward implication: " << (*inputIter2)->id << " value "<< i << endl;
+                  (ImpliQueue).push(newImply);
+
+                  // If the D-Drive succeeded through this gate, well and good, return true
+                  // Else we have another trial - i e try ONE on the unknown wire 
+                  if (D_Algo() == true) return true;
+
+                  // Compliment the original values
+                  in1 =(Value) ((~(int)in1)&0xf);
+                  in2 =(Value) ((~(int)in2)&0xf);
+              }
+          }
+          // Case II - Only one wire is unknown
+          else 
+          {
+              // Here inputIter should point to the first wire and inputIter2 to second
+              // Make sure iter2 points to the wire with known value and iter to unknown
+              if ((*inputIter2)->value == U)
+              {
+                  inputIter2--;
+                  inputIter++;
+              }
+              
+              // TODO:put some error checks
+
+#define       V_XOR(x,y)     (Value)((((int)(x) & (~(int)(y))) | ( (~(int)(x)) & (int)(y)))&0xf)
+
+              Value val = V_XOR( checkIterator->value, (*inputIter2)->value);
+
+              // Pushing backward impli
+              Implication* newImply= new Implication(*inputIter,val,false); /*bool false = 0 = backward*/
+              ATPG_DFILE << "Adding backward implication: " << (*inputIter)->id << " value "<< val << endl; 
+              (ImpliQueue).push(newImply);
+
+              // Pushing forward impli
+              newImply= new Implication(*inputIter,val,true); /*bool false = 0 = backward*/
+              ATPG_DFILE << "Adding forward implication: " << (*inputIter)->id << " value "<< val << endl;
+              (ImpliQueue).push(newImply);
+
+              // If the D-Drive succeeded through this gate, well and good, return true
+              // Else fail 
+              if (D_Algo() == true) return true;
+          }
+
+          return false;
+      }
+
       for (;inputIter != (curGate->inputs).end();inputIter++)
       {
           if (Compatible((*inputIter)->value,cval))
@@ -1063,10 +1206,81 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
             ImpliQueue.pop();
             return true;
         }
-        else 
+	else if (curGate->gtype == XOR)
+        {
+            ATPG_DFILE << __FILE__ << __LINE__ << "Handling xor :)" << endl;
 
+            // Just lazy to handle mutiple input xor...For now, only 2 input xor
+            if ((curGate->inputs).size() != 2)
+                assert(false);
+
+            // iterators to the two wires
+            list<Wire*>::iterator inputIter, inputIter2 = (curGate->inputs).begin();
+            inputIter = inputIter2++;
+
+            // first reflect the impli on the wire
+            if (curWire != circuit.faultWire)
+            {
+                if ( !Compatible(curWire->value, curImplication->value) )
+                    return false;
+                Change_Value_And_Update_Log(curImplication);
+            }
+            
+            // Case I - both the inputs are unknown. Then add the gate to J frontier
+            if  ( ((*inputIter)->value == U) && ((*inputIter2)->value == U) )
+            {
+                Add_To_JFrontier(curWire, curImplication->value);
+                ImpliQueue.pop();
+                return true;
+            }
+            // Case II - when both the values are known, then check for consistency
+            // and return t/f accordingly
+            else if  ( ((*inputIter)->value != U) && ((*inputIter2)->value != U) )
+            {
+                // if the gate evaluates to different value than the implied one,
+                // report error
+                if ( !Compatible(curGate->Evaluate(), curImplication->value) )
+                    return false;
+
+                // else pop the impli and return true
+                ImpliQueue.pop();
+                return true;
+            }
+            // Case III - when one of the values is not known
+            // Then add new implications to propagate backward
+            else 
+            {
+                // Here inputIter should point to the first wire and inputIter2 to second
+                // Make sure iter2 points to the wire with known value and iter to unknown
+                if ((*inputIter2)->value == U)
+                {
+                    inputIter2--;
+                    inputIter++;
+                }
+
+
+#define         V_XOR(x,y)     (Value)((((int)(x) & (~(int)(y))) | ( (~(int)(x)) & (int)(y)))&0xf)
+
+                Value val = V_XOR( curImplication->value, (*inputIter2)->value);
+
+                // pop off the current impli and push new ones
+                (ImpliQueue).pop();
+
+                // Pushing backward impli
+                Implication* newImply= new Implication(*inputIter,val,false); /*bool false = 0 = backward*/
+                ATPG_DFILE << "Adding backward implication: " << (*inputIter)->id << " value "<< val << endl; 
+                (ImpliQueue).push(newImply);
+
+                // Pushing forward impli
+                newImply= new Implication(*inputIter,val,true); /*bool false = 0 = backward*/
+                ATPG_DFILE << "Adding forward implication: " << (*inputIter)->id << " value "<< val << endl;
+                (ImpliQueue).push(newImply);
+                return true;
+            }
+
+        }
+        else 
         { 
-            // TODO: Handle XOR
             cout << "Gate type is :" << curGate->gtype << endl;
             cout << "Value implied is " << impliedValue << endl;
             cout<<__FILE__<<__LINE__ << "    " <<"Something wrong"<< endl;
