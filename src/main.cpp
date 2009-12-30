@@ -42,19 +42,21 @@ int main(int argc,char **argv)
     
     
     
-    //Try to run ATPG for each wire in the ckt
-    map<string,Wire *>::iterator it = circuit.Netlist.begin();
-    for (; it != circuit.Netlist.end(); it++)
-    {
-        circuit.Clear_Wire_Values();	
-        while (!ImpliQueue.empty())
-            ImpliQueue.pop();
-        Logs.clear();
-    	curTest.Do_ATPG(it->second->id,DBAR);	
-        MAIN_DFILE << "Ran algo for wire" << it->second->id << endl;
-    }
+//    //Try to run ATPG for each wire in the ckt
+//    map<string,Wire *>::iterator it = circuit.Netlist.begin();
+//    for (; it != circuit.Netlist.end(); it++)
+//    {
+//        circuit.Clear_Wire_Values();	
+//        while (!ImpliQueue.empty())
+//            ImpliQueue.pop();
+//        Logs.clear();
+//    	curTest.Do_ATPG(it->second->id,DBAR);	
+//        MAIN_DFILE << "Ran algo for wire" << it->second->id << endl;
+//    }
 
 
+    map<string,Wire *>::iterator it = circuit.Netlist.find("N203");
+  	curTest.Do_ATPG(it->second->id,D);	
 
      // circuit.Simulate_Good();
     // cout << "finished evaluating" << endl;
