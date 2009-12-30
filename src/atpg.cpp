@@ -4,10 +4,6 @@
 #include "macros.h"
 #include "dot.h"
 
-static list<Implication*> Logs;
-static queue<Implication*> ImpliQueue;
-
-
 ofstream ATPG_DFILE;
 
 
@@ -311,8 +307,8 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
         if ( curWire != (circuit.faultWire) )
             Change_Value_And_Update_Log(curImplication);
         
-        cout<< "Adding to J Frontier:  " << (*iter)->id << endl;
-        Add_To_JFrontier((*iter),impliedValue);
+        ATPG_DFILE << "Adding to J Frontier:  " << (*iter)->id << endl;
+        Add_To_JFrontier(curWire,impliedValue);
         ImpliQueue.pop();
         return true;
     }

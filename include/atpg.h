@@ -50,6 +50,8 @@ public:
 
 bool Change_Value_And_Update_Log (Implication *);
 
+static list<Implication*> Logs;
+static queue<Implication*> ImpliQueue;
 
 #endif /* ifndef ATPG_H */
 

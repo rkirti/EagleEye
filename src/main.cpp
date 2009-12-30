@@ -43,14 +43,16 @@ int main(int argc,char **argv)
     
     
     //Try to run ATPG for each wire in the ckt
-    
-    map<string,Wire*>::iterator iter=(circuit.Netlist).begin();
-    for(;iter != (circuit.Netlist).end(); iter++)
+    map<string,Wire *>::iterator it = circuit.Netlist.begin();
+    for (; it != circuit.Netlist.end(); it++)
     {
-        curTest.Do_ATPG(iter->second->id,D);	
-        MAIN_DFILE << "Ran algo for wire" << iter->second->id << endl;
+        circuit.Clear_Wire_Values();	
+        while (!ImpliQueue.empty())
+            ImpliQueue.pop();
+        Logs.clear();
+    	curTest.Do_ATPG(it->second->id,DBAR);	
+        MAIN_DFILE << "Ran algo for wire" << it->second->id << endl;
     }
-
 
 
 
