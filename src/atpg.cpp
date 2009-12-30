@@ -667,12 +667,12 @@ DFrontierWork:
             {
                 // Pushing backward impli
                 Implication* newImply= new Implication(*inputIter,(Value)(i*0xf),false); /*bool false = 0 = backward*/ // remember to push 0 or 15
-                ATPG_DFILE << "Adding backward implication: " << (*inputIter)->id << " value "<< i << endl; 
+                ATPG_DFILE << "Adding backward implication: " << (*inputIter)->id << " value "<< i*15 << endl; 
                 (ImpliQueue).push(newImply);
 
                 // Pushing forward impli
-                newImply= new Implication(*inputIter,(Value)i,true); /*bool false = 0 = backward*/
-                ATPG_DFILE << "Adding forward implication: " << (*inputIter)->id << " value "<< i << endl;
+                newImply= new Implication(*inputIter,(Value)(i*0xf),true); /*bool false = 0 = backward*/
+                ATPG_DFILE << "Adding forward implication: " << (*inputIter)->id << " value "<< i*0xf << endl;
                 (ImpliQueue).push(newImply);
 
                 // If the D-Drive succeeded through this gate, well and good, return true
