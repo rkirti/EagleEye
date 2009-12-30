@@ -134,7 +134,7 @@ bool ATPG::Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplicatio
     // we are still talking of the same implication
     // and not popping off something else, since
     // we might have popped in action 2
-    if ((curGate->Evaluate() == impliedValue) && (curWire->id == ImpliQueue.front()->wire->id) )
+    if ((curGate->Evaluate() == impliedValue) &&  (!ImpliQueue.empty()) && (curWire->id == ImpliQueue.front()->wire->id) )
     {
         ATPG_DFILE << "Implied value equals the value of the gate output." << endl;
         ATPG_DFILE << "Gate in question is :" << curGate->id << endl;
@@ -270,7 +270,7 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
     // are c. Thus, no need to go backward.
     // Return true.
     
-    if ((curGate->Evaluate() == impliedValue) && (curWire->id == ImpliQueue.front()->wire->id) )
+    if ((curGate->Evaluate() == impliedValue) &&  (!ImpliQueue.empty()) && (curWire->id == ImpliQueue.front()->wire->id) )
     {
         // if it is the faulty wire, don't set the value
         if (curWire != (circuit.faultWire))
@@ -470,7 +470,7 @@ bool ATPG::Imply_And_Check()
     {
 
         //  Step 1: Get Details of current implication 
-        Implication*  curImplication = (ImpliQueue).front();
+        Implication*  curImplication = ImpliQueue.front();
         Wire* curWire = curImplication->wire;
         Value curValue = curImplication->value;
         ATPG_DFILE <<  "New implication from the queue:  " << (curWire->id) <<  " value:   "<< (curValue) ;
