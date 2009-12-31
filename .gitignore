@@ -11,3 +11,5 @@ tags
 lex.yy.c
 depend.mak
 cscope.out
+iverilog/
+summary
