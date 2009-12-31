@@ -606,7 +606,6 @@ void Circuit::Init_Debug()
     EVALUATE_DFILE.open("debug/eval.debug",ios::out);   
     ATPG_DFILE.open("debug/atpg.debug",ios::out);   
     MAIN_DFILE.open("debug/main.debug",ios::out);   
-    faultsFile.open("faults.txt");
 }
 
 
@@ -624,34 +623,33 @@ void Circuit::Clear_Wire_Values()
 
 bool Circuit::ReadFaults()
 {
+    
+    faultsFile.open("tests/faults.txt");
     // Read faults from the faults.txt file
     if (!faultsFile.good())
     {
-        cout << "Couldn't open the file faults.txt" << endl;
+        cout << "Couldn't open the file tests/faults.txt" << endl;
         assert (false);
     }
+    
+    string wireName;
+    int faultType;
+    map<string,Wire *>::iterator iter;
 
-    char token[2][100];
-    bool start=0,flip=0;
-
-    while (faultsFile >> token[flip])
+    while (faultsFile >> wireName >> faultType)
     {
-        if ( flip && start )
+        
+        cout << "Fault specified: Wire: " << wireName << " FaultValue " << faultType << endl;
+        if ( ((iter = Netlist.find(wireName)) !=  Netlist.end()) &&  (faultType == 0 || faultType == 1))
         {
-            map<string,Wire *>::iterator iter = Netlist.find(token[0]);
-            if (iter == Netlist.end())
-            {
-                cout << "Unknown wire in the faults.txt file, wire name: " << token[0] << endl;
-                assert(false);
-            }
-
-            Fault readFault(iter->second, atoi(token[1]));
+            Fault readFault(iter->second, (faultType==0)?0:1);
             FaultSet.push_back(readFault);
         }
-
-        if (!start)
-            start = true;
-        flip = !flip;
+        else
+        {
+            cout << "Fault specified in tests/faults.txt incorrect - wire not found or faultvalue incorrect" << endl; 
+            exit(-1);
+        }
     }
 
     return true;
