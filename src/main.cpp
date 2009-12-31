@@ -51,6 +51,8 @@ int main(int argc,char **argv)
     circuit.ReadFaults(); 
 
     // Run ATPG on the fault set
+    int detectedFaults=0;
+    int undetectedFaults=0;
     list<Fault>::iterator it = circuit.FaultSet.begin();
     for (; it != circuit.FaultSet.end(); it++)
     {
@@ -59,47 +61,35 @@ int main(int argc,char **argv)
             ImpliQueue.pop();
         Logs.clear();
     	bool result = curTest.Do_ATPG(it->FaultSite,(it->faultType == 0) ? D : DBAR);
-        cout << "Ran D algo for wire " << it->FaultSite->id << " for the fault s-a-" << it->faultType <<  " and the result is " << result << endl;
+        if (result) 
+        {
+            MAIN_DFILE  << "Ran D algo SUCCESSFULLY for wire  " << it->FaultSite->id << " for the fault s-a-" << it->faultType << endl;
+            MAIN_DFILE << "Outputs at which fault is detected" << endl;
+
+            detectedFaults++;
+            // Iterate through list of POs to see if any of them has 
+            // D or DBAR. If so, print them   
+            map<string,Wire*>::iterator iter = (circuit.PriOutputs).begin();
+            for (; iter!=(circuit.PriOutputs).end();iter++)
+            {
+                if (iter->second->value == D ||  iter->second->value == DBAR )
+                    MAIN_DFILE << iter->second->id << "   " <<  iter->second->value
+                        << endl;
+            }
+
+        }
+        else
+        {
+            MAIN_DFILE  << "Ran D algo but failed for wire  " << it->FaultSite->id << " for the fault s-a-" << it->faultType <<  "  and the result is  " << result << endl;
+            MAIN_DFILE << " FAULT NOT DETECTABLE " << endl;
+           undetectedFaults++; 
+        }   
+            MAIN_DFILE << endl << endl;
+
     }
 
-
-//    map<string,Wire *>::iterator it = circuit.Netlist.find("N1_AND2_1");
-//  	curTest.Do_ATPG(it->second->id,D);	
-
-     // circuit.Simulate_Good();
-    // cout << "finished evaluating" << endl;
-
-	/*
-	 * print the circuit, just to test it
-	 */
-
-/*	
-    map<string,Wire*>::iterator iter=(circuit.Netlist).begin();
-	
-	for(;iter != (circuit.Netlist).end(); iter++)
-	{
-		cout << iter->first << "  " << iter->second->wtype  << endl;
-                list<Element*>::iterator iterEle = iter->second->outputs.begin();
-                for(;iterEle != iter->second->outputs.end(); iterEle++)
-                    cout << (*iterEle)->id << "  " ;
-                cout << endl;
-                //cout << iter->second->input->id << "  = input " << endl;
-	}
-    map<string,Gate*>::iterator iter1=(circuit.Gates).begin();
-	
-	for(;iter1 != (circuit.Gates).end(); iter1++)
-	{
-		cout << iter1->first << "  " << iter1->second->gtype << " level="<< iter1->second->level << "  " << endl;
-	}
-*/	
-    
-    
-    
-    
+    MAIN_DFILE << "Total Faults detected :        " << detectedFaults << endl;  
+    MAIN_DFILE << "Total Faults not detected :    " << undetectedFaults << endl;  
     return 0;
 }
-
-
-
-		
 
