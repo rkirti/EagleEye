@@ -5,6 +5,7 @@
 #include "dot.h"
 
 ofstream ATPG_DFILE;
+ofstream faultWriteFile;
 
 
 
@@ -1330,5 +1331,26 @@ bool Change_Value_And_Update_Log (Implication *curImpli)
 	return true;
 }
 
+void ATPG::Generate_Full_FaultSet()
+{
+    faultWriteFile.open("tests/faults.txt",ios::out);
+    if (!faultWriteFile.good())
+    {
+        cout << "Couldn't open the file tests/faults.txt" << endl;
+        exit(-1);
+    }
+    
+    map<string,Wire *>::iterator iter= circuit.Netlist.begin();
+    string DFault =  " 0";
+    string DBarFault  = " 1";
 
+    for (; iter != circuit.Netlist.end(); iter++)
+    {
+        cout << "Adding  "  <<  iter->second->id <<  endl;
+        faultWriteFile << iter->second->id << DFault << endl; 
+        faultWriteFile << iter->second->id << DBarFault << endl; 
+    }
+    faultWriteFile.close();
+    return;
+}
 

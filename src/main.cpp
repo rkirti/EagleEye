@@ -32,9 +32,19 @@ int main(int argc,char **argv)
         exit(0);
     }
 
+    // Open all the files needed for writing debug info
     circuit.Init_Debug();
+    
+    // Levels are needed for evaluation
     circuit.Levelize();
+
+    // Name the branch wires correctly    
     circuit.ResolveBranches();
+
+    // Write both possible faults for each wire in the fault file
+    curTest.Generate_Full_FaultSet();
+    
+    // Read the faults
     circuit.ReadFaults(); 
 
     // Run ATPG on the fault set

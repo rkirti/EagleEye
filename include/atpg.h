@@ -42,7 +42,7 @@ public:
     void Update_PI_For_9V();
 
     void Failure();
-
+    void Generate_Full_FaultSet();
 
     Implication* Find_In_Logs_List(Wire* wire);
 

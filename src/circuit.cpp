@@ -624,12 +624,12 @@ void Circuit::Clear_Wire_Values()
 bool Circuit::ReadFaults()
 {
     
-    faultsFile.open("tests/faults.txt");
+    faultsFile.open("tests/faults.txt",ios::in);
     // Read faults from the faults.txt file
     if (!faultsFile.good())
     {
         cout << "Couldn't open the file tests/faults.txt" << endl;
-        assert (false);
+        exit(-1);
     }
     
     string wireName;
@@ -652,10 +652,8 @@ bool Circuit::ReadFaults()
         }
     }
 
+    faultsFile.close();
     return true;
 }
-
-
-
 
 
