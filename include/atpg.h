@@ -7,7 +7,7 @@
 
 #include "lexer.h"
 #include "circuit.h"
-
+#include <time.h>
 
 
 
@@ -43,6 +43,7 @@ public:
 
     void Failure();
     void Generate_Full_FaultSet();
+    void Generate_Random_Vectors();
 
     Implication* Find_In_Logs_List(Wire* wire);
 

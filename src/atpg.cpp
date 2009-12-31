@@ -6,7 +6,7 @@
 
 ofstream ATPG_DFILE;
 ofstream faultWriteFile;
-
+ofstream randomVectorFile;
 
 
 bool ATPG::Do_ATPG(Wire *faultwire, Value faultval)
@@ -1346,11 +1346,36 @@ void ATPG::Generate_Full_FaultSet()
 
     for (; iter != circuit.Netlist.end(); iter++)
     {
-        cout << "Adding  "  <<  iter->second->id <<  endl;
         faultWriteFile << iter->second->id << DFault << endl; 
         faultWriteFile << iter->second->id << DBarFault << endl; 
     }
     faultWriteFile.close();
     return;
 }
+
+
+
+
+void ATPG::Generate_Random_Vectors()
+{
+    srand(time(NULL));
+    randomVectorFile.open("tests/randvectors.txt",ios::out);
+    if (!randomVectorFile.good())
+    {
+        cout << "Couldn't open the file tests/randvectors.txt" << endl;
+        exit(-1);
+    }
+    
+    map<string,Wire *>::iterator iter= circuit.PriInputs.begin();
+    for (; iter != circuit.PriInputs.end(); iter++)
+    {
+        randomVectorFile << iter->second->id << " " << rand()%2 << endl; 
+    }
+    randomVectorFile.close();
+    return;
+}
+
+
+
+
 

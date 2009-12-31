@@ -41,6 +41,9 @@ int main(int argc,char **argv)
     // Name the branch wires correctly    
     circuit.ResolveBranches();
 
+    // Generate random inputs
+    curTest.Generate_Random_Vectors();    
+    
     // Write both possible faults for each wire in the fault file
     curTest.Generate_Full_FaultSet();
     
