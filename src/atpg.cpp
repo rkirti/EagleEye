@@ -1368,32 +1368,29 @@ void ATPG::Generate_Random_Vectors(int n)
     }
     map<string,Wire *>::iterator iter;
     int j;
-    
+    int randLen = sizeof(int)*8;
+
     // Print the vector for one set of PIs on one line
     for (j=0;j<n;j++)
     {
-        iter= circuit.PriInputs.begin();
-        for (; iter != circuit.PriInputs.end(); iter++)
+        int randNo = rand();
+        int curPos = 0;
+        for (iter = circuit.PriInputs.begin(); iter != circuit.PriInputs.end(); iter++)
         {
+            randomVectorFile << ( (randNo & (1 << curPos)) >> curPos);
             randomVectorFile  << rand()%2 ; 
+            curPos++;
+            if (curPos == randLen)
+                curPos = 0;
         }
         randomVectorFile << endl;
     }
     
-    // UGLY UGLY HACK -  please replace
-    // Use the unix uniq utility to remove duplicate vectors
-    // Hacky - name of the random vector file  is hardcoded here.
-    system("sort tests/randvectors.txt --output=tests/randvectors.txt");
-    // Uniq cant do its job in place - so we need a temp file
-    system("uniq tests/randvectors.txt tests/randvectors.txt~");
-    system("mv tests/randvectors.txt~ tests/randvectors.txt");
-
-
     randomVectorFile.close();
     return;
 }
 
-
+/*
 void ATPG::Random_Vector_Test()
 {
     randVectorFile.open("tests/randvectors.txt",ios::in);   
@@ -1415,5 +1412,5 @@ void ATPG::Random_Vector_Test()
 
 
 }
-
+*/
 
