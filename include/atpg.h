@@ -54,6 +54,17 @@ public:
 
 };
 
+class RandomVectorTest
+{
+    public:
+    RandomVectorTest();
+    ~RandomVectorTest();
+    void PerformTest();
+    void GenerateAndSetRVector();
+    void GenerateFullFaultSet();
+};
+
+
 bool Change_Value_And_Update_Log (Implication *);
 
 static list<Implication*> Logs;

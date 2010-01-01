@@ -7,7 +7,6 @@
 ofstream ATPG_DFILE;
 ofstream faultWriteFile;
 ofstream randomVectorFile;
-ifstream randVectorFile;
 
 bool ATPG::Do_ATPG(Wire *faultwire, Value faultval)
 {
@@ -1331,7 +1330,7 @@ bool Change_Value_And_Update_Log (Implication *curImpli)
 	return true;
 }
 
-void ATPG::Generate_Full_FaultSet()
+RandomVectorTest::RandomVectorTest()
 {
     faultWriteFile.open("tests/faults.txt",ios::out);
     if (!faultWriteFile.good())
@@ -1339,6 +1338,27 @@ void ATPG::Generate_Full_FaultSet()
         cout << "Couldn't open the file tests/faults.txt" << endl;
         exit(-1);
     }
+
+    // open the rand vectors file for Generate and set random vectors functions to use
+    randomVectorFile.open("tests/randvectors.txt",ios::out);
+    if (!randomVectorFile.good())
+    {
+        cout << "Couldn't open the file tests/randvectors.txt" << endl;
+        exit(-1);
+    }
+
+    // set the random seed for random vector generation
+    srand(time(NULL));
+}
+
+RandomVectorTest::~RandomVectorTest()
+{
+    faultWriteFile.close();
+    randomVectorFile.close();
+}
+
+void RandomVectorTest::GenerateFullFaultSet()
+{
     
     map<string,Wire *>::iterator iter= circuit.Netlist.begin();
     string DFault =  " 0";
@@ -1349,22 +1369,14 @@ void ATPG::Generate_Full_FaultSet()
         faultWriteFile << iter->second->id << DFault << endl; 
         faultWriteFile << iter->second->id << DBarFault << endl; 
     }
-    faultWriteFile.close();
     return;
 }
 
 
 
 
-void ATPG::Generate_AndSet_Random_Vector()
+void RandomVectorTest::GenerateAndSetRVector()
 {
-    srand(time(NULL));
-    randomVectorFile.open("tests/randvectors.txt",ios::out);
-    if (!randomVectorFile.good())
-    {
-        cout << "Couldn't open the file tests/randvectors.txt" << endl;
-        exit(-1);
-    }
     map<string,Wire *>::iterator iter;
     int randLen = sizeof(int)*8;
     int randNo = rand();
@@ -1380,18 +1392,17 @@ void ATPG::Generate_AndSet_Random_Vector()
     }
     randomVectorFile << endl;
 
-    randomVectorFile.close();
     return;
 }
 
-void ATPG::Random_Vector_Test()
+void RandomVectorTest::PerformTest()
 {
     int no_times = 1;
-
+    
     cout << "The size of the fault set is " << (circuit.FaultSet).size() << endl;
     while (no_times--)  // need to change this to x% coverage && time limit
     {
-        Generate_AndSet_Random_Vector();
+        GenerateAndSetRVector();
         Value FaultWireOrigVal = U;
 
         vector<Value> faultFreeOutput,faultyOutput;

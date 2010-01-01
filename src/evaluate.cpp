@@ -87,7 +87,7 @@ Value Not(list<Wire*> inputs)
    assert(inputs.size() == 1);
    iter=inputs.begin();
     output = (Value) ((*iter)->value != U)?(Value)(~((*iter)->value)&0xf):U;
-   cout << __LINE__ << " output from not gate = " << output << endl;
+   //cout << __LINE__ << " output from not gate = " << output << endl;
     
    return output;
 }

@@ -14,7 +14,6 @@ ofstream MAIN_DFILE;
 int main(int argc,char **argv)
 {
 
-    ATPG curTest;
 
     if (argc != 2)
     {
@@ -40,11 +39,11 @@ int main(int argc,char **argv)
     // Name the branch wires correctly    
     circuit.ResolveBranches();
 
-    // Generate random inputs
-    //Deprecated:curTest.Generate_Random_Vectors(32);    
-    
+    // RandomVectorTest object to handle random vector tests
+    RandomVectorTest rTest;
+
     // Write both possible faults for each wire in the fault file
-    curTest.Generate_Full_FaultSet();
+    rTest.GenerateFullFaultSet();
     
     // Read the faults
     circuit.ReadFaults(); 
@@ -52,8 +51,11 @@ int main(int argc,char **argv)
     // Fault Set generated, written to a file and read into the FaultSet
     // strcuture. Random vectors also available in a file.
     // Now testing.
-    curTest.Random_Vector_Test(); 
+    rTest.PerformTest(); 
  
+    // ATPG object to handle atpg algorithm
+    // ATPG atpgTest; - currently putting peace :P
+
     return 0;
 }
 
