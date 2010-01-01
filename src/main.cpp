@@ -51,10 +51,51 @@ int main(int argc,char **argv)
     // Fault Set generated, written to a file and read into the FaultSet
     // strcuture. Random vectors also available in a file.
     // Now testing.
-    rTest.PerformTest(); 
+    // rTest.PerformTest(); @kirti: remove this comment if you want to run random test
  
     // ATPG object to handle atpg algorithm
-    // ATPG atpgTest; - currently putting peace :P
+    ATPG atpgTest;
+
+    // Run ATPG on the fault set
+    int detectedFaults=0;
+    int undetectedFaults=0;
+    list<Fault>::iterator it = circuit.FaultSet.begin();
+    for (; it != circuit.FaultSet.end(); it++)
+    {
+        circuit.Clear_Wire_Values();	
+        while (!ImpliQueue.empty())
+            ImpliQueue.pop();
+        Logs.clear();
+    	bool result = atpgTest.Do_ATPG(it->FaultSite,(it->faultType == 0) ? D : DBAR);
+        if (result) 
+        {
+            MAIN_DFILE  << "Ran D algo SUCCESSFULLY for wire  " << it->FaultSite->id << " for the fault s-a-" << it->faultType << endl;
+            MAIN_DFILE << "Outputs at which fault is detected" << endl;
+
+            detectedFaults++;
+            // Iterate through list of POs to see if any of them has 
+            // D or DBAR. If so, print them   
+            map<string,Wire*>::iterator iter = (circuit.PriOutputs).begin();
+            for (; iter!=(circuit.PriOutputs).end();iter++)
+            {
+                if (iter->second->value == D ||  iter->second->value == DBAR )
+                    MAIN_DFILE << iter->second->id << "   " <<  iter->second->value
+                        << endl;
+            }
+
+        }
+        else
+        {
+            MAIN_DFILE  << "Ran D algo but failed for wire  " << it->FaultSite->id << " for the fault s-a-" << it->faultType <<  "  and the result is  " << result << endl;
+            MAIN_DFILE << " FAULT NOT DETECTABLE " << endl;
+           undetectedFaults++; 
+        }   
+            MAIN_DFILE << endl << endl;
+
+    }
+
+    MAIN_DFILE << "Total Faults detected :        " << detectedFaults << endl;  
+    MAIN_DFILE << "Total Faults not detected :    " << undetectedFaults << endl;  
 
     return 0;
 }
