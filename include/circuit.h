@@ -16,6 +16,7 @@
 #include <cstdlib>
 #include <sstream>
 #include <fstream>
+#include <vector>
 
 
 using namespace std;
@@ -233,12 +234,12 @@ public:
     string Check_Name_Present(string givenname);
     string intToString(int inInt);
 
- //   bool D_Algo();
     bool Evaluate();
+    vector<Value> CaptureOutput();
     bool Wire_Not_Derived(Wire* wire);
     void Print_All_Wires();
     void Clear_Wire_Values();
-   // bool Imply_And_Check();
+    void Clear_Internal_Wire_Values();
     void Init_Debug();
     bool Simulate_Good();
     bool ReadFaults();

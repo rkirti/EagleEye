@@ -7,6 +7,7 @@
 
 #include "lexer.h"
 #include "circuit.h"
+#include <vector>
 #include <time.h>
 
 
@@ -44,7 +45,7 @@ public:
     void Failure();
     void Generate_Full_FaultSet();
     // N is the number of random vectors to generate
-    void Generate_Random_Vectors(int n);
+    void Generate_AndSet_Random_Vector();
     void Random_Vector_Test();
 
 

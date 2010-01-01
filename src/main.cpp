@@ -41,7 +41,7 @@ int main(int argc,char **argv)
     circuit.ResolveBranches();
 
     // Generate random inputs
-    curTest.Generate_Random_Vectors(25);    
+    //Deprecated:curTest.Generate_Random_Vectors(32);    
     
     // Write both possible faults for each wire in the fault file
     curTest.Generate_Full_FaultSet();
@@ -52,7 +52,7 @@ int main(int argc,char **argv)
     // Fault Set generated, written to a file and read into the FaultSet
     // strcuture. Random vectors also available in a file.
     // Now testing.
-    //curTest.Random_Vector_Test(); 
+    curTest.Random_Vector_Test(); 
  
     return 0;
 }

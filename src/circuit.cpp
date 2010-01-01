@@ -251,7 +251,10 @@ bool Circuit::Evaluate()
                 Value curValue = curGate->Evaluate();
                 Wire* outputWire = curGate->output;
                 CIRCUIT_DFILE << "Setting value of wire " << outputWire->id << " to " << (int)curValue << endl; 
-                outputWire->value = curValue;
+                // if the value of the wire is already set, don't set it again. (might be becuase it is faulty)
+                if (outputWire->value == U)
+                    outputWire->value = curValue;
+
                 if  ((outputWire->outputs).size() > 1) 
                 {
                     list<Element*>::iterator iter = (outputWire->outputs).begin();
@@ -262,11 +265,13 @@ bool Circuit::Evaluate()
                      * */
                     for (;iter != (outputWire->outputs).end(); iter++)
                     {
-                        cout << "output: " << (*iter)->id << endl;
+                        //cout << "output: " << (*iter)->id << endl;
                         Wire* check = (dynamic_cast<Wire*>(*iter));
                         assert(check);
                         CIRCUIT_DFILE << "Setting value of branch " <<  check->id <<   " of wire " << outputWire->id << " to "  << (int) curValue << endl;
-                        check->value = curValue;
+                        // if the value of the wire is already set, don't set it again. (might be becuase it is faulty)
+                        if (check->value == U)
+                            check->value = curValue;
 
                     }
 
@@ -609,6 +614,9 @@ void Circuit::Init_Debug()
 }
 
 
+/*
+ * Clear all wire values to U
+ */
 void Circuit::Clear_Wire_Values()
 {
 
@@ -618,6 +626,22 @@ void Circuit::Clear_Wire_Values()
     for (;iter != (circuit.Netlist).end(); iter++)
     {   
         (iter->second)->value = U;
+    }
+}
+
+/*
+ * Clear all internal wire values(all wires except PIs) to U
+ */
+void Circuit::Clear_Internal_Wire_Values()
+{
+
+    // Print out the netlist
+    // Clear the values of all the wires. Set the value to U
+    map<string,Wire*> ::iterator iter =  (circuit.Netlist).begin();
+    for (;iter != (circuit.Netlist).end(); iter++)
+    {   
+        if ( (iter->second)->wtype != PI)
+            (iter->second)->value = U;
     }
 }
 
@@ -654,6 +678,15 @@ bool Circuit::ReadFaults()
 
     faultsFile.close();
     return true;
+}
+
+vector<Value> Circuit::CaptureOutput()
+{
+    vector<Value> output;
+    map<string,Wire *>::iterator iter = PriOutputs.begin();
+    for (;iter != PriOutputs.end(); iter++)
+        output.push_back((iter->second)->value);
+    return output;
 }
 
 

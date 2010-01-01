@@ -1356,9 +1356,8 @@ void ATPG::Generate_Full_FaultSet()
 
 
 
-void ATPG::Generate_Random_Vectors(int n)
+void ATPG::Generate_AndSet_Random_Vector()
 {
-    assert (n>0);
     srand(time(NULL));
     randomVectorFile.open("tests/randvectors.txt",ios::out);
     if (!randomVectorFile.good())
@@ -1367,49 +1366,63 @@ void ATPG::Generate_Random_Vectors(int n)
         exit(-1);
     }
     map<string,Wire *>::iterator iter;
-    int j;
     int randLen = sizeof(int)*8;
-
-    // Print the vector for one set of PIs on one line
-    for (j=0;j<n;j++)
+    int randNo = rand();
+    int curPos = 0;
+    for (iter = circuit.PriInputs.begin(); iter != circuit.PriInputs.end(); iter++)
     {
-        int randNo = rand();
-        int curPos = 0;
-        for (iter = circuit.PriInputs.begin(); iter != circuit.PriInputs.end(); iter++)
-        {
-            randomVectorFile << ( (randNo & (1 << curPos)) >> curPos);
-            curPos++;
-            if (curPos == randLen)
-                curPos = 0;
-        }
-        randomVectorFile << endl;
+        bool bit = ( (randNo & (1 << curPos)) >> curPos);
+        randomVectorFile << bit;
+        (iter->second)->value = (Value)(bit*0xf);
+        curPos++;
+        if (curPos == randLen)
+            curPos = 0;
     }
-    
+    randomVectorFile << endl;
+
     randomVectorFile.close();
     return;
 }
 
-/*
 void ATPG::Random_Vector_Test()
 {
-    randVectorFile.open("tests/randvectors.txt",ios::in);   
-    string curVector;
-    Fault curFault;
-    int vectorLen = circuit.PriInputs.length();
-    // While we have another test vector - try it out
-    // for all the faults in the fault-set.
-    while (getline(randomVectorFile,curVector) && (curVector.length == vectorLen))
-    {
-        for (curFault= circuit.FaultSet.begin(); curFault != circuit.FaultSet.end(); curFault++)
-        {
-            //Call a function to see if curVector detects curFault 
-            // If yes, remove curFault from the list. (PROBLEM!!! - iterator
-            // gets messed ??)
+    int no_times = 1;
 
+    cout << "The size of the fault set is " << (circuit.FaultSet).size() << endl;
+    while (no_times--)  // need to change this to x% coverage && time limit
+    {
+        Generate_AndSet_Random_Vector();
+        Value FaultWireOrigVal = U;
+
+        vector<Value> faultFreeOutput,faultyOutput;
+
+        // Evaluate the circuit without faults and store the bitmap;
+        circuit.Evaluate();
+        // Capture the fault free output
+        faultFreeOutput = circuit.CaptureOutput();
+
+        // Now insert each fault and test if it is detected or not
+        list<Fault>::iterator iter = (circuit.FaultSet).begin();
+        while (iter != (circuit.FaultSet).end())
+        {
+            circuit.Clear_Internal_Wire_Values();
+            FaultWireOrigVal = iter->FaultSite->value;
+            iter->FaultSite->value = (iter->faultType == 0)?ZERO:ONE;
+            circuit.Evaluate();
+            faultyOutput.clear();
+            faultyOutput = circuit.CaptureOutput();
+            iter->FaultSite->value = FaultWireOrigVal;
+
+            if (faultyOutput != faultFreeOutput)
+            {
+                iter = (circuit.FaultSet).erase(iter);
+                continue;
+            }
+            iter++;
         }
     }
 
+    cout << "The size of the fault set is " << (circuit.FaultSet).size() << endl;
 
 }
-*/
 
