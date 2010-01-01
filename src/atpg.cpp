@@ -7,7 +7,7 @@
 ofstream ATPG_DFILE;
 ofstream faultWriteFile;
 ofstream randomVectorFile;
-
+ifstream randVectorFile;
 
 bool ATPG::Do_ATPG(Wire *faultwire, Value faultval)
 {
@@ -1394,6 +1394,26 @@ void ATPG::Generate_Random_Vectors(int n)
 }
 
 
+void ATPG::Random_Vector_Test()
+{
+    randVectorFile.open("tests/randvectors.txt",ios::in);   
+    string curVector;
+    Fault curFault;
+    int vectorLen = circuit.PriInputs.length();
+    // While we have another test vector - try it out
+    // for all the faults in the fault-set.
+    while (getline(randomVectorFile,curVector) && (curVector.length == vectorLen))
+    {
+        for (curFault= circuit.FaultSet.begin(); curFault != circuit.FaultSet.end(); curFault++)
+        {
+            //Call a function to see if curVector detects curFault 
+            // If yes, remove curFault from the list. (PROBLEM!!! - iterator
+            // gets messed ??)
 
+        }
+    }
+
+
+}
 
 

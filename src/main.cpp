@@ -49,7 +49,10 @@ int main(int argc,char **argv)
     // Read the faults
     circuit.ReadFaults(); 
     
-    curTest.Random_Vector_Test(); 
+    // Fault Set generated, written to a file and read into the FaultSet
+    // strcuture. Random vectors also available in a file.
+    // Now testing.
+   curTest.Random_Vector_Test(); 
  
     return 0;
 }

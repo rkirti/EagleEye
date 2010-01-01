@@ -45,6 +45,9 @@ public:
     void Generate_Full_FaultSet();
     // N is the number of random vectors to generate
     void Generate_Random_Vectors(int n);
+    void Random_Vector_Test();
+
+
 
     Implication* Find_In_Logs_List(Wire* wire);
 
