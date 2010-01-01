@@ -1378,7 +1378,6 @@ void ATPG::Generate_Random_Vectors(int n)
         for (iter = circuit.PriInputs.begin(); iter != circuit.PriInputs.end(); iter++)
         {
             randomVectorFile << ( (randNo & (1 << curPos)) >> curPos);
-            randomVectorFile  << rand()%2 ; 
             curPos++;
             if (curPos == randLen)
                 curPos = 0;
