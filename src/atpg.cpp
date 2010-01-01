@@ -1356,8 +1356,9 @@ void ATPG::Generate_Full_FaultSet()
 
 
 
-void ATPG::Generate_Random_Vectors()
+void ATPG::Generate_Random_Vectors(int n)
 {
+    assert (n>0);
     srand(time(NULL));
     randomVectorFile.open("tests/randvectors.txt",ios::out);
     if (!randomVectorFile.good())
@@ -1365,12 +1366,29 @@ void ATPG::Generate_Random_Vectors()
         cout << "Couldn't open the file tests/randvectors.txt" << endl;
         exit(-1);
     }
+    map<string,Wire *>::iterator iter;
+    int j;
     
-    map<string,Wire *>::iterator iter= circuit.PriInputs.begin();
-    for (; iter != circuit.PriInputs.end(); iter++)
+    // Print the vector for one set of PIs on one line
+    for (j=0;j<n;j++)
     {
-        randomVectorFile << iter->second->id << " " << rand()%2 << endl; 
+        iter= circuit.PriInputs.begin();
+        for (; iter != circuit.PriInputs.end(); iter++)
+        {
+            randomVectorFile  << rand()%2 ; 
+        }
+        randomVectorFile << endl;
     }
+    
+    // UGLY UGLY HACK -  please replace
+    // Use the unix uniq utility to remove duplicate vectors
+    // Hacky - name of the random vector file  is hardcoded here.
+    system("sort tests/randvectors.txt --output=tests/randvectors.txt");
+    // Uniq cant do its job in place - so we need a temp file
+    system("uniq tests/randvectors.txt tests/randvectors.txt~");
+    system("mv tests/randvectors.txt~ tests/randvectors.txt");
+
+
     randomVectorFile.close();
     return;
 }

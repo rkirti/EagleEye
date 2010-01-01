@@ -43,7 +43,8 @@ public:
 
     void Failure();
     void Generate_Full_FaultSet();
-    void Generate_Random_Vectors();
+    // N is the number of random vectors to generate
+    void Generate_Random_Vectors(int n);
 
     Implication* Find_In_Logs_List(Wire* wire);
 

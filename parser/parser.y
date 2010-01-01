@@ -242,10 +242,14 @@ int lexer(int argc, char** argv)
   }
     return 1;
 }
-  
+
+
+
 yyerror(s)
 char *s;
 {
 	fprintf(stderr,"%s at lineNum %d %s %d\n",s,lineNum,yytext, YYMAXDEPTH);
+	fprintf(stderr,"Exiting");
+    exit(0);
 }
 
