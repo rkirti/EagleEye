@@ -10,6 +10,7 @@ extern ofstream ATPG_DFILE;
 ofstream MAIN_DFILE;
 
 
+ // Random Vector Testing
 int main(int argc,char **argv)
 {
 
@@ -22,9 +23,54 @@ int main(int argc,char **argv)
     }
 
 
-    /*
-     * Call the lexer now !
-     */
+     // Call the lexer now !
+
+    if( !lexer(argc,argv) )
+    {
+        cout << ":(" << endl;
+        exit(0);
+    }
+
+    // Open all the files needed for writing debug info
+    circuit.Init_Debug();
+    
+    // Levels are needed for evaluation
+    circuit.Levelize();
+
+    // Name the branch wires correctly    
+    circuit.ResolveBranches();
+
+    // Generate random inputs
+    curTest.Generate_Random_Vectors(25);    
+    
+    // Write both possible faults for each wire in the fault file
+    curTest.Generate_Full_FaultSet();
+    
+    // Read the faults
+    circuit.ReadFaults(); 
+    
+    curTest.Random_Vector_Test(); 
+ 
+    return 0;
+}
+
+
+// ATPG Testing
+
+/*
+int main(int argc,char **argv)
+{
+
+    ATPG curTest;
+
+    if (argc != 2)
+    {
+        cout << "Usage: ./bin/atpg <benchmarkfile> " << endl;
+        exit(0);
+    }
+
+
+     // Call the lexer now !
 
     if( !lexer(argc,argv) )
     {
@@ -92,4 +138,4 @@ int main(int argc,char **argv)
     MAIN_DFILE << "Total Faults not detected :    " << undetectedFaults << endl;  
     return 0;
 }
-
+*/
