@@ -635,6 +635,11 @@ void Circuit::Print_All_Wires()
 
 void Circuit::Init_Debug()
 {
+    //CIRCUIT_DFILE.open("/dev/null",ios::out);   
+    //EVALUATE_DFILE.open("/dev/null",ios::out);   
+    //ATPG_DFILE.open("/dev/null",ios::out);   
+    //MAIN_DFILE.open("/dev/null",ios::out);   
+
     CIRCUIT_DFILE.open("debug/ckt.debug",ios::out);   
     EVALUATE_DFILE.open("debug/eval.debug",ios::out);   
     ATPG_DFILE.open("debug/atpg.debug",ios::out);   

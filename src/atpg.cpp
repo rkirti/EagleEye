@@ -531,7 +531,9 @@ void ATPG::Clean_Logs()
 	    // Old value is on the RHS
 	    (*iter)->wire->modified = false;
     }
-    Logs.clear();
+    // Don't remove the logs because they might be used by Jfrontier.
+    // DfrontierWork clears the logs in the start.
+//    Logs.clear();
     return;
 }
 
@@ -543,7 +545,7 @@ void ATPG::Failure()
     list<Implication*>::iterator iter= Logs.begin();
     for (; iter!=Logs.end();iter++)
     {
-        ATPG_DFILE << "Reverting value of wire" << endl; 
+        ATPG_DFILE << "Reverting value of wire" << (*iter)->wire->id << " current val:" << (*iter)->wire->value << " reverting to " << (*iter)->value << endl; 
 	    // Old value is on the RHS
 	    (*iter)->wire->value = (*iter)->value;
 	    // reset the modified flag anyways
@@ -591,7 +593,10 @@ bool ATPG::D_Algo()
     }
 
 DFrontierWork:
-    // Error is not at PO. Algo should execute :(
+    // Error is not at PO. Algo should execute
+    //
+    // We don't need to save logs. Therefore let us clear the logs;
+    Logs.clear();
     
 
     // No means of propagating the error ahead
@@ -711,6 +716,9 @@ DoneXor:
 // from the D frontier. This is the only difference between DFrontierWork and JFrontierWork
 //
 JFrontierWork:
+    list<Implication *>CurLogs;
+    CurLogs = Logs;
+    Logs.clear();
     if (circuit.JFrontier.empty()) return true;
     checkIterator = (circuit.JFrontier).begin();
 
@@ -723,8 +731,6 @@ JFrontierWork:
     //  2. more than input has value x
     //  3. none of the inputs which currently have
     //  known values have value c
-    for (;checkIterator !=(circuit.JFrontier).end();checkIterator++)
-    {
        Gate* curGate=dynamic_cast<Gate*>(checkIterator->iwire->input);
        Value cval = ControlValues[curGate->gtype];
         
@@ -838,7 +844,7 @@ JFrontierWork:
               if (D_Algo() == true) return true;
           }
 
-          return false;
+          goto JFrontierFail;
       }
 
       for (;inputIter != (curGate->inputs).end();inputIter++)
@@ -864,14 +870,16 @@ JFrontierWork:
 
                   newImply= new Implication(*inputIter,(Value)((~cval)&0xf),true); /*bool false = 0 = backward*/
                   (ImpliQueue).push(newImply);
-                  if (D_Algo() == true) return true;
+                  //if (D_Algo() == true) return true;
 
               }
           }         
       }
+JFrontierFail:
+      // before we fail, we should undo the values we set
+      Logs = CurLogs;
+      Failure();
       return false;
-    }
-    return false;
 }
 
 

@@ -59,6 +59,12 @@ int main(int argc,char **argv)
     // Run ATPG on the fault set
     int detectedFaults=0;
     int undetectedFaults=0;
+
+//    Just leave these lines so that they can used to test individual wires easily - kashyap
+//    map<string,Wire *>::iterator iter = circuit.Netlist.find("h");
+//    bool result = atpgTest.Do_ATPG(iter->second, D);
+//    cout << "the grand result is " << result << endl;
+
     list<Fault>::iterator it = circuit.FaultSet.begin();
     for (; it != circuit.FaultSet.end(); it++)
     {
@@ -69,8 +75,8 @@ int main(int argc,char **argv)
     	bool result = atpgTest.Do_ATPG(it->FaultSite,(it->faultType == 0) ? D : DBAR);
         if (result) 
         {
-            MAIN_DFILE  << "Ran D algo SUCCESSFULLY for wire  " << it->FaultSite->id << " for the fault s-a-" << it->faultType << endl;
-            MAIN_DFILE << "Outputs at which fault is detected" << endl;
+            cout  << "Ran D algo SUCCESSFULLY for wire  " << it->FaultSite->id << " for the fault s-a-" << it->faultType << endl;
+            cout << "Outputs at which fault is detected" << endl;
 
             detectedFaults++;
             // Iterate through list of POs to see if any of them has 
@@ -86,16 +92,16 @@ int main(int argc,char **argv)
         }
         else
         {
-            MAIN_DFILE  << "Ran D algo but failed for wire  " << it->FaultSite->id << " for the fault s-a-" << it->faultType <<  "  and the result is  " << result << endl;
-            MAIN_DFILE << " FAULT NOT DETECTABLE " << endl;
+            cout  << "Ran D algo but failed for wire  " << it->FaultSite->id << " for the fault s-a-" << it->faultType <<  "  and the result is  " << result << endl;
+            cout << " FAULT NOT DETECTABLE " << endl;
            undetectedFaults++; 
         }   
             MAIN_DFILE << endl << endl;
 
     }
 
-    MAIN_DFILE << "Total Faults detected :        " << detectedFaults << endl;  
-    MAIN_DFILE << "Total Faults not detected :    " << undetectedFaults << endl;  
+     cout << "Total Faults detected :        " << detectedFaults << endl;  
+     cout << "Total Faults not detected :    " << undetectedFaults << endl;  
 
     return 0;
 }
