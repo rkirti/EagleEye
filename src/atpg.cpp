@@ -411,13 +411,14 @@ bool ATPG::Remove_From_D(Wire *wire)
         {
             iter = circuit.DFrontier.erase(iter);
             result = true;
+            ATPG_DFILE  << "Removed a gate with output wire " <<  wire->id << " from DFrontier." << endl;
+            ATPG_DFILE <<  "DFrontier is now  " << endl; 
+            PRINTDFRONTIER;
             continue;   // we can return from function
         }
         iter ++;
     }
-    ATPG_DFILE  << "Removed a gate with output wire " <<  wire->id << " from DFrontier." << endl;
-    ATPG_DFILE <<  "DFrontier is now  " << endl; 
-    PRINTDFRONTIER;
+    if (!result) ATPG_DFILE << "Not found in DFrontier : gate with output wire " <<  wire->id << " from DFrontier." << endl;
     ATPG_DFILE << endl << endl;
     return result;
 }
@@ -1008,7 +1009,17 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
         if (Remove_From_D(curGate->output))
              ATPG_DFILE << "The gate is indeed in D and has been removed" << curGate->id << endl;
         else 
-             ATPG_DFILE << "The gate is not there in D frontier. report from " << __LINE__ << endl;
+        { 
+            ATPG_DFILE << "The gate is not there in D frontier. report from " << __LINE__ << endl;
+            ATPG_DFILE << "Gate to be removed not present in D Frontier. Possibly a bug. FIX ME" << endl;
+            ATPG_DFILE << "Curgate output is " <<  curGate->output->id  << endl;
+            ATPG_DFILE << "And DFrontier is " << endl;
+            PRINTDFRONTIER;
+            cout << "DFROntier removal bug.FIX ME. I am exiting" << endl;
+
+            exit(0);
+        }   
+                
 
         // The last thing to do is to propagate the impli and
         // before that, popping off the current impli
