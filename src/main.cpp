@@ -187,9 +187,9 @@ int main(int argc,char **argv)
             MAIN_DFILE  << "Ran D algo but failed for wire  " << it->FaultSite->id << " for the fault s-a-" << it->faultType <<  "  and the result is  " << result << endl;
             MAIN_DFILE << " FAULT NOT DETECTABLE " << endl;
             undetectedFaults++;
-            MAIN_DFILE << "DEBUG ME NOW. I am exiting" << endl;
-            cout << "I am " <<  it->FaultSite->id<< " DEBUG ME NOW. I am exiting" << endl;
-            exit(0);
+//            MAIN_DFILE << "DEBUG ME NOW. I am exiting" << endl;
+//            cout << "I am " <<  it->FaultSite->id<< " DEBUG ME NOW. I am exiting" << endl;
+//            exit(0);
 
         }   
             MAIN_DFILE << endl << endl;

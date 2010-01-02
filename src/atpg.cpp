@@ -86,8 +86,9 @@ bool ATPG::Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplicatio
     // compatible with the value to be implied
     // else we need backtracking
 
-    if (!Compatible(curWire->value,impliedValue))
+    if ( (curWire != circuit.faultWire) && !Compatible(curWire->value,impliedValue))
     {
+        ATPG_DFILE << "Implied value " << impliedValue << "  Current value  " << curWire->value << endl; 
         ATPG_DFILE << "Implied value contradicts the current value of the wire." << endl;
         ATPG_DFILE << "Wire in question is :" << curWire->id << endl;
         ATPG_DFILE << "Returning false , need to backtrack" << endl;
@@ -226,8 +227,10 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
     // compatible with the value to be implied
     // else we need backtracking
 
-    if (!Compatible(curWire->value,impliedValue))
+    if ( (curWire != circuit.faultWire) &&   !Compatible(curWire->value,impliedValue))
     {
+
+        ATPG_DFILE << "Implied value " << impliedValue << "  Current value  " << curWire->value << endl; 
         ATPG_DFILE << "Implied value contradicts the current value of the wire." << endl;
         ATPG_DFILE << "Wire in question is :" << curWire->id << endl;
         ATPG_DFILE << "Returning false , need to backtrack" << endl;
@@ -911,8 +914,10 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
 
     // Check if the value of the wire is already set
     // And if it is the right value or not
-    if (!Compatible(curWire->value,impliedValue))
+    if ( (curWire != circuit.faultWire) && !Compatible(curWire->value,impliedValue))
     {
+
+        ATPG_DFILE << "Implied value " << impliedValue << "  Current value  " << curWire->value << endl; 
         ATPG_DFILE << "Implied value contradicts the current value of the wire." << endl;
         ATPG_DFILE << "Wire in question is :" << curWire->id << endl;
         ATPG_DFILE << "Returning false , need to backtrack" << endl;
@@ -1009,16 +1014,7 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
         if (Remove_From_D(curGate->output))
              ATPG_DFILE << "The gate is indeed in D and has been removed" << curGate->id << endl;
         else 
-        { 
             ATPG_DFILE << "The gate is not there in D frontier. report from " << __LINE__ << endl;
-            ATPG_DFILE << "Gate to be removed not present in D Frontier. Possibly a bug. FIX ME" << endl;
-            ATPG_DFILE << "Curgate output is " <<  curGate->output->id  << endl;
-            ATPG_DFILE << "And DFrontier is " << endl;
-            PRINTDFRONTIER;
-            cout << "DFROntier removal bug.FIX ME. I am exiting" << endl;
-
-            exit(0);
-        }   
                 
 
         // The last thing to do is to propagate the impli and
