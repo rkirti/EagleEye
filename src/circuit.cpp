@@ -662,6 +662,8 @@ void Circuit::Clear_Wire_Values()
     }
 }
 
+
+
 /*
  * Clear all internal wire values(all wires except PIs) to U
  */

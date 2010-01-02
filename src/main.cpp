@@ -11,6 +11,7 @@ ofstream MAIN_DFILE;
 
 
  // Random Vector Testing
+/*
 int main(int argc,char **argv)
 {
 
@@ -43,7 +44,7 @@ int main(int argc,char **argv)
     RandomVectorTest rTest;
 
     // Write both possible faults for each wire in the fault file
-    rTest.GenerateFullFaultSet();
+    Generate_Full_FaultSet();
     
     // Read the faults
     circuit.ReadFaults(); 
@@ -105,11 +106,11 @@ int main(int argc,char **argv)
 
     return 0;
 }
-
+*/
 
 // ATPG Testing -- why did you comment ? You can run atpg after random vector test. 
 
-/*
+
 int main(int argc,char **argv)
 {
 
@@ -139,12 +140,9 @@ int main(int argc,char **argv)
     // Name the branch wires correctly    
     circuit.ResolveBranches();
 
-    // Generate random inputs
-    curTest.Generate_Random_Vectors(25);    
-    
     // Write both possible faults for each wire in the fault file
-    curTest.Generate_Full_FaultSet();
-    
+    Generate_Full_FaultSet();
+
     // Read the faults
     circuit.ReadFaults(); 
 
@@ -154,11 +152,19 @@ int main(int argc,char **argv)
     list<Fault>::iterator it = circuit.FaultSet.begin();
     for (; it != circuit.FaultSet.end(); it++)
     {
-        circuit.Clear_Wire_Values();	
+        // Important to clean up stuff from the previous run before we begin
+        // Set all wires to U
+        circuit.Clear_Wire_Values();
+        // No Implications or logs should be there.    
         while (!ImpliQueue.empty())
             ImpliQueue.pop();
         Logs.clear();
-    	bool result = curTest.Do_ATPG(it->FaultSite,(it->faultType == 0) ? D : DBAR);
+    	// Clear all the Frontiers.
+        circuit.DFrontier.clear();
+        circuit.JFrontier.clear();
+        
+        
+        bool result = curTest.Do_ATPG(it->FaultSite,(it->faultType == 0) ? D : DBAR);
         if (result) 
         {
             MAIN_DFILE  << "Ran D algo SUCCESSFULLY for wire  " << it->FaultSite->id << " for the fault s-a-" << it->faultType << endl;
@@ -180,7 +186,11 @@ int main(int argc,char **argv)
         {
             MAIN_DFILE  << "Ran D algo but failed for wire  " << it->FaultSite->id << " for the fault s-a-" << it->faultType <<  "  and the result is  " << result << endl;
             MAIN_DFILE << " FAULT NOT DETECTABLE " << endl;
-           undetectedFaults++; 
+            undetectedFaults++;
+            MAIN_DFILE << "DEBUG ME NOW. I am exiting" << endl;
+            cout << "I am " <<  it->FaultSite->id<< " DEBUG ME NOW. I am exiting" << endl;
+            exit(0);
+
         }   
             MAIN_DFILE << endl << endl;
 
@@ -190,4 +200,3 @@ int main(int argc,char **argv)
     MAIN_DFILE << "Total Faults not detected :    " << undetectedFaults << endl;  
     return 0;
 }
-*/

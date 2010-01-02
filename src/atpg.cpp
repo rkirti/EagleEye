@@ -1340,13 +1340,6 @@ bool Change_Value_And_Update_Log (Implication *curImpli)
 
 RandomVectorTest::RandomVectorTest()
 {
-    faultWriteFile.open("tests/faults.txt",ios::out);
-    if (!faultWriteFile.good())
-    {
-        cout << "Couldn't open the file tests/faults.txt" << endl;
-        exit(-1);
-    }
-
     // open the rand vectors file for Generate and set random vectors functions to use
     randomVectorFile.open("tests/randvectors.txt",ios::out);
     if (!randomVectorFile.good())
@@ -1361,13 +1354,18 @@ RandomVectorTest::RandomVectorTest()
 
 RandomVectorTest::~RandomVectorTest()
 {
-    faultWriteFile.close();
     randomVectorFile.close();
 }
 
-void RandomVectorTest::GenerateFullFaultSet()
+void Generate_Full_FaultSet()
 {
-    
+    faultWriteFile.open("tests/faults.txt",ios::out);
+    if (!faultWriteFile.good())
+    {
+        cout << "Couldn't open the file tests/faults.txt" << endl;
+        exit(-1);
+    }
+
     map<string,Wire *>::iterator iter= circuit.Netlist.begin();
     string DFault =  " 0";
     string DBarFault  = " 1";
@@ -1377,10 +1375,9 @@ void RandomVectorTest::GenerateFullFaultSet()
         faultWriteFile << iter->second->id << DFault << endl; 
         faultWriteFile << iter->second->id << DBarFault << endl; 
     }
+    faultWriteFile.close();
     return;
 }
-
-
 
 
 void RandomVectorTest::GenerateAndSetRVector()

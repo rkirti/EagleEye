@@ -34,7 +34,7 @@ public:
     
     bool Remove_From_D(Wire *wire);
     bool Remove_From_J(Wire *wire);
-
+    
     bool Compatible(Value oldval,Value newval);
     bool  Check_Wire_Value_For_Assignment(Wire* wire,Value val);
     
@@ -43,9 +43,6 @@ public:
     void Update_PI_For_9V();
 
     void Failure();
-    void Generate_Full_FaultSet();
-    // N is the number of random vectors to generate
-    void Generate_AndSet_Random_Vector();
     void Random_Vector_Test();
 
 
@@ -61,8 +58,13 @@ class RandomVectorTest
     ~RandomVectorTest();
     void PerformTest();
     void GenerateAndSetRVector();
-    void GenerateFullFaultSet();
 };
+
+
+// Both ATPG and Random Test need this - 
+// so keeping it out of both classes
+void Generate_Full_FaultSet();
+
 
 
 bool Change_Value_And_Update_Log (Implication *);
