@@ -382,7 +382,7 @@ bool ATPG::Compatible(Value oldval,Value newval)
 
 bool ATPG::Add_To_JFrontier(Wire *wire,Value value)
 {
-    circuit.JFrontier.push_back(WireValuePair(wire,value));
+    circuit.TempJFrontier.push_back(WireValuePair(wire,value));
     ATPG_DFILE  << "Added a gate with output wire " <<  wire->id << " to JFrontier." << endl;
     ATPG_DFILE <<  "JFrontier is now  " << endl; 
     PRINTJFRONTIER;
@@ -393,7 +393,7 @@ bool ATPG::Add_To_JFrontier(Wire *wire,Value value)
 
 bool ATPG::Add_To_DFrontier(Wire *wire,Value value)
 {
-    circuit.DFrontier.push_front(WireValuePair(wire,value));
+    circuit.TempDFrontier.push_front(WireValuePair(wire,value));
     ATPG_DFILE  << "Added a gate with output wire " <<  wire->id << " to DFrontier." << endl;
     ATPG_DFILE <<  "DFrontier is now  " << endl; 
     PRINTDFRONTIER;
@@ -502,11 +502,34 @@ bool ATPG::Imply_And_Check()
 
     //Make_Assignments(); 	// Deprecated
     Clean_Logs(); 	// Clears the log
+    // Merge the temporary frontiers with the global ones.
+    Merge_Frontiers();
+
+
     return true;
 
 fail:
     Failure();
     return false;
+}
+
+
+
+void ATPG::Merge_Frontiers()
+{
+    list<WireValuePair>::iterator iter= circuit.TempJFrontier.begin();
+    for (; iter != circuit.TempJFrontier.end();iter++)
+        circuit.JFrontier.push_front(*iter);
+    for (iter= circuit.TempDFrontier.begin(); iter != circuit.TempDFrontier.end();iter++)
+        circuit.DFrontier.push_front(*iter);
+    ATPG_DFILE << "Merged the temp.frontiers with global ones" << endl;
+
+    circuit.TempJFrontier.clear();
+    circuit.TempDFrontier.clear();
+
+    ATPG_DFILE << "Cleared the temp.frontiers" << endl;
+
+    return;
 }
 
 
@@ -556,9 +579,14 @@ void ATPG::Failure()
 	    (*iter)->wire->modified = false;
     }
     Logs.clear();
+    
     // remove all the implications thought of
     while (!ImpliQueue.empty())
 	    ImpliQueue.pop();
+    circuit.TempJFrontier.clear();
+    circuit.TempDFrontier.clear();
+
+    ATPG_DFILE << "Cleared the temp.frontiers" << endl;
 }
 
 
