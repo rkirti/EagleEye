@@ -206,6 +206,10 @@ public:
 
     list<WireValuePair> DFrontier;
     list<WireValuePair> JFrontier;
+    
+    list<WireValuePair> TempDFrontier;
+    list<WireValuePair> TempJFrontier;
+
 
     // The current fault under consideration
     Wire *faultWire;

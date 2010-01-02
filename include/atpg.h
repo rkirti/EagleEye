@@ -32,6 +32,8 @@ public:
     bool Add_To_JFrontier(Wire *wire,Value value);
     bool Add_To_DFrontier(Wire *wire,Value value);
     
+    void Merge_Frontiers();
+    
     bool Remove_From_D(Wire *wire);
     bool Remove_From_J(Wire *wire);
     
