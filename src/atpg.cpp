@@ -855,7 +855,8 @@ JFrontierWork:
               // Error check 1: if we have d or dbar on any inputs, we cannot justify a full value(0 or 1) on the output of an xor
 #define       ISDORDBAR(X)  ((X == D) || (X == DBAR))
               if (ISDORDBAR((*inputIter)->value) || ISDORDBAR((*inputIter2)->value))
-                  return false;
+                  goto JFrontierFail;
+                  //return false;
 
 #define       V_XOR(x,y)     (Value)((((int)(x) & (~(int)(y))) | ( (~(int)(x)) & (int)(y)))&0xf)
 
@@ -1264,6 +1265,8 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
             if (curWire != circuit.faultWire)
             {
                 if ( !Compatible(curWire->value, curImplication->value) )
+                {
+                    ATPG_DFILE << __LINE__ << "cur value and implied values not compatable" << endl;
                     return false;
                 Change_Value_And_Update_Log(curImplication);
             }
@@ -1282,7 +1285,10 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
                 // if the gate evaluates to different value than the implied one,
                 // report error
                 if ( !Compatible(curGate->Evaluate(), curImplication->value) )
+                {
+                    ATPG_DFILE << "gate evaluates to different value" << endl;
                     return false;
+                }
 
                 // else pop the impli and return true
                 ImpliQueue.pop();
@@ -1305,6 +1311,7 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
                 if (((*inputIter2)->value != ONE) && ((*inputIter2)->value != ZERO))
                 {
                     ImpliQueue.pop();    // not needed
+                    ATPG_DFILE << "D/Dbar on one of the inputs" << endl;
                     return false;
                 }
 
