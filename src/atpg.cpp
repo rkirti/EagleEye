@@ -1300,6 +1300,13 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
                     inputIter++;
                 }
 
+                // if the known input is not 0 or 1 (i.e D or Dbar), then the
+                // backward implication can never be satisfifed.
+                if (((*inputIter2)->value != ONE) && ((*inputIter2)->value != ZERO))
+                {
+                    ImpliQueue.pop();    // not needed
+                    return false;
+                }
 
 #define         V_XOR(x,y)     (Value)((((int)(x) & (~(int)(y))) | ( (~(int)(x)) & (int)(y)))&0xf)
 
