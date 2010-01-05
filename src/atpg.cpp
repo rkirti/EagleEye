@@ -1268,6 +1268,7 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
                 {
                     ATPG_DFILE << __LINE__ << "cur value and implied values not compatable" << endl;
                     return false;
+                }
                 Change_Value_And_Update_Log(curImplication);
             }
             
@@ -1449,7 +1450,7 @@ void RandomVectorTest::GenerateAndSetRVector()
     return;
 }
 
-void RandomVectorTest::PerformTest()
+void RandomVectorTest::PerformTest(int no_of_vectors)
 {
     int no_times = 1;
     
