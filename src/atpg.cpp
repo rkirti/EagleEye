@@ -941,9 +941,35 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
     ATPG_DFILE << "Handling forward implication on wire " << curWire->id << endl;
     assert(curImplication->direction == true);
 
+    // if the an implication comes on a faulty wire, take care of it properly
+    // bad way of dealing ( vvv ) Better way is to change the implication value to the 
+    // appropriate one.
+    if (curWire == circuit.faultWire) 
+    {
+	if (curWire->value != U)
+	{
+	    ATPG_DFILE << __LINE__ << "very interesting...I never thought this will happen" << endl;
+	    ImpliQueue.pop();
+	    switch (impliedValue)
+	    {
+		case ZERO:
+		case DBAR:
+		    return (curWire->value == DBAR)?true:false;
+		    break;
+
+		case ONE:
+		case D:
+		    return (curWire->value == D)?true:false;
+		    break;
+
+		default:
+		    return false;
+	    }
+	}
+    }
     // Check if the value of the wire is already set
     // And if it is the right value or not
-    if ( (curWire != circuit.faultWire) && !Compatible(curWire->value,impliedValue))
+    else if (!Compatible(curWire->value,impliedValue))
     {
 
         ATPG_DFILE << "Implied value " << impliedValue << "  Current value  " << curWire->value << endl; 
@@ -1130,10 +1156,17 @@ bool  ATPG::Handle_Forward_Implication_On_Stem(Implication* curImplication, Wire
 bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWire, Value impliedValue)
 {
 
+    // if it is the faulty, check if the value is already set
+    if (curWire == circuit.faultWire)
+    {
+	if (curWire->value != U)
+	{
+	    ATPG_DFILE << "This is bad....Should never happen !" << endl;
+	    assert(false);
+	}
+    }
     // First check if the curr value is compatable with current
-    if ( (curWire != circuit.faultWire) && 
-            (!Compatible(curWire->value, curImplication->value) 
-            ) )
+    else if (!Compatible(curWire->value, curImplication->value)) 
         return false;
 
 
