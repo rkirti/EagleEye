@@ -49,7 +49,7 @@ int main(int argc,char **argv)
     // Fault Set generated, written to a file and read into the FaultSet
     // strcuture. Random vectors also available in a file.
     // Now testing.
-    rTest.PerformTest(1);  // doesn nothing is no of vectors = 0;
+    rTest.PerformTest(10,1);  // 10% in 1 min
 
     // ATPG object to handle atpg algorithm
     ATPG atpgTest;
@@ -60,7 +60,7 @@ int main(int argc,char **argv)
     //    cout << "the grand result is " << result << endl;
 
     // Run ATPG on the fault set
-    //atpgTest.PerformTest();
+    atpgTest.PerformTest();
     return 0;
 }
 

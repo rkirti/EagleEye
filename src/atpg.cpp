@@ -1,5 +1,6 @@
 #include "circuit.h"
 #include <stdio.h>
+#include <time.h>
 #include "atpg.h"
 #include "macros.h"
 #include "dot.h"
@@ -1636,10 +1637,34 @@ void RandomVectorTest::GenerateAndSetRVector()
     return;
 }
 
-void RandomVectorTest::PerformTest(int no_times)
+/*
+ * coverage - Fault coverage needed from random vector testing.
+ *          - 0 to 50 %
+ * timeLimit - time limit to stop random vector testing
+ *           - 0 to 15 min
+ */
+void RandomVectorTest::PerformTest(int coverage,int timeLimit)
 {
-    cout << "The size of the fault set is " << (circuit.FaultSet).size() << endl;
-    while (no_times--)  // need to change this to x% coverage && time limit
+
+    if ( (coverage < 0) || (coverage > 50) )
+    {
+        cout << "Fault coverage for random vector testing should be in the range 0-50 %" << endl;
+        exit(-1);
+    }
+    if ( (timeLimit < 0) || (timeLimit > 15) )
+    {
+        cout << "Time limit for random vector testing should be in the range 0-15 %" << endl;
+        exit(-1);
+    }
+
+    int totalFaults = (circuit.FaultSet).size();
+    int faultsToDetect = ( totalFaults * coverage ) / 100;
+    int faultsDetected = 0;
+    time_t startTime = time (NULL);
+    time_t endTime = timeLimit * 60;    // tentative end time in seconds
+
+    cout << "The size of the fault set is " << totalFaults << endl;
+    while ((faultsDetected < faultsToDetect) && ((time (NULL) - startTime) < endTime))
     {
         GenerateAndSetRVector();
         Value FaultWireOrigVal = U;
@@ -1653,7 +1678,7 @@ void RandomVectorTest::PerformTest(int no_times)
 
         // Now insert each fault and test if it is detected or not
         list<Fault>::iterator iter = (circuit.FaultSet).begin();
-        while (iter != (circuit.FaultSet).end())
+        while ( (iter != (circuit.FaultSet).end()) && ((time (NULL) - startTime) < endTime) )
         {
             circuit.Clear_Internal_Wire_Values();
             FaultWireOrigVal = iter->FaultSite->value;
@@ -1663,9 +1688,14 @@ void RandomVectorTest::PerformTest(int no_times)
             faultyOutput = circuit.CaptureOutput();
             iter->FaultSite->value = FaultWireOrigVal;
 
+            // fault detected - remove the fault from the fault list 
+            // and increment the detected faults
             if (faultyOutput != faultFreeOutput)
             {
                 iter = (circuit.FaultSet).erase(iter);
+                faultsDetected++;
+                if (faultsDetected >= faultsToDetect)
+                    break;
                 continue;
             }
             iter++;

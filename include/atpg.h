@@ -59,7 +59,7 @@ class RandomVectorTest
     public:
     RandomVectorTest();
     ~RandomVectorTest();
-    void PerformTest(int no_of_vectors);
+    void PerformTest(int coverage,int timeLimit);
     void GenerateAndSetRVector();
 };
 
