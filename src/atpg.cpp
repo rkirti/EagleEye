@@ -52,8 +52,9 @@ bool ATPG::Do_ATPG(Wire *faultwire, Value faultval)
     // Display results
 #ifdef VERBOSE_MODE
     ATPG_DFILE << "Returning from D Algo for wire "  <<  faultwire->id << " with result " << result << endl;
+   // circuit.Print_All_Wires();
 #endif
-    circuit.Print_All_Wires();
+    
     CircuitGraphPrint();
     
    return result;

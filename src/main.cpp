@@ -80,8 +80,8 @@ int main(int argc,char **argv)
         bool result = atpgTest.Do_ATPG(it->FaultSite,(it->faultType == 0) ? D : DBAR);
         if (result) 
         {
-            cout  << "Ran D algo SUCCESSFULLY for wire  " << it->FaultSite->id << " for the fault s-a-" << it->faultType << endl;
-            cout << "Outputs at which fault is detected" << endl;
+            MAIN_DFILE  << "Ran D algo SUCCESSFULLY for wire  " << it->FaultSite->id << " for the fault s-a-" << it->faultType << endl;
+            MAIN_DFILE << "Outputs at which fault is detected" << endl;
 
             detectedFaults++;
             // Iterate through list of POs to see if which of them has 
@@ -93,7 +93,36 @@ int main(int argc,char **argv)
                     MAIN_DFILE << iter->second->id << "   " <<  iter->second->value
                         << endl;
             }
-            // Open the debug file afresh.
+            MAIN_DFILE << "Emitting the test vectors" << endl;
+            for (iter=circuit.PriInputs.begin(); iter!=(circuit.PriInputs).end();iter++)
+            {
+                switch (iter->second->value)
+                {
+
+                    case ZERO:
+                        MAIN_DFILE << "0";
+                        break;
+                    case ONE:
+                        MAIN_DFILE << "1";
+                        break;
+                    case U:
+                        MAIN_DFILE << "U";
+                        break;
+                    case D:
+                        MAIN_DFILE << "D";
+                        break;
+                    case DBAR:
+                        MAIN_DFILE << "DBAR";
+                        break;
+
+                }
+
+                MAIN_DFILE << " ";
+
+           }
+           MAIN_DFILE << endl << endl;
+            
+             // Open the debug file afresh.
              // We dont need debug info for runs that were
              // successful.
              ATPG_DFILE.close();
@@ -104,9 +133,11 @@ int main(int argc,char **argv)
             cout  << "Ran D algo but failed for wire  " << it->FaultSite->id << " for the fault s-a-" << it->faultType <<  "  and the result is  " << result << endl;
             cout << " FAULT NOT DETECTABLE " << endl;
             undetectedFaults++;
-            //            MAIN_DFILE << "DEBUG ME NOW. I am exiting" << endl;
-            //            cout << "I am " <<  it->FaultSite->id<< " DEBUG ME NOW. I am exiting" << endl;
-            //            exit(0);
+            //Prints stats so far before exiting
+            MAIN_DFILE << "Faults detected so far "  <<  detectedFaults << endl;
+            MAIN_DFILE << "DEBUG ME NOW. I am exiting" << endl;
+            cout << "I am " <<  it->FaultSite->id<< " DEBUG ME NOW. I am exiting" << endl;
+            exit(0);
 
         }   
         MAIN_DFILE << endl << endl;
