@@ -84,8 +84,8 @@ int main(int argc,char **argv)
             cout << "Outputs at which fault is detected" << endl;
 
             detectedFaults++;
-            // Iterate through list of POs to see if any of them has 
-            // D or DBAR. If so, print them   
+            // Iterate through list of POs to see if which of them has 
+            // D or DBAR.   
             map<string,Wire*>::iterator iter = (circuit.PriOutputs).begin();
             for (; iter!=(circuit.PriOutputs).end();iter++)
             {
@@ -93,7 +93,11 @@ int main(int argc,char **argv)
                     MAIN_DFILE << iter->second->id << "   " <<  iter->second->value
                         << endl;
             }
-
+            // Open the debug file afresh.
+             // We dont need debug info for runs that were
+             // successful.
+             ATPG_DFILE.close();
+             ATPG_DFILE.open("debug/atpg.debug",ios::out);
         }
         else
         {
