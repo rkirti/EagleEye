@@ -9,6 +9,7 @@
 
 
 ofstream ATPG_DFILE;
+extern ofstream MAIN_DFILE;
 ofstream faultWriteFile;
 ofstream randomVectorFile;
 
@@ -1635,10 +1636,8 @@ void RandomVectorTest::GenerateAndSetRVector()
     return;
 }
 
-void RandomVectorTest::PerformTest(int no_of_vectors)
+void RandomVectorTest::PerformTest(int no_times)
 {
-    int no_times = 1;
-    
     cout << "The size of the fault set is " << (circuit.FaultSet).size() << endl;
     while (no_times--)  // need to change this to x% coverage && time limit
     {
@@ -1676,4 +1675,96 @@ void RandomVectorTest::PerformTest(int no_of_vectors)
     cout << "The size of the fault set is " << (circuit.FaultSet).size() << endl;
 
 }
+bool ATPG::PerformTest()
+{
+    // Run ATPG on the fault set
+    MAIN_DFILE << "size of the fault set = " << circuit.FaultSet.size() << endl;
+    int detectedFaults=0;
+    int undetectedFaults=0;
+    list<Fault>::iterator it = circuit.FaultSet.begin();
+    for (; it != circuit.FaultSet.end(); it++)
+    {
+        // Important to clean up stuff from the previous run before we begin
+        // Set all wires to U
+        circuit.Clear_Wire_Values();
+        // No Implications or logs should be there.    
+        while (!ImpliQueue.empty())
+            ImpliQueue.pop();
+        Logs.clear();
+        // Clear all the Frontiers.
+        circuit.DFrontier.clear();
+        circuit.JFrontier.clear();
 
+
+        bool result = Do_ATPG(it->FaultSite,(it->faultType == 0) ? D : DBAR);
+        if (result) 
+        {
+            MAIN_DFILE  << "Ran D algo SUCCESSFULLY for wire  " << it->FaultSite->id << " for the fault s-a-" << it->faultType << endl;
+            MAIN_DFILE << "Outputs at which fault is detected" << endl;
+
+            detectedFaults++;
+            // Iterate through list of POs to see if which of them has 
+            // D or DBAR.   
+            map<string,Wire*>::iterator iter = (circuit.PriOutputs).begin();
+            for (; iter!=(circuit.PriOutputs).end();iter++)
+            {
+                if (iter->second->value == D ||  iter->second->value == DBAR )
+                    MAIN_DFILE << iter->second->id << "   " <<  iter->second->value
+                        << endl;
+            }
+            MAIN_DFILE << "Emitting the test vectors" << endl;
+            for (iter=circuit.PriInputs.begin(); iter!=(circuit.PriInputs).end();iter++)
+            {
+                switch (iter->second->value)
+                {
+
+                    case ZERO:
+                        MAIN_DFILE << "0";
+                        break;
+                    case ONE:
+                        MAIN_DFILE << "1";
+                        break;
+                    case U:
+                        MAIN_DFILE << "U";
+                        break;
+                    case D:
+                        MAIN_DFILE << "D";
+                        break;
+                    case DBAR:
+                        MAIN_DFILE << "DBAR";
+                        break;
+
+                }
+
+                MAIN_DFILE << " ";
+
+           }
+           MAIN_DFILE << endl << endl;
+            
+             // Open the debug file afresh.
+             // We dont need debug info for runs that were
+             // successful.
+             ATPG_DFILE.close();
+             ATPG_DFILE.open("debug/atpg.debug",ios::out);
+        }
+        else
+        {
+            cout  << "Ran D algo but failed for wire  " << it->FaultSite->id << " for the fault s-a-" << it->faultType <<  "  and the result is  " << result << endl;
+            cout << " FAULT NOT DETECTABLE " << endl;
+            undetectedFaults++;
+            //Prints stats so far before exiting
+           // MAIN_DFILE << "Faults detected so far "  <<  detectedFaults << endl;
+            //MAIN_DFILE << "DEBUG ME NOW. I am exiting" << endl;
+            //cout << "I am " <<  it->FaultSite->id<< " DEBUG ME NOW. I am exiting" << endl;
+            //exit(0);
+
+        }   
+        MAIN_DFILE << endl << endl;
+
+    }
+
+    MAIN_DFILE << "Total Faults detected :        " << detectedFaults << endl;  
+    MAIN_DFILE << "Total Faults not detected :    " << undetectedFaults << endl;  
+    MAIN_DFILE << "Total number of wires:         " << circuit.Netlist.size()<< endl;
+
+}

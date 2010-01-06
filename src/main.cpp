@@ -49,7 +49,7 @@ int main(int argc,char **argv)
     // Fault Set generated, written to a file and read into the FaultSet
     // strcuture. Random vectors also available in a file.
     // Now testing.
-    rTest.PerformTest(0);  // doesn nothing is no of vectors = 0;
+    rTest.PerformTest(1);  // doesn nothing is no of vectors = 0;
 
     // ATPG object to handle atpg algorithm
     ATPG atpgTest;
@@ -60,93 +60,7 @@ int main(int argc,char **argv)
     //    cout << "the grand result is " << result << endl;
 
     // Run ATPG on the fault set
-    int detectedFaults=0;
-    int undetectedFaults=0;
-    list<Fault>::iterator it = circuit.FaultSet.begin();
-    for (; it != circuit.FaultSet.end(); it++)
-    {
-        // Important to clean up stuff from the previous run before we begin
-        // Set all wires to U
-        circuit.Clear_Wire_Values();
-        // No Implications or logs should be there.    
-        while (!ImpliQueue.empty())
-            ImpliQueue.pop();
-        Logs.clear();
-        // Clear all the Frontiers.
-        circuit.DFrontier.clear();
-        circuit.JFrontier.clear();
-
-
-        bool result = atpgTest.Do_ATPG(it->FaultSite,(it->faultType == 0) ? D : DBAR);
-        if (result) 
-        {
-            MAIN_DFILE  << "Ran D algo SUCCESSFULLY for wire  " << it->FaultSite->id << " for the fault s-a-" << it->faultType << endl;
-            MAIN_DFILE << "Outputs at which fault is detected" << endl;
-
-            detectedFaults++;
-            // Iterate through list of POs to see if which of them has 
-            // D or DBAR.   
-            map<string,Wire*>::iterator iter = (circuit.PriOutputs).begin();
-            for (; iter!=(circuit.PriOutputs).end();iter++)
-            {
-                if (iter->second->value == D ||  iter->second->value == DBAR )
-                    MAIN_DFILE << iter->second->id << "   " <<  iter->second->value
-                        << endl;
-            }
-            MAIN_DFILE << "Emitting the test vectors" << endl;
-            for (iter=circuit.PriInputs.begin(); iter!=(circuit.PriInputs).end();iter++)
-            {
-                switch (iter->second->value)
-                {
-
-                    case ZERO:
-                        MAIN_DFILE << "0";
-                        break;
-                    case ONE:
-                        MAIN_DFILE << "1";
-                        break;
-                    case U:
-                        MAIN_DFILE << "U";
-                        break;
-                    case D:
-                        MAIN_DFILE << "D";
-                        break;
-                    case DBAR:
-                        MAIN_DFILE << "DBAR";
-                        break;
-
-                }
-
-                MAIN_DFILE << " ";
-
-           }
-           MAIN_DFILE << endl << endl;
-            
-             // Open the debug file afresh.
-             // We dont need debug info for runs that were
-             // successful.
-             ATPG_DFILE.close();
-             ATPG_DFILE.open("debug/atpg.debug",ios::out);
-        }
-        else
-        {
-            cout  << "Ran D algo but failed for wire  " << it->FaultSite->id << " for the fault s-a-" << it->faultType <<  "  and the result is  " << result << endl;
-            cout << " FAULT NOT DETECTABLE " << endl;
-            undetectedFaults++;
-            //Prints stats so far before exiting
-           // MAIN_DFILE << "Faults detected so far "  <<  detectedFaults << endl;
-            //MAIN_DFILE << "DEBUG ME NOW. I am exiting" << endl;
-            //cout << "I am " <<  it->FaultSite->id<< " DEBUG ME NOW. I am exiting" << endl;
-            //exit(0);
-
-        }   
-        MAIN_DFILE << endl << endl;
-
-    }
-
-    MAIN_DFILE << "Total Faults detected :        " << detectedFaults << endl;  
-    MAIN_DFILE << "Total Faults not detected :    " << undetectedFaults << endl;  
-    MAIN_DFILE << "Total number of wires:         " << circuit.Netlist.size()<< endl;
+    //atpgTest.PerformTest();
     return 0;
 }
 
