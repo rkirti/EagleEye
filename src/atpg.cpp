@@ -4,6 +4,10 @@
 #include "macros.h"
 #include "dot.h"
 
+#ifdef VERBOSE_FOO
+#endif
+
+
 ofstream ATPG_DFILE;
 ofstream faultWriteFile;
 ofstream randomVectorFile;
@@ -13,8 +17,10 @@ bool ATPG::Do_ATPG(Wire *faultwire, Value faultval)
     bool result;
     Implication* newImply;
 
+#ifdef VERBOSE_FOO
     ATPG_DFILE << "ATPG called for faulty wire " <<  faultwire->id << endl;
     ATPG_DFILE << "Faulty value of the wire is " <<  faultval << endl;
+#endif
    
     // set the fault wire
     (circuit.faultWire) = faultwire; 
@@ -29,10 +35,11 @@ bool ATPG::Do_ATPG(Wire *faultwire, Value faultval)
     newImply= new Implication(circuit.faultWire,faultval,true); 
     (ImpliQueue).push(newImply); 
 
+#ifdef VERBOSE_FOO
     ATPG_DFILE << "Adding implication: " <<  (circuit.faultWire)->id  
         << "  value:  " <<  faultval <<  endl;
- 
     ATPG_DFILE << "Calling D_Algo from DO_ATPG" << endl;
+#endif
 
 
     // Run the D Algorithm to find the test vectors.
@@ -43,7 +50,9 @@ bool ATPG::Do_ATPG(Wire *faultwire, Value faultval)
 
 
     // Display results
+#ifdef VERBOSE_FOO
     ATPG_DFILE << "Returning from D Algo for wire "  <<  faultwire->id << " with result " << result << endl;
+#endif
     circuit.Print_All_Wires();
     CircuitGraphPrint();
     
@@ -59,20 +68,22 @@ bool ATPG::Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplicatio
     Value xorValue =  Do_Xor((Value)((~ControlValues[curGate->gtype])&0xf),(Value)InversionValues[curGate->gtype]);
     
  
+#ifdef VERBOSE_FOO
     ATPG_DFILE << "Handling implication on wire " << curWire->id
           << " non-controlling value on gate inputs needed" << endl; 
-
+#endif
 
     // This function is reached only if the wire on 
     // which the implication is made has a gate 
     // input. i.e it is not a fanout branch and 
     // its value is cbar xor i
     
+#ifdef VERBOSE_FOO
     ATPG_DFILE << "Value to be implied" << impliedValue << endl;
     ATPG_DFILE << "Value by Xor" <<  xorValue << endl;
     ATPG_DFILE << "Current value of the wire is " << curWire->value << endl;
     ATPG_DFILE << "Current gate's output evaluated is " << curGate->Evaluate();
-
+#endif
     assert(impliedValue ==  xorValue);
     assert(curGate);
 
@@ -104,10 +115,12 @@ bool ATPG::Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplicatio
     // or is already set by a forward impli
     if (curWire->value == impliedValue) 
     {
+#ifdef VERBOSE_FOO
         ATPG_DFILE << "Implied value equals the current value of the wire." << endl;
         ATPG_DFILE << "Wire in question is :" << curWire->id << endl;
         ATPG_DFILE << "Popping off the implication" << endl;
         ATPG_DFILE << endl;
+#endif
         ImpliQueue.pop();
         return true;
     } 
@@ -125,10 +138,12 @@ bool ATPG::Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplicatio
     // we might have popped in action 2
     if ((curGate->Evaluate() == impliedValue) && (curWire->id == ImpliQueue.front()->wire->id) )
     {
+#ifdef VERBOSE_FOO
         ATPG_DFILE << "Implied value equals the value of the gate output." << endl;
         ATPG_DFILE << "Gate in question is :" << curGate->id << endl;
         ATPG_DFILE << "Popping off the implication" << endl;
         ATPG_DFILE << endl;
+#endif
 
         // Pop off the implication anyways
         // Set the value only if its not
@@ -159,14 +174,18 @@ bool ATPG::Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplicatio
                     Implication* newImply;
                     Value newVal = (Value)((~(ControlValues[curGate->gtype])) & 0xf);
                     newImply= new Implication(*iter,newVal,false); 
+#ifdef VERBOSE_FOO
                     ATPG_DFILE << " Adding implication :  " << (*iter)->id << " Value: " <<  newVal << endl;
+#endif
                     ImpliQueue.push(newImply); 
                 }
 
                 // If it is the faulty wire, don't set the value
                 if ( curWire != (circuit.faultWire) )
                 {
+#ifdef VERBOSE_FOO
                     ATPG_DFILE << " New intention:  " <<  curImplication->wire->id << "  " <<  curImplication->value << endl; 
+#endif
                     Change_Value_And_Update_Log(curImplication);
                 }
                 ImpliQueue.pop();
@@ -178,10 +197,12 @@ bool ATPG::Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplicatio
         default:
             // Some input has value c
             {
+#ifdef VERBOSE_FOO
                 ATPG_DFILE << "Evaluate of " << curGate->id << " gives :" << curGate->Evaluate() << endl;
                 ATPG_DFILE << "Evaluation not compatible with implied value: " << impliedValue << endl;
                 ATPG_DFILE << "Returning false" << endl;
                 ATPG_DFILE <<  endl;
+#endif
                 return false;
             }
     }
@@ -197,6 +218,7 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
     Value xorValue =  Do_Xor((Value)((ControlValues[curGate->gtype])&0xf),(Value)InversionValues[curGate->gtype]);
     
  
+#ifdef VERBOSE_FOO
     ATPG_DFILE << "Handling implication on wire " << curWire->id
                << " controlling value on gate inputs needed" << endl; 
 
@@ -205,6 +227,7 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
     ATPG_DFILE << "Value by Xor" <<  xorValue << endl;
     ATPG_DFILE << "Current value of the wire is " << curWire->value << endl;
     ATPG_DFILE << "Current gate's output evaluated is " << curGate->Evaluate();
+#endif
 
 
     // Assumption: 
@@ -245,10 +268,12 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
     // or is already set by a forward impli
     if (curWire->value == impliedValue) 
     {
+#ifdef VERBOSE_FOO
         ATPG_DFILE << "Implied value equals the current value of the wire." << endl;
         ATPG_DFILE << "Wire in question is :" << curWire->id << endl;
         ATPG_DFILE << "Popping off the implication" << endl;
         ATPG_DFILE << endl;
+#endif
         ImpliQueue.pop();
         return true;
     } 
@@ -288,7 +313,9 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
         if  ( (*iter)->value  == U) inputUCount++;
     }
 
+#ifdef VERBOSE_FOO
     ATPG_DFILE << "Input UCount is " << inputUCount << " for gate " << curGate->id << endl;
+#endif
 
     if (inputUCount>1) 
     {
@@ -297,7 +324,9 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
         if ( curWire != (circuit.faultWire) )
             Change_Value_And_Update_Log(curImplication);
         
+#ifdef VERBOSE_FOO
         ATPG_DFILE << "Adding to J Frontier:  " << (*iter)->id << endl;
+#endif
         Add_To_JFrontier(curWire,impliedValue);
         ImpliQueue.pop();
         return true;
@@ -308,7 +337,9 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
 
         // Iterate again to find out which wire
         // has unknown value and imply C on it.
+#ifdef VERBOSE_FOO
         ATPG_DFILE << "Hunting for the only input wire with value U" << endl; 
+#endif
 
         for (iter = (curGate->inputs).begin();iter != (curGate->inputs).end();iter++)
         {
@@ -319,8 +350,10 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
                 Value newVal = (ControlValues[curGate->gtype]);
                 // false indicates backward direction
                 Implication* newImply= new Implication(*iter,newVal,false);
+#ifdef VERBOSE_FOO
                 ATPG_DFILE << (*iter)->id << "is the sole input wire with Value U" << endl;  
                 ATPG_DFILE << "Adding implication on that wire with  value:  " <<  newVal << endl;
+#endif
                 ImpliQueue.push(newImply); 
 
             }
@@ -383,10 +416,12 @@ bool ATPG::Compatible(Value oldval,Value newval)
 bool ATPG::Add_To_JFrontier(Wire *wire,Value value)
 {
     circuit.TempJFrontier.push_back(WireValuePair(wire,value));
+#ifdef VERBOSE_FOO
     ATPG_DFILE  << "Added a gate with output wire " <<  wire->id << " to JFrontier." << endl;
     ATPG_DFILE <<  "JFrontier is now  " << endl; 
     PRINTJFRONTIER;
     ATPG_DFILE << endl << endl;
+#endif
     return true;
 }
 
@@ -394,10 +429,12 @@ bool ATPG::Add_To_JFrontier(Wire *wire,Value value)
 bool ATPG::Add_To_DFrontier(Wire *wire,Value value)
 {
     circuit.TempDFrontier.push_front(WireValuePair(wire,value));
+#ifdef VERBOSE_FOO
     ATPG_DFILE  << "Added a gate with output wire " <<  wire->id << " to DFrontier." << endl;
     ATPG_DFILE <<  "DFrontier is now  " << endl; 
     PRINTDFRONTIER;
     ATPG_DFILE << endl << endl;
+#endif
     return true;
 }
 
@@ -414,15 +451,19 @@ bool ATPG::Remove_From_D(Wire *wire)
         {
             iter = circuit.DFrontier.erase(iter);
             result = true;
+#ifdef VERBOSE_FOO
             ATPG_DFILE  << "Removed a gate with output wire " <<  wire->id << " from DFrontier." << endl;
             ATPG_DFILE <<  "DFrontier is now  " << endl; 
             PRINTDFRONTIER;
+#endif
             continue;   // we can return from function
         }
         iter ++;
     }
     if (!result) ATPG_DFILE << "Not found in DFrontier : gate with output wire " <<  wire->id << " from DFrontier." << endl;
+#ifdef VERBOSE_FOO
     ATPG_DFILE << endl << endl;
+#endif
     return result;
 }
 
@@ -443,10 +484,12 @@ bool ATPG::Remove_From_J(Wire *wire)
         }
         iter ++;
     }
+#ifdef VERBOSE_FOO
     ATPG_DFILE  << "Removed a gate with output wire " <<  wire->id << " from JFrontier." << endl;
     ATPG_DFILE <<  "JFrontier is now  " << endl; 
     PRINTJFRONTIER;
     ATPG_DFILE << endl << endl;
+#endif
     return result;
 }
 
@@ -454,7 +497,9 @@ bool ATPG::Remove_From_J(Wire *wire)
 
 bool ATPG::Imply_And_Check()
 {
+#ifdef VERBOSE_FOO
     ATPG_DFILE << "Imply_And_Check called" << endl;
+#endif
     assert(Logs.empty());
     
     while (!ImpliQueue.empty())
@@ -464,7 +509,9 @@ bool ATPG::Imply_And_Check()
         Implication*  curImplication = (ImpliQueue).front();
         Wire* curWire = curImplication->wire;
         Value curValue = curImplication->value;
+#ifdef VERBOSE_FOO
         ATPG_DFILE <<  "New implication from the queue:  " << (curWire->id) <<  " value:   "<< (curValue) ;
+#endif
         if (curImplication->direction == 0)  ATPG_DFILE <<   "  backwards" << endl;
         else  ATPG_DFILE << "  forward" << endl;
             
@@ -475,8 +522,10 @@ bool ATPG::Imply_And_Check()
             if (Resolve_Backward_Implication(curImplication,curWire,curValue) == false)
             {
 
+#ifdef VERBOSE_FOO
                 ATPG_DFILE << "Backward implication not resolved " ;
                 ATPG_DFILE << ": Returning false" << endl << endl;
+#endif
                 goto fail;
             }
                 else continue;
@@ -490,8 +539,10 @@ bool ATPG::Imply_And_Check()
             if (Resolve_Forward_Implication(curImplication,curWire,curValue) == false)
          {
 
+#ifdef VERBOSE_FOO
              ATPG_DFILE << "Forward implication not resolved " ;
              ATPG_DFILE << ": Returning false" << endl << endl;
+#endif
              goto fail;
 
          }
@@ -522,12 +573,16 @@ void ATPG::Merge_Frontiers()
         circuit.JFrontier.push_front(*iter);
     for (iter= circuit.TempDFrontier.begin(); iter != circuit.TempDFrontier.end();iter++)
         circuit.DFrontier.push_front(*iter);
+#ifdef VERBOSE_FOO
     ATPG_DFILE << "Merged the temp.frontiers with global ones" << endl;
+#endif
 
     circuit.TempJFrontier.clear();
     circuit.TempDFrontier.clear();
 
+#ifdef VERBOSE_FOO
     ATPG_DFILE << "Cleared the temp.frontiers" << endl;
+#endif
 
     return;
 }
@@ -567,12 +622,16 @@ void ATPG::Clean_Logs()
 
 void ATPG::Failure()
 {
+#ifdef VERBOSE_FOO
     ATPG_DFILE << "Imply_And_Check failed. NEED TO BACKTRACK" << endl << endl;
     ATPG_DFILE << "Using the logs to reverse all decisions/assignments" << endl;
+#endif
     list<Implication*>::iterator iter= Logs.begin();
     for (; iter!=Logs.end();iter++)
     {
+#ifdef VERBOSE_FOO
         ATPG_DFILE << "Reverting value of wire" << (*iter)->wire->id << " current val:" << (*iter)->wire->value << " reverting to " << (*iter)->value << endl; 
+#endif
 	    // Old value is on the RHS
 	    (*iter)->wire->value = (*iter)->value;
 	    // reset the modified flag anyways
@@ -586,7 +645,9 @@ void ATPG::Failure()
     circuit.TempJFrontier.clear();
     circuit.TempDFrontier.clear();
 
+#ifdef VERBOSE_FOO
     ATPG_DFILE << "Cleared the temp.frontiers" << endl;
+#endif
 }
 
 
@@ -597,7 +658,9 @@ bool ATPG::D_Algo()
     if (Imply_And_Check() == false) 
     {
 
+#ifdef VERBOSE_FOO
         ATPG_DFILE << " Imply_And_Check returned false. Returning false from D_Algo " << endl;
+#endif
         return false;
     }
    
@@ -635,8 +698,10 @@ DFrontierWork:
     if (circuit.DFrontier.empty()) 
     {
 
+#ifdef VERBOSE_FOO
         ATPG_DFILE  << "Found the D Frontier empty and hence cant propagate fault." << endl;
         ATPG_DFILE  <<  "Returning false" << endl << endl ;
+#endif
         return false;
     }
 
@@ -653,8 +718,10 @@ DFrontierWork:
     while ( !circuit.DFrontier.empty() )
     {
          
+#ifdef VERBOSE_FOO
         ATPG_DFILE << "Current size of D = " << circuit.DFrontier.size() 
                    << " About to take " << checkIter->iwire->id << "  from D" << endl;
+#endif
      
         // Take the first element off the D frontier
         DFront = (circuit.DFrontier).front();
@@ -670,7 +737,9 @@ DFrontierWork:
         // Handle Xor here
         if (curGate->gtype == XOR)
         {
+#ifdef VERBOSE_FOO
             ATPG_DFILE << "Handling Xor in D frontier" << endl;
+#endif
 
             // Just lazy to handle mutiple input xor...For now, only 2 input xor
             if ((curGate->inputs).size() != 2)
@@ -681,7 +750,9 @@ DFrontierWork:
 
             if ((*inputIter)->value != U)
             {
+#ifdef VERBOSE_FOO
                 ATPG_DFILE << __LINE__ << "  Something wrong ! this gate should not be in D frontier" << endl;
+#endif
                 goto DoneXor;
             }
 
@@ -694,12 +765,16 @@ DFrontierWork:
             {
                 // Pushing backward impli
                 Implication* newImply= new Implication(*inputIter,(Value)(i*0xf),false); /*bool false = 0 = backward*/ // remember to push 0 or 15
+#ifdef VERBOSE_FOO
                 ATPG_DFILE << "Adding backward implication: " << (*inputIter)->id << " value "<< i*0xf << endl; 
+#endif
                 (ImpliQueue).push(newImply);
 
                 // Pushing forward impli
                 newImply= new Implication(*inputIter,(Value)(i*0xf),true); /*bool false = 0 = backward*/
+#ifdef VERBOSE_FOO
                 ATPG_DFILE << "Adding forward implication: " << (*inputIter)->id << " value "<< i*0xf << endl;
+#endif
                 (ImpliQueue).push(newImply);
 
                 // If the D-Drive succeeded through this gate, well and good, return true
@@ -719,16 +794,23 @@ DoneXor:
             {
 
                 Implication* newImply= new Implication(*inputIter,(Value)((~cval)&0xf),false); /*bool false = 0 = backward*/
+#ifdef VERBOSE_FOO
                 ATPG_DFILE << "Adding backward implication: " << (*inputIter)->id
                     <<  ~(cval) << endl; 
+#endif
                 (ImpliQueue).push(newImply);
                 newImply= new Implication(*inputIter,(Value)((~cval)&0xf),true); /*bool false = 0 = backward*/
+#ifdef VERBOSE_FOO
                 ATPG_DFILE << "Adding forward implication: " << (*inputIter)->id
                     <<  ~(cval) << endl; 
+#endif
                 (ImpliQueue).push(newImply);
             }         
             else
+                ;
+#ifdef VERBOSE_FOO
               ATPG_DFILE << "Wire: " << (*inputIter)->id << "value: " <<  (*inputIter)->value <<endl; 
+#endif
 
 
         }
@@ -766,12 +848,14 @@ JFrontierWork:
        Gate* curGate=dynamic_cast<Gate*>(checkIterator->iwire->input);
        Value cval = ControlValues[curGate->gtype];
         
+#ifdef VERBOSE_FOO
       ATPG_DFILE <<__FILE__<<__LINE__ << "    " << __LINE__ << "    " ;
       ATPG_DFILE <<__FILE__<<__LINE__ << "    " << "Selected gate: " << curGate->id 
         << "from the J Frontier" << endl;
       ATPG_DFILE <<__FILE__<<__LINE__ << "    " << "Control value is: " << cval << endl;
       ATPG_DFILE <<__FILE__<<__LINE__ << "    " << endl <<  endl;
 
+#endif
 
       /*Select an input with Value U*/
       list<Wire*>::iterator inputIter = (curGate->inputs).begin();
@@ -779,7 +863,9 @@ JFrontierWork:
       // Handle Xor here
       if (curGate->gtype == XOR)
       {
+#ifdef VERBOSE_FOO
           ATPG_DFILE << "Handling Xor in J frontier" << endl;
+#endif
 
           // Just lazy to handle mutiple input xor...For now, only 2 input xor
           if ((curGate->inputs).size() != 2)
@@ -788,7 +874,9 @@ JFrontierWork:
           // iterator to the second input wire
           list<Wire*>::iterator inputIter2 = ++((curGate->inputs).begin());
 
+#ifdef VERBOSE_FOO
           ATPG_DFILE << "in1 = " << ((*inputIter)->value) << " in2 = " << ((*inputIter2)->value) << " want to justify value=" << checkIterator->value << endl;
+#endif
 
           // Case I - both the inputs are unknown
           if  ( ((*inputIter)->value == U) && ((*inputIter2)->value == U) )
@@ -812,22 +900,30 @@ JFrontierWork:
               {
                   // Pushing backward impli on in1
                   Implication* newImply= new Implication(*inputIter,in1,false); /*bool false = 0 = backward*/
+#ifdef VERBOSE_FOO
                   ATPG_DFILE << "Adding backward implication: " << (*inputIter)->id << " value "<< i << endl; 
+#endif
                   (ImpliQueue).push(newImply);
 
                   // Pushing forward impli on in1
                   newImply= new Implication(*inputIter,in1,true); /*bool false = 0 = backward*/
+#ifdef VERBOSE_FOO
                   ATPG_DFILE << "Adding forward implication: " << (*inputIter)->id << " value "<< i << endl;
+#endif
                   (ImpliQueue).push(newImply);
 
                   // Pushing backward impli on in2
                   newImply= new Implication(*inputIter2,in2,false); /*bool false = 0 = backward*/
+#ifdef VERBOSE_FOO
                   ATPG_DFILE << "Adding backward implication: " << (*inputIter2)->id << " value "<< i << endl; 
+#endif
                   (ImpliQueue).push(newImply);
 
                   // Pushing forward impli on in2
                   newImply= new Implication(*inputIter2,in2,true); /*bool false = 0 = backward*/
+#ifdef VERBOSE_FOO
                   ATPG_DFILE << "Adding forward implication: " << (*inputIter2)->id << " value "<< i << endl;
+#endif
                   (ImpliQueue).push(newImply);
 
                   // If the D-Drive succeeded through this gate, well and good, return true
@@ -864,12 +960,16 @@ JFrontierWork:
 
               // Pushing backward impli
               Implication* newImply= new Implication(*inputIter,val,false); /*bool false = 0 = backward*/
+#ifdef VERBOSE_FOO
               ATPG_DFILE << "Adding backward implication: " << (*inputIter)->id << " value "<< val << endl; 
+#endif
               (ImpliQueue).push(newImply);
 
               // Pushing forward impli
               newImply= new Implication(*inputIter,val,true); /*bool false = 0 = backward*/
+#ifdef VERBOSE_FOO
               ATPG_DFILE << "Adding forward implication: " << (*inputIter)->id << " value "<< val << endl;
+#endif
               (ImpliQueue).push(newImply);
 
               // If the D-Drive succeeded through this gate, well and good, return true
@@ -886,7 +986,9 @@ JFrontierWork:
           {
               // All implications backward
               Implication* newImply= new Implication(*inputIter,(Value)(cval),false); /*bool false = 0 = backward*/
+#ifdef VERBOSE_FOO
               ATPG_DFILE <<__FILE__<<__LINE__ << "    " << "+++++++++++++++++++++ Implying CVal: " << cval <<   " on input: " <<  (*inputIter)->id << endl;
+#endif
               (ImpliQueue).push(newImply);
               
               newImply= new Implication(*inputIter,(Value)(cval),true); /*bool false = 0 = backward*/
@@ -896,7 +998,9 @@ JFrontierWork:
                   // Implying c on this particular input didn't work
                   // so imply cbar 
               {
+#ifdef VERBOSE_FOO
                   ATPG_DFILE <<__FILE__<<__LINE__ << "    " << "+++++++++++++++++++++ Implying ~CVal: " <<  ((~cval)&0xf) <<   " on input: " <<  (*inputIter)->id << endl;
+#endif
            
                   newImply= new Implication(*inputIter,(Value)((~cval)&0xf),false); /*bool false = 0 = backward*/
                   (ImpliQueue).push(newImply);
@@ -987,7 +1091,9 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
     {
         Change_Value_And_Update_Log(curImplication);
         ImpliQueue.pop();
+#ifdef VERBOSE_FOO
         ATPG_DFILE << "Success, po reached and po value set to:" << impliedValue << endl;
+#endif
         return true;
     }
 
@@ -1010,8 +1116,10 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
     Value wireOldValue = curWire->value;
 
     // set the value for the wire, ie impliedValue to wire->value
+#ifdef VERBOSE_FOO
     ATPG_DFILE << "Setting the value of the wire " << curImplication->wire->id  
                << " to the implied value " <<  curImplication->value << endl; 
+#endif
     Change_Value_And_Update_Log(curImplication);
         
 
@@ -1029,13 +1137,17 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
     if ((curGate->output != circuit.faultWire) && !(Compatible(gateOldOutput,gateNewOutput)|| Compatible(gateNewOutput,gateOldOutput)))
     {
         // revert back !
+#ifdef VERBOSE_FOO
         ATPG_DFILE << "Gate's old output, without setting the value of the wire was" << gateOldOutput << endl;
         ATPG_DFILE << "Gate's new output, after setting the value of the wire is" << gateNewOutput << endl;
         ATPG_DFILE << "Not compatible,Returning false" << endl;
+#endif
         return false;
     }
     
+#ifdef VERBOSE_FOO
     ATPG_DFILE << "GateOldOutput = " << gateOldOutput << " NewOutput = " << gateNewOutput << endl;
+#endif
     
     
     
@@ -1049,8 +1161,10 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
             if ( (impliedValue == D) || (impliedValue == DBAR))
             {
                 // Add the gate to D frontier
+#ifdef VERBOSE_FOO
                  ATPG_DFILE << "Adding gate to D frontier: " << curGate->id  
                             << " with value: "  << gateNewOutput << endl;
+#endif
                  //bug: Add_To_DFrontier(curGate->output, gateNewOutput);
                  Add_To_DFrontier(curGate->output, U);
             }
@@ -1078,7 +1192,9 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
         // pop off the current impli
         ImpliQueue.pop();
         Implication* newImply= new Implication(curGate->output,gateNewOutput,true); /*bool true = 0 = forward*/
+#ifdef VERBOSE_FOO
         ATPG_DFILE << "Adding implication on wire " << curGate->output->id << "  Line: " << __LINE__ << "    " << endl;
+#endif
         ImpliQueue.push(newImply); 
 
 	return true;
@@ -1090,7 +1206,9 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
     // gate to J frontier  
     else 
     {
+#ifdef VERBOSE_FOO
        ATPG_DFILE << "Removing from J frontier" << endl;
+#endif
         if ( gateNewOutput == U )
         {
             // pop off the current implication
@@ -1114,7 +1232,9 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
         return true;
     }
 
+#ifdef VERBOSE_FOO
     ATPG_DFILE<< "Returning false from end of function Resolve_Forward_Implication" << endl;
+#endif
     return false;
 
 }
@@ -1124,7 +1244,10 @@ bool  ATPG::Handle_Forward_Implication_On_Stem(Implication* curImplication, Wire
 {
 
     Implication* newImply; 
+#ifdef VERBOSE_FOO
     ATPG_DFILE << "The forward implication is on a wire which is a stem" << endl;
+#endif
+
 
     // First set the value of the current wire 
     // ie.the stem
@@ -1137,13 +1260,17 @@ bool  ATPG::Handle_Forward_Implication_On_Stem(Implication* curImplication, Wire
         assert(owire != NULL);
 
         newImply = new Implication(owire, curImplication->value,true); 
+#ifdef VERBOSE_FOO
         ATPG_DFILE << "Adding new implication on the branch" << owire->id  << " of stem " << curWire->id << endl;
+#endif
         ImpliQueue.push(newImply); 
     }
 
 
     // Pop off the current implication and return
+#ifdef VERBOSE_FOO
     ATPG_DFILE << "Popping off the implication on the stem " << endl;
+#endif
     assert(ImpliQueue.front()->wire->id  == curWire->id);
     ImpliQueue.pop();
     return true;
@@ -1216,11 +1343,15 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
 
             // If this assert fails == resolve branches failure
             assert(owire != NULL);
-            if ( owire != curWire )
+            if ( owire != curWire  && owire != circuit.faultWire)
             {
                 // Add forward implications for the remaining branches, other than the current one
                 newImply = new Implication(owire, curImplication->value,true);
+#ifdef VERBOSE_FOO
+                ATPG_DFILE << "Adding forward implication: " <<  owire->id << endl;
+#endif
                 ImpliQueue.push(newImply); 
+
             }
         }
 
@@ -1237,7 +1368,9 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
     Value xorValue =  Do_Xor(ControlValues[curGate->gtype],InversionValues[curGate->gtype]);
 
     assert(curGate);
+#ifdef VERBOSE_FOO
     ATPG_DFILE << "Backward implication is on this gate's output: " << curGate->id << endl;
+#endif
 
     if ( impliedValue == xorValue)
     {
@@ -1284,7 +1417,9 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
         }
 	else if (curGate->gtype == XOR)
         {
+#ifdef VERBOSE_FOO
             ATPG_DFILE << __FILE__ << __LINE__ << "Handling xor :)" << endl;
+#endif
 
             // Just lazy to handle mutiple input xor...For now, only 2 input xor
             if ((curGate->inputs).size() != 2)
@@ -1358,12 +1493,16 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
 
                 // Pushing backward impli
                 Implication* newImply= new Implication(*inputIter,val,false); /*bool false = 0 = backward*/
+#ifdef VERBOSE_FOO
                 ATPG_DFILE << "Adding backward implication: " << (*inputIter)->id << " value "<< val << endl; 
+#endif
                 (ImpliQueue).push(newImply);
 
                 // Pushing forward impli
                 newImply= new Implication(*inputIter,val,true); /*bool false = 0 = backward*/
+#ifdef VERBOSE_FOO
                 ATPG_DFILE << "Adding forward implication: " << (*inputIter)->id << " value "<< val << endl;
+#endif
                 (ImpliQueue).push(newImply);
                 return true;
             }

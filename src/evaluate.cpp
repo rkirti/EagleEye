@@ -32,7 +32,7 @@ const GateEvaluate g_EvaluateTable[] =
  */
 Value And(list<Wire*> inputs)
 {
-  int output=ONE;	
+   int output=ONE;	
    list<Wire*>::iterator iter;
    
    for (iter=inputs.begin(); iter != inputs.end(); iter++ )
@@ -47,8 +47,7 @@ Value And(list<Wire*> inputs)
 
 Value Or(list<Wire*> inputs)
 {
-   int  output=ZERO;	
-    Implication* intention=NULL;
+    int  output=ZERO;	
     list<Wire*>::iterator iter;
 
     for (iter=inputs.begin(); iter != inputs.end(); iter++ )
@@ -64,7 +63,6 @@ Value Or(list<Wire*> inputs)
 Value Buf(list<Wire*> inputs)
 {
    Value output=U;
-   Implication* intention=NULL;
    list<Wire*>::iterator iter;
    assert(inputs.size() == 1);
 
@@ -80,14 +78,12 @@ Value Buf(list<Wire*> inputs)
 
 Value Not(list<Wire*> inputs)
 {
-   Implication* intention=NULL;
    Value output=U;
    list<Wire*>::iterator iter;
-   
    assert(inputs.size() == 1);
+   
    iter=inputs.begin();
-    output = (Value) ((*iter)->value != U)?(Value)(~((*iter)->value)&0xf):U;
-   //cout << __LINE__ << " output from not gate = " << output << endl;
+   output = (Value) ((*iter)->value != U)?(Value)(~((*iter)->value)&0xf):U;
     
    return output;
 }
