@@ -134,10 +134,10 @@ int main(int argc,char **argv)
             cout << " FAULT NOT DETECTABLE " << endl;
             undetectedFaults++;
             //Prints stats so far before exiting
-            MAIN_DFILE << "Faults detected so far "  <<  detectedFaults << endl;
-            MAIN_DFILE << "DEBUG ME NOW. I am exiting" << endl;
-            cout << "I am " <<  it->FaultSite->id<< " DEBUG ME NOW. I am exiting" << endl;
-            exit(0);
+           // MAIN_DFILE << "Faults detected so far "  <<  detectedFaults << endl;
+            //MAIN_DFILE << "DEBUG ME NOW. I am exiting" << endl;
+            //cout << "I am " <<  it->FaultSite->id<< " DEBUG ME NOW. I am exiting" << endl;
+            //exit(0);
 
         }   
         MAIN_DFILE << endl << endl;
@@ -146,6 +146,7 @@ int main(int argc,char **argv)
 
     MAIN_DFILE << "Total Faults detected :        " << detectedFaults << endl;  
     MAIN_DFILE << "Total Faults not detected :    " << undetectedFaults << endl;  
+    MAIN_DFILE << "Total number of wires:         " << circuit.Netlist.size()<< endl;
     return 0;
 }
 
