@@ -72,7 +72,7 @@ class Wire: public Element
     public:
         Value value; 
         WireType wtype;
-        virtual Value Evaluate()	// modify later, without defining this I am gettting compilation error.
+        virtual Value Evaluate()	// Not used. Any class inheriting Element has to define this.
 	{
 		return U;
 	}

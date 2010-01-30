@@ -37,11 +37,5 @@ clean:
 depend: 
 	g++ -g -I $(HEADER_SRC) -M $(SRC_FILES) \
 		| perl -ne 's/^(\S)/obj\/$$1/;print' \
-		> depend.mak
+		> /dev/null
 
-# Default rule to make depend.mak
-depend.mak:
-	touch $@
-
-# Include the generated dependency file
-include depend.mak
