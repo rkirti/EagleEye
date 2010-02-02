@@ -26,6 +26,22 @@ const GateEvaluate g_EvaluateTable[] =
 
 
 
+    
+/*
+ * Gate Evaluation  
+ * We use a table of function pointers.
+ * The appropriate function is invoked by indexing 
+ * into the table using the gatetype field of the calling
+ * gate object
+ */
+
+Value Gate::Evaluate()
+{
+    return g_EvaluateTable[gtype](inputs);
+}
+
+
+
 
 
 /*

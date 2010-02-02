@@ -201,7 +201,6 @@ public:
 
  
 
- //   bool Evaluate();
     vector<Value> CaptureOutput();
     bool ReadFaults();
 
