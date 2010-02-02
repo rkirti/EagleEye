@@ -32,7 +32,6 @@ extern ofstream MAIN_DFILE;
 
 
 // returns if the value is known or not
-// 
 bool isNotKnown(Value v)
 {
     switch(v)
@@ -67,7 +66,6 @@ int Translate_Value_To_Int(Value value)
 /*Use only to check if value is c xor i or  cbar xor i*/
 Value Do_Xor(Value val1, Value val2)
 {
-
     Value output;
     Value negval1 =  (Value) (val1 != U)?(Value)(~(val1)&0xf):U;
     Value negval2 =  (Value) (val2 != U)?(Value)(~(val2)&0xf):U;
@@ -88,11 +86,6 @@ string intToString(int inInt)
 
 void Init_Debug()
 {
-    //CIRCUIT_DFILE.open("/dev/null",ios::out);   
-    //EVALUATE_DFILE.open("/dev/null",ios::out);   
-    //ATPG_DFILE.open("/dev/null",ios::out);   
-    //MAIN_DFILE.open("/dev/null",ios::out);   
-
     CIRCUIT_DFILE.open("debug/ckt.debug",ios::out);   
     EVALUATE_DFILE.open("debug/eval.debug",ios::out);   
     ATPG_DFILE.open("debug/atpg.debug",ios::out);   
@@ -104,8 +97,6 @@ void Init_Debug()
 void Print_All_Wires(Circuit& circuit)
 {
     CIRCUIT_DFILE << "Print_All_Wires called"  << endl;
-
-
     // Print out the primary inputs
     CIRCUIT_DFILE << "Printing all the PIs "   << endl << endl;
     map<string,Wire*> ::iterator iter =  (circuit.PriInputs).begin();
@@ -143,9 +134,6 @@ void Print_All_Wires(Circuit& circuit)
  */
 void Clear_Wire_Values(Circuit& circuit)
 {
-
-    // Print out the netlist
-    // Clear the values of all the wires. Set the value to U
     map<string,Wire*> ::iterator iter =  (circuit.Netlist).begin();
     for (;iter != (circuit.Netlist).end(); iter++)
     {   
@@ -155,13 +143,8 @@ void Clear_Wire_Values(Circuit& circuit)
 
 
 
-/*
- * Clear all internal wire values(all wires except PIs) to U
- */
 void Clear_Internal_Wire_Values( Circuit& circuit)
 {
-
-    // Print out the netlist
     // Clear the values of all the wires. Set the value to U
     map<string,Wire*> ::iterator iter =  (circuit.Netlist).begin();
     for (;iter != (circuit.Netlist).end(); iter++)

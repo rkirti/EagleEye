@@ -1,4 +1,3 @@
-
 /*
  * Functions for circuit simulation
  */
@@ -7,6 +6,5 @@
 #include "circuit.h"
 
 bool Simulate_Good(Circuit& circuit);
-
 
 #endif /* ifndef SIMULATE_H */
