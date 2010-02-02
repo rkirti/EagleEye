@@ -35,7 +35,7 @@ int main(int argc,char **argv)
     Levelize(circuit);
 
     // Name the branch wires correctly    
-    circuit.ResolveBranches();
+    Resolve_Branches(circuit);
 
     // Write both possible faults for each wire in the fault file
     Generate_Full_FaultSet();

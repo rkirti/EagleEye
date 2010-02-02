@@ -198,33 +198,20 @@ public:
     // The current fault under consideration
     Wire *faultWire;
 
-    // Function, which adds a wire to the J frontier, along with it's value
- //   bool Add_To_JFrontier(Wire *wire,Value);
-  //  bool Add_To_DFrontier(Wire *wire,Value);
-
- //   bool Remove_From_J(Wire *wire);
-  //  bool Remove_From_D(Wire *wire);
-
-
+ 
     /*this should move to a different header file*/
     bool AddWire(const char* name,WireType type);
     /*Signals: input and output signals of the gate*/
     bool AddGate(GateType type, char *name,char* output,char **inputs,int numSignals);
     void Add_Gate_To_Wire_Output(Gate* gate,const char* wirename);   
     void  Add_Gate_To_Wire_Input(Gate* gate,const char* wirename);
- //   bool Levelize();
-    bool ResolveBranches();
-    void ResolveWire(Wire* somewire);
 
     void Update_Wire_Pair(Wire* oldwire,Wire* newwire);
     void  Update_Gate_Input(Gate* gate, Wire* oldwire,Wire* newwire);
 
-    string Check_Name_Present(string givenname);
-    string intToString(int inInt);
 
     bool Evaluate();
     vector<Value> CaptureOutput();
-    bool Wire_Not_Derived(Wire* wire);
     void Print_All_Wires();
     void Clear_Wire_Values();
     void Clear_Internal_Wire_Values();

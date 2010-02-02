@@ -95,10 +95,9 @@ bool Levelize(Circuit& circuit)
 
 
 
-/*
-bool Resolve_Branches(Circuit* circuitPtr)
+
+bool Resolve_Branches(Circuit& circuit)
 {
-   Circuit circuit = *circuitPtr;
    map<string,Wire*>:: iterator iter = (circuit.Netlist).begin();
    cout << "Resolve Branches started" << endl;
    while (iter != (circuit.Netlist).end())
@@ -114,7 +113,7 @@ bool Resolve_Branches(Circuit* circuitPtr)
         {
 
                 cout << "Calling resolve wire for  " << iwire->id << endl;
-                Resolve_Wire(circuitPtr,iwire);
+                Resolve_Wire(circuit,iwire);
         }
         else 
         {
@@ -128,10 +127,9 @@ bool Resolve_Branches(Circuit* circuitPtr)
 
 
 
-void Resolve_Wire(Circuit* circuitPtr,Wire* wire)
+void Resolve_Wire(Circuit&,Wire* wire)
 {
 
-    Circuit circuit = *circuitPtr;
     // Assuming that initially all outputs of
     // a wire are gates
     //Steps:
@@ -153,7 +151,7 @@ void Resolve_Wire(Circuit* circuitPtr,Wire* wire)
         Gate* gate = dynamic_cast<Gate*>(*iter);
         assert(gate); // dynamic_cast must not fail
         string newname = (wire->id)+"_"+(gate->id);
-        newname = Check_Name_Present(circuitPtr,newname);
+        newname = Check_Name_Present(circuit,newname);
         // step 2. Add a new wire for this instance
         cout << "Adding derived wire:    " <<  newname  << endl;
         circuit.AddWire(newname.c_str(),CONNECTION);
@@ -199,9 +197,8 @@ bool Wire_Not_Derived(Wire* wire)
 
 
 
-string Check_Name_Present(Circuit* circuitPtr,string givenname)
+string Check_Name_Present(Circuit& circuit,string givenname)
 {
-    Circuit circuit =  *circuitPtr;
     map<string,int>::iterator iter = (circuit.RepeatInputs).find(givenname);
     cout << givenname <<endl;
     if (iter != (circuit.RepeatInputs).end())
@@ -223,4 +220,16 @@ string Check_Name_Present(Circuit* circuitPtr,string givenname)
 
 }
 
-*/
+
+
+
+string intToString(int inInt)
+{
+    stringstream ss;
+    string s;
+    ss << inInt;
+    s = ss.str();
+    return s;
+}
+
+

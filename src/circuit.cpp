@@ -322,136 +322,13 @@ bool Circuit::Evaluate()
     return true;
 }
 
-void Circuit:: ResolveWire(Wire* wire)
-{
-    // Assuming that initially all outputs of
-    // a wire are gates
-    //Steps:
-    // 1. Find out if a wire has more than one outputs
-    // 2. Create a new wire - with input as the orig wire
-    // and output as the gate
-    // 3. Update the orig wire's outputs to reflect the wires rather than gates
-    // 4. Update the output gates (orig gates) inputs showing the new wires
-    // as inputs
-
-    cout << "Need to resolve wire:   " << wire->id << endl;
-    list<Element*>:: iterator iter = (wire->outputs).begin();
-    while ( iter != (wire->outputs).end() )
-    {
-        Element* curEle = (*iter);
-        if (curEle->type == GATE)
-        {
-
-        Gate* gate = dynamic_cast<Gate*>(*iter);
-        assert(gate); // dynamic_cast must not fail
-        string newname = (wire->id)+"_"+(gate->id);
-        newname = Check_Name_Present(newname);
-        // step 2. Add a new wire for this instance
-        cout << "Adding derived wire:    " <<  newname  << endl;
-        circuit.AddWire(newname.c_str(),CONNECTION);
-
-        // The new wire's output should be the 
-        // gate
-        Add_Gate_To_Wire_Output(gate,newname.c_str());
-
-        // The new wire's input should be the old wire and
-        // the old wire' output should change from gate to 
-        // new wire
-
-        Wire* newwire = ((circuit.Netlist).find(newname))->second;
-        newwire->input = wire;
-         // finally update the gate's inputlist
-        (gate->inputs).remove(wire);
-        (gate->inputs).push_back(newwire);
-        
-        (*iter) = newwire;
-
-       iter++;
-        }
-
-
-        else continue;
-    }
-
-    if (wire->wtype == PO)
-    {
-        cout << "***************PO with fanout detected*************" <<  endl;
-        assert(false);
-    }
-}
 
 
 
 
 
-bool Circuit::ResolveBranches()
-{
-   map<string,Wire*>:: iterator iter = (circuit.Netlist).begin();
-   CIRCUIT_DFILE << "Resolve Branches started" << endl;
-   while (iter != (circuit.Netlist).end())
-    {
-        Wire* iwire = iter->second;
-        
-        // Condition for stemout
-        // 1. If the wire is not a PO, output size is > 1
-        // 2. If the wire is a PO output size is > 0
-        if (  ( (int)(iwire->outputs).size() > 1 
-            || ( (int) (iwire->outputs).size() > 0  && (iwire->wtype == PO))) 
-            && (Wire_Not_Derived(iwire)))
-        {
-
-                CIRCUIT_DFILE << "Calling resolve wire for  " << iwire->id << endl;
-                ResolveWire(iwire);
-        }
-        else 
-        {
-            CIRCUIT_DFILE << "No need to resolve wire " << iwire->id << endl;
-        }
-        iter++;
-    }
-    CIRCUIT_DFILE << "Resolve branches completed successfully" << endl << endl;
-    return true;
-}
 
 
-string Circuit::intToString(int inInt)
-{
-    stringstream ss;
-    string s;
-    ss << inInt;
-    s = ss.str();
-    return s;
-}
-
-string Circuit::Check_Name_Present(string givenname)
-{
-    map<string,int>::iterator iter = (circuit.RepeatInputs).find(givenname);
-    cout << givenname <<endl;
-    if (iter != (circuit.RepeatInputs).end())
-    {
-            iter->second += 1;
-            string newname;
-            newname = givenname + "_" + intToString(iter->second);
-            cout << "Returning name   " << newname << endl;
-         //   cout << "int value is  "  << iter->second << endl;
-            return newname;
-    }
-    else 
-     {
-         (circuit.RepeatInputs).insert(pair<string,int>(givenname,0));
-         cout << "Adding the namemap" << givenname << endl;
-        //    cout << "Returning name   " << givenname << endl;
-         return  givenname;
-     }
-
-}
-
-
-bool Circuit::Wire_Not_Derived(Wire* wire)
-{
-    if (wire->id.find("_") != string::npos ) return false;
-    else return true;
-}
 
 /*Use only to check if value is c xor i or  cbar xor i*/
 Value Do_Xor(Value val1, Value val2)
