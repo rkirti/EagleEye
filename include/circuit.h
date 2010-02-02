@@ -30,7 +30,6 @@ class Wire;
 typedef Value (*GateEvaluate)(list<Wire*> inputs);
 
 
-
 /* The evaluate functions array */
 extern const GateEvaluate g_EvaluateTable[];
 
@@ -213,7 +212,7 @@ public:
     bool AddGate(GateType type, char *name,char* output,char **inputs,int numSignals);
     void Add_Gate_To_Wire_Output(Gate* gate,const char* wirename);   
     void  Add_Gate_To_Wire_Input(Gate* gate,const char* wirename);
-    bool Levelize();
+ //   bool Levelize();
     bool ResolveBranches();
     void ResolveWire(Wire* somewire);
 
@@ -245,4 +244,5 @@ int Translate_Value_To_Int(Value value);
 
 
 #include "evaluate.h"
+#include "setup.h"
 #endif /* ifndef CIRCUIT_H */

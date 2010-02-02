@@ -22,25 +22,22 @@
 #include "circuit.h"
 using namespace std;
 
-extern ofstream CIRCUIT_DFILE;
 
 // NOTE:  We add only PIs, POs, and intermediate gates to the levels
-
-bool Levelize(Circuit* circuitPtr)
+bool Levelize(Circuit& circuit)
 {
-    Circuit circuit = *circuitPtr;
     int level=0;
     map<string,Wire*>::iterator iter =  (circuit.PriInputs).begin();
     multimap<int,Element*>:: iterator levelIter;
 
-    CIRCUIT_DFILE << "Starting Levelize" << endl;
+    cout << "Starting Levelize" << endl;
 
     // Adding the primary inputs to level zero
-    CIRCUIT_DFILE <<  "Adding all primary inputs" << endl;
+    cout <<  "Adding all primary inputs" << endl;
     
     for (;iter != (circuit.PriInputs).end(); iter++)
     {   
-        CIRCUIT_DFILE << "Adding  " << iter->second->id << " at level 0 " << endl;
+        cout << "Adding  " << iter->second->id << " at level 0 " << endl;
         (circuit.Levels).insert(pair<int,Element*>(0,(Element*)iter->second));
     }
 
@@ -63,7 +60,7 @@ bool Levelize(Circuit* circuitPtr)
                     if (curGate->tempInputs == 0) 
                     {
 
-                        CIRCUIT_DFILE << "Adding  " << curGate->id << " at level  " << level+1 << endl;
+                        cout << "Adding  " << curGate->id << " at level  " << level+1 << endl;
                         (circuit.Levels).insert(pair<int,Element*>(level+1,(Element*)curGate));
                     }
                 }
@@ -80,7 +77,7 @@ bool Levelize(Circuit* circuitPtr)
                     if (curGate->tempInputs == 0) 
                     {
 
-                        CIRCUIT_DFILE << "Adding  " << curGate->id << " at level  " << level+1 << endl;
+                        cout << "Adding  " << curGate->id << " at level  " << level+1 << endl;
                         (circuit.Levels).insert(pair<int,Element*>(level+1,(Element*)curGate));
                     }
                 }
@@ -92,18 +89,18 @@ bool Levelize(Circuit* circuitPtr)
 
         }
     }while (   (circuit.Levels).find(++level) != (circuit.Levels).end() ); 
-    CIRCUIT_DFILE << "Levelization completed" << endl << endl;
+    cout << "Levelization completed" << endl << endl;
 }
 
 
 
 
-
+/*
 bool Resolve_Branches(Circuit* circuitPtr)
 {
    Circuit circuit = *circuitPtr;
    map<string,Wire*>:: iterator iter = (circuit.Netlist).begin();
-   CIRCUIT_DFILE << "Resolve Branches started" << endl;
+   cout << "Resolve Branches started" << endl;
    while (iter != (circuit.Netlist).end())
     {
         Wire* iwire = iter->second;
@@ -116,16 +113,16 @@ bool Resolve_Branches(Circuit* circuitPtr)
             && (Wire_Not_Derived(iwire)))
         {
 
-                CIRCUIT_DFILE << "Calling resolve wire for  " << iwire->id << endl;
+                cout << "Calling resolve wire for  " << iwire->id << endl;
                 Resolve_Wire(circuitPtr,iwire);
         }
         else 
         {
-            CIRCUIT_DFILE << "No need to resolve wire " << iwire->id << endl;
+            cout << "No need to resolve wire " << iwire->id << endl;
         }
         iter++;
     }
-    CIRCUIT_DFILE << "Resolve branches completed successfully" << endl << endl;
+    cout << "Resolve branches completed successfully" << endl << endl;
     return true;
 }
 
@@ -226,4 +223,4 @@ string Check_Name_Present(Circuit* circuitPtr,string givenname)
 
 }
 
-
+*/

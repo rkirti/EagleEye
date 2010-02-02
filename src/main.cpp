@@ -32,7 +32,7 @@ int main(int argc,char **argv)
     circuit.Init_Debug();
 
     // Levels are needed for evaluation
-    circuit.Levelize();
+    Levelize(circuit);
 
     // Name the branch wires correctly    
     circuit.ResolveBranches();
