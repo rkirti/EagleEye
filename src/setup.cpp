@@ -23,6 +23,23 @@
 using namespace std;
 
 
+bool  AddWire(Circuit& circuit,const char *inName,WireType type)
+{
+	Wire *iwire = new Wire(inName,type);
+	circuit.Netlist.insert( pair<string,Wire *>(inName,iwire) );
+    iwire->value = U;
+	
+    if (type == PI)
+        circuit.PriInputs.insert( pair<string,Wire*>(inName,iwire) );
+	else if (type == PO)
+		circuit.PriOutputs.insert( pair<string,Wire*>(inName,iwire) );
+
+	return true;
+}
+
+
+
+
 // NOTE:  We add only PIs, POs, and intermediate gates to the levels
 bool Levelize(Circuit& circuit)
 {
@@ -154,7 +171,7 @@ void Resolve_Wire(Circuit&,Wire* wire)
         newname = Check_Name_Present(circuit,newname);
         // step 2. Add a new wire for this instance
         cout << "Adding derived wire:    " <<  newname  << endl;
-        circuit.AddWire(newname.c_str(),CONNECTION);
+        AddWire(circuit,newname.c_str(),CONNECTION);
 
         // The new wire's output should be the 
         // gate

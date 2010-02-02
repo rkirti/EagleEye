@@ -51,23 +51,6 @@ void Circuit::Add_Gate_To_Wire_Input(Gate* gate,const char* wirename)
 
 
 
-/*
- * Circuit::methods
- */
-bool  Circuit::AddWire(const char *inName,WireType type)
-{
-	Wire *iwire = new Wire(inName,type);
-	Netlist.insert( pair<string,Wire *>(inName,iwire) );
-    iwire->value = U;
-	
-    if (type == PI)
-        PriInputs.insert( pair<string,Wire*>(inName,iwire) );
-	else if (type == PO)
-		PriOutputs.insert( pair<string,Wire*>(inName,iwire) );
-
-	return true;
-}
-
 
 
 /* By the time a gate is added, all the wires have been added and 

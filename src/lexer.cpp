@@ -5,7 +5,7 @@ using namespace std;
 
 int Lexer_AddWire(char* inName,WireType type)
 {
-	return circuit.AddWire(inName,type);
+	return AddWire(circuit,inName,type);
 
 }
 

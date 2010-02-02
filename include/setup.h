@@ -5,6 +5,9 @@
 #ifndef SETUP_H
 #define SETUP_H
 
+
+
+bool  AddWire(Circuit& circuit,const char *inName,WireType type);
 bool Levelize(Circuit& circuit);   
 bool Resolve_Branches(Circuit& circuit);
 void Resolve_Wire(Circuit& circuit,Wire* wire);
