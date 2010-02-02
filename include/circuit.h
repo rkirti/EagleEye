@@ -207,7 +207,7 @@ public:
     void Clear_Wire_Values();
     void Clear_Internal_Wire_Values();
     void Init_Debug();
-    bool Simulate_Good();
+ //   bool Simulate_Good();
     bool ReadFaults();
 
 };
@@ -219,4 +219,5 @@ extern Circuit circuit;
 #include "evaluate.h"
 #include "helper.h"
 #include "setup.h"
+#include "simulate.h"
 #endif /* ifndef CIRCUIT_H */

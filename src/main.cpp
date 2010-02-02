@@ -37,6 +37,8 @@ int main(int argc,char **argv)
     // Name the branch wires correctly    
     Resolve_Branches(circuit);
 
+    Simulate_Good(circuit);
+/*
     // Write both possible faults for each wire in the fault file
     Generate_Full_FaultSet();
 
@@ -62,5 +64,6 @@ int main(int argc,char **argv)
     // Run ATPG on the fault set
     atpgTest.PerformTest();
     return 0;
+*/
 }
 
