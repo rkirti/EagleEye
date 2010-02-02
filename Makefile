@@ -1,5 +1,5 @@
 # The cpp source files
-FILES = main.cpp evaluate.cpp circuit.cpp lexer.cpp atpg.cpp dot.cpp setup.cpp
+FILES = main.cpp evaluate.cpp circuit.cpp lexer.cpp atpg.cpp dot.cpp setup.cpp helper.cpp
 
 # Absolute locations of the source and object files (wrt the Makefile location)
 SRC_FILES := $(FILES:%.cpp=src/%.cpp)

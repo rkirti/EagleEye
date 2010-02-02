@@ -221,57 +221,12 @@ bool Circuit::Evaluate()
 
 
 
-/*Use only to check if value is c xor i or  cbar xor i*/
-Value Do_Xor(Value val1, Value val2)
-{
-
-    Value output;
-    Value negval1 =  (Value) (val1 != U)?(Value)(~(val1)&0xf):U;
-    Value negval2 =  (Value) (val2 != U)?(Value)(~(val2)&0xf):U;
-    output = (Value)((( (val1 & negval2) | (negval1 & val2)))&0xf);
-    return output;
-}
-
-
-int Translate_Value_To_Int(Value value)
-{
-    switch(value)
-    {
-        case 0x0: 
-            return 0;
-        case 0xff:
-            return 1;
-    }
-    return 0;
-}
 
 
 
 
 
 
-
-
-
-
-
-// returns if the value is known or not
-// 
-bool isNotKnown(Value v)
-{
-    switch(v)
-     {
-	    case ONE:
-	    case ZERO:
-	    case D:
-	    case DBAR:
-	    return false;
-	
-	default:
-	    return true;
-     }
-     return true;
-}
 
 
     

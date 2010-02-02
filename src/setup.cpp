@@ -337,13 +337,3 @@ string Check_Name_Present(Circuit& circuit,string givenname)
 
 
 
-string intToString(int inInt)
-{
-    stringstream ss;
-    string s;
-    ss << inInt;
-    s = ss.str();
-    return s;
-}
-
-

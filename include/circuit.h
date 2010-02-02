@@ -59,7 +59,8 @@ class Wire: public Element
     public:
         Value value; 
         WireType wtype;
-        virtual Value Evaluate()	// Not used. Any class inheriting Element has to define this.
+        virtual Value Evaluate()	
+        // Not used. Any class inheriting Element has to define this.
 	{
 		return U;
 	}
@@ -215,11 +216,7 @@ public:
 /* The global circuit */
 extern Circuit circuit;
 
-bool isNotKnown(Value);
-Value Do_Xor(Value val1, Value val2);
-int Translate_Value_To_Int(Value value);
-
-
 #include "evaluate.h"
+#include "helper.h"
 #include "setup.h"
 #endif /* ifndef CIRCUIT_H */
