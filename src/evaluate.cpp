@@ -98,7 +98,6 @@ Value Not(list<Wire*> inputs)
 Value Nand(list<Wire*> inputs)
 {
     int output=ZERO;
-    Implication* intention=NULL;
     list<Wire *>::iterator iter;
     Value curValue;
 
@@ -122,7 +121,6 @@ Value Nand(list<Wire*> inputs)
 Value Nor(list<Wire*> inputs)
 {
    int output=ONE;
-   Implication* intention=NULL;
    list<Wire *>::iterator iter;
    Value curValue;
    

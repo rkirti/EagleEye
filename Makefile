@@ -13,11 +13,11 @@ BIN_DIR=bin
 
 # Instrcution of how to compile the cpp source files
 obj/%.o: src/%.cpp
-	g++ -g -c $< -I $(HEADER_SRC) -o $@ 
+	g++ -g -c -Wall $< -I $(HEADER_SRC) -o $@ 
 
 # The main executable
 atpg: $(OBJ_FILES) parser/parser.tab.o parser/lex.yy.o
-	g++ -g $(OBJ_FILES) parser/parser.tab.o parser/lex.yy.o -o $(BIN_DIR)/$@ 
+	g++ -g -Wall $(OBJ_FILES) parser/parser.tab.o parser/lex.yy.o -o $(BIN_DIR)/$@ 
 
 parser/parser.tab.o: parser/parser.tab.c parser/parser.tab.h
 	gcc -g -c -I include/ -I parser/ parser/parser.tab.c -o parser/parser.tab.o
