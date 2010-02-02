@@ -23,6 +23,14 @@
 using namespace std;
 
 
+extern ofstream CIRCUIT_DFILE;
+extern ofstream EVALUATE_DFILE;
+extern ofstream ATPG_DFILE;
+extern ofstream MAIN_DFILE;
+
+
+
+
 // returns if the value is known or not
 // 
 bool isNotKnown(Value v)
@@ -77,5 +85,90 @@ string intToString(int inInt)
     return s;
 }
 
+
+void Init_Debug()
+{
+    //CIRCUIT_DFILE.open("/dev/null",ios::out);   
+    //EVALUATE_DFILE.open("/dev/null",ios::out);   
+    //ATPG_DFILE.open("/dev/null",ios::out);   
+    //MAIN_DFILE.open("/dev/null",ios::out);   
+
+    CIRCUIT_DFILE.open("debug/ckt.debug",ios::out);   
+    EVALUATE_DFILE.open("debug/eval.debug",ios::out);   
+    ATPG_DFILE.open("debug/atpg.debug",ios::out);   
+    MAIN_DFILE.open("debug/main.debug",ios::out);   
+}
+
+
+
+void Print_All_Wires(Circuit& circuit)
+{
+    CIRCUIT_DFILE << "Print_All_Wires called"  << endl;
+
+
+    // Print out the primary inputs
+    CIRCUIT_DFILE << "Printing all the PIs "   << endl << endl;
+    map<string,Wire*> ::iterator iter =  (circuit.PriInputs).begin();
+
+    for (;iter != (circuit.PriInputs).end(); iter++)
+    {   
+        CIRCUIT_DFILE << setw(20) << (iter->second)->id << ":    " << (iter->second)->value << endl;
+    }
+
+
+    // Print out the primary outputs
+    iter =  (circuit.PriOutputs).begin();
+    CIRCUIT_DFILE << "Printing all POs " << endl << endl;
+    for (;iter != (circuit.PriOutputs).end(); iter++)
+    {   
+        CIRCUIT_DFILE  << setw(20) << (iter->second)->id << ":    " << (iter->second)->value << endl;
+    }
+
+
+    // Print out the netlist
+    iter =  (circuit.Netlist).begin();
+    CIRCUIT_DFILE << "Printing out the netlist " << endl << endl;
+    for (;iter != (circuit.Netlist).end(); iter++)
+    {   
+        CIRCUIT_DFILE << setw(20) << (iter->second)->id << ":    " << (iter->second)->value << endl;
+    }
+
+    CIRCUIT_DFILE <<  endl << endl;
+}
+
+
+
+/*
+ * Clear all wire values to U
+ */
+void Clear_Wire_Values(Circuit& circuit)
+{
+
+    // Print out the netlist
+    // Clear the values of all the wires. Set the value to U
+    map<string,Wire*> ::iterator iter =  (circuit.Netlist).begin();
+    for (;iter != (circuit.Netlist).end(); iter++)
+    {   
+        (iter->second)->value = U;
+    }
+}
+
+
+
+/*
+ * Clear all internal wire values(all wires except PIs) to U
+ */
+void Clear_Internal_Wire_Values( Circuit& circuit)
+{
+
+    // Print out the netlist
+    // Clear the values of all the wires. Set the value to U
+    map<string,Wire*> ::iterator iter =  (circuit.Netlist).begin();
+    for (;iter != (circuit.Netlist).end(); iter++)
+    {   
+        if ( (iter->second)->wtype != PI)
+            (iter->second)->value = U;
+    }
+}
 
 

@@ -201,12 +201,8 @@ public:
 
  
 
-    bool Evaluate();
+ //   bool Evaluate();
     vector<Value> CaptureOutput();
-    void Print_All_Wires();
-    void Clear_Wire_Values();
-    void Clear_Internal_Wire_Values();
-    void Init_Debug();
     bool ReadFaults();
 
 };

@@ -1670,7 +1670,7 @@ void RandomVectorTest::PerformTest(int coverage,int timeLimit)
         vector<Value> faultFreeOutput,faultyOutput;
 
         // Evaluate the circuit without faults and store the bitmap;
-        circuit.Evaluate();
+        Evaluate(circuit);
         // Capture the fault free output
         faultFreeOutput = circuit.CaptureOutput();
 
@@ -1678,10 +1678,10 @@ void RandomVectorTest::PerformTest(int coverage,int timeLimit)
         list<Fault>::iterator iter = (circuit.FaultSet).begin();
         while ( (iter != (circuit.FaultSet).end()) && ((time (NULL) - startTime) < endTime) )
         {
-            circuit.Clear_Internal_Wire_Values();
+            Clear_Internal_Wire_Values(circuit);
             FaultWireOrigVal = iter->FaultSite->value;
             iter->FaultSite->value = (iter->faultType == 0)?ZERO:ONE;
-            circuit.Evaluate();
+            Evaluate(circuit);
             faultyOutput.clear();
             faultyOutput = circuit.CaptureOutput();
             iter->FaultSite->value = FaultWireOrigVal;
@@ -1714,7 +1714,7 @@ bool ATPG::PerformTest()
     {
         // Important to clean up stuff from the previous run before we begin
         // Set all wires to U
-        circuit.Clear_Wire_Values();
+        Clear_Wire_Values(circuit);
         // No Implications or logs should be there.    
         while (!ImpliQueue.empty())
             ImpliQueue.pop();

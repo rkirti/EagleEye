@@ -23,6 +23,9 @@
 using namespace std;
 
 
+
+
+
 bool  Add_Wire(Circuit& circuit,const char *inName,WireType type)
 {
 	Wire *iwire = new Wire(inName,type);
@@ -333,7 +336,3 @@ string Check_Name_Present(Circuit& circuit,string givenname)
      }
 
 }
-
-
-
-

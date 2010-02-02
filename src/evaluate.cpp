@@ -10,6 +10,8 @@
 using namespace std;
 
 ofstream EVALUATE_DFILE;
+extern ofstream CIRCUIT_DFILE;
+
 
 const GateEvaluate g_EvaluateTable[] = 
 {
@@ -165,4 +167,98 @@ Value Xor(list<Wire *> inputs)
     return (Value)output;
 }
 
+
+bool Evaluate( Circuit& circuit)
+{
+    int level=1;
+    multimap<int,Element*>:: iterator levelIter;
+    map<string,Wire*> ::iterator iter =  (circuit.PriInputs).begin();
+
+    CIRCUIT_DFILE << "Circuit evaluation called for" << endl;
+
+    // first propage the values on primary inputs to the immediate brances
+    for ( iter = (circuit.PriInputs).begin(); iter != (circuit.PriInputs).end(); iter++)
+    {
+        Wire *outputWire = (iter->second);
+        Value curValue = outputWire->value;
+                if  ((outputWire->outputs).size() > 1) 
+                {
+                    list<Element*>::iterator iterator = (outputWire->outputs).begin();
+                    CIRCUIT_DFILE << "Evaluating stemouts of wire " << outputWire->id << endl;
+                    /* Reasons for the dynamic cast: 
+                     * If the output wire has > 1 output, they are all bound to
+                     * be wires.
+                     * */
+                    for (;iterator != (outputWire->outputs).end(); iterator++)
+                    {
+                        //cout << "output: " << (*iterator)->id << endl;
+                        Wire* check = (dynamic_cast<Wire*>(*iterator));
+                        assert(check);
+                        CIRCUIT_DFILE << "Setting value of branch " <<  check->id <<   " of wire " << outputWire->id << " to "  << (int) curValue << endl;
+                        // if the value of the wire is already set, don't set it again. (might be becuase it is faulty)
+                        if (check->value == U)
+                            check->value = curValue;
+
+                    }
+
+                }
+    }
+
+    do
+    {
+        /* first and second are the end-point iterators that has been
+         * returned on qeurying the multimap on a value
+         */
+        for (levelIter = ((circuit.Levels).equal_range(level)).first; 
+                levelIter !=((circuit.Levels).equal_range(level)).second; levelIter++)
+        {
+            //   cout <<"Iter is now at" << levelIter->second->id  <<endl;
+            if ( (levelIter->second)->type == GATE)
+            {
+                Gate* curGate = dynamic_cast<Gate*>(levelIter->second);
+                Value curValue = curGate->Evaluate();
+                Wire* outputWire = curGate->output;
+                CIRCUIT_DFILE << "Setting value of wire " << outputWire->id << " to " << (int)curValue << endl; 
+                // if the value of the wire is already set, don't set it again. (might be becuase it is faulty)
+                if (outputWire->value == U)
+                    outputWire->value = curValue;
+
+                if  ((outputWire->outputs).size() > 1) 
+                {
+                    list<Element*>::iterator iter = (outputWire->outputs).begin();
+                    CIRCUIT_DFILE << "Evaluating stemouts of wire " << outputWire->id << endl;
+                    /* Reasons for the dynamic cast: 
+                     * If the output wire has > 1 output, they are all bound to
+                     * be wires.
+                     * */
+                    for (;iter != (outputWire->outputs).end(); iter++)
+                    {
+                        //cout << "output: " << (*iter)->id << endl;
+                        Wire* check = (dynamic_cast<Wire*>(*iter));
+                        assert(check);
+                        CIRCUIT_DFILE << "Setting value of branch " <<  check->id <<   " of wire " << outputWire->id << " to "  << (int) curValue << endl;
+                        // if the value of the wire is already set, don't set it again. (might be becuase it is faulty)
+                        if (check->value == U)
+                            check->value = curValue;
+
+                    }
+
+                }
+
+            }
+            else cout << "something wrong" << endl;
+
+
+        }
+    }while (   (circuit.Levels).find(++level) != (circuit.Levels).end() ); 
+
+    iter = (circuit.PriOutputs).begin();
+    
+//    for (;iter != (circuit.PriOutputs).end(); iter++)
+//    {   
+//         cout << "PO: " << (iter->second)->id << "value:  " << (iter->second)->value << endl;
+//    }
+
+    return true;
+}
 

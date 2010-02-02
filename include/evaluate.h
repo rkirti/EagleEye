@@ -21,4 +21,6 @@ Value Buf(list<Wire *> inputs);
 
 
 
+bool Evaluate( Circuit& circuit);
+
 #endif /* ifndef EVALUATE_H */

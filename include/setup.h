@@ -7,6 +7,7 @@
 
 
 
+void Init_Debug();
 bool  Add_Wire(Circuit& circuit,const char *inName,WireType type);
 bool Add_Gate(Circuit& circuit,GateType type, char *name,char* output,char **inputs,int numSignals);
 void Add_Gate_To_Wire_Output(Circuit& circuit,Gate* gate,const char* wirename);   
@@ -16,5 +17,7 @@ bool Resolve_Branches(Circuit& circuit);
 void Resolve_Wire(Circuit& circuit,Wire* wire);
 bool Wire_Not_Derived(Wire* wire);
 string Check_Name_Present(Circuit& circuit,string givenname);
+
+
 
 #endif /* ifndef SETUP_H */

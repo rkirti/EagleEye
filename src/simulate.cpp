@@ -80,7 +80,7 @@ bool Simulate_Good(Circuit& circuit)
     cout << "Accepted all inputs, now calling circuit evaluate" << endl;
     cout << endl << endl;
     
-    circuit.Evaluate();
+    Evaluate(circuit);
     cout << "Evaluation done. Now printing outputs" << endl;
     cout << "Please enter the name of the file to print output vectors " << endl;
     
