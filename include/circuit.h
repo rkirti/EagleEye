@@ -207,7 +207,6 @@ public:
     void Clear_Wire_Values();
     void Clear_Internal_Wire_Values();
     void Init_Debug();
- //   bool Simulate_Good();
     bool ReadFaults();
 
 };
