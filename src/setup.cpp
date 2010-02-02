@@ -23,7 +23,7 @@
 using namespace std;
 
 
-bool  AddWire(Circuit& circuit,const char *inName,WireType type)
+bool  Add_Wire(Circuit& circuit,const char *inName,WireType type)
 {
 	Wire *iwire = new Wire(inName,type);
 	circuit.Netlist.insert( pair<string,Wire *>(inName,iwire) );
@@ -38,6 +38,102 @@ bool  AddWire(Circuit& circuit,const char *inName,WireType type)
 }
 
 
+
+void Add_Gate_To_Wire_Output( Circuit& circuit,Gate* gate,const char* wirename)
+{
+    Wire* iwire = ((circuit.Netlist).find(wirename))->second;
+    assert( (circuit.Netlist).find(wirename) != (circuit.Netlist).end());
+ //   cout << "Added gate  "  << gate->id <<  "  as output of wire  " << iwire->id << endl;
+    iwire->outputs.push_back((Element*)gate);    
+    return;
+}
+
+
+void Add_Gate_To_Wire_Input(Circuit& circuit, Gate* gate,const char* wirename)
+{
+    Wire* iwire = ((circuit.Netlist).find(wirename))->second;
+    assert( (circuit.Netlist).find(wirename) != (circuit.Netlist).end());
+  //  cout << "Added gate  "  << gate->id <<  "  as input of wire  " << iwire->id << endl;
+    iwire->input = (Element*)gate;    
+    return;
+}
+
+
+
+
+/* By the time a gate is added, all the wires have been added and 
+ * their types are known
+ * */
+
+bool Add_Gate(Circuit& circuit,GateType type, char *name,char* output,char **inputs,int numSignals)
+{
+    Gate *gate = new Gate(name,type);
+    map<string,Wire *>::iterator iter;
+
+    // Some consistency checks before we add
+    // the wires to the gates inputs and output
+    // 1. Output must be a valid wire
+    iter = circuit.Netlist.find(output);
+    if (iter  ==  circuit.Netlist.end()) 
+    {
+        cout  << "Gate's output name %s does not represent a valid wire " << output << endl;
+        return false;
+    }
+
+    // 2. If output type is PO, it should be
+    // there in PO list
+    if ((iter->second)->wtype == PO)
+    {
+        iter = circuit.PriOutputs.find(output);
+        if (iter  ==  circuit.PriOutputs.end()) 
+        {
+            cout << "Gate's output name %s is supposedly PO but not present in PO list " << output << endl;
+            return false;
+        }
+    }
+
+    // Now that we are convinced, add the wire as gate's output
+    // and the gate as wire's input :P
+    Add_Gate_To_Wire_Input(circuit, gate,((iter->second)->id).c_str());
+    gate->output = iter->second;
+
+    while (numSignals--)
+    {
+
+
+        // Some consistency checks before we add
+        // the wires to the gates inputs and output
+        // 1. Input must be a valid wire
+        iter = circuit.Netlist.find(inputs[numSignals]);
+        if (iter  ==  circuit.Netlist.end()) 
+        {
+            cout << "Gate's input name %s does not represent a valid wire" << inputs[numSignals] << endl;
+            return false;
+        }
+
+        // 2. If input type is PI, it should be
+        // there in PI list
+        if ((iter->second)->wtype == PI)
+        {
+            iter = circuit.PriInputs.find(inputs[numSignals]);
+            if (iter  ==  circuit.PriInputs.end()) 
+            {
+                cout << "Gate's input name %s is supposedly PI but not present in PI list" << inputs[numSignals] << endl;
+                return false;
+            }
+        }
+
+        // Now that we are convinced, add the wire as gate's input
+        gate->inputs.push_back(iter->second);
+        Add_Gate_To_Wire_Output(circuit,gate,((iter->second)->id).c_str());
+    }
+
+    // Finally we add the gate to the circuit list
+    gate->tempInputs = (gate->inputs).size();
+    circuit.Gates.insert( pair<string,Gate *>(name, gate) );
+
+    return true;
+}
 
 
 // NOTE:  We add only PIs, POs, and intermediate gates to the levels
@@ -107,6 +203,7 @@ bool Levelize(Circuit& circuit)
         }
     }while (   (circuit.Levels).find(++level) != (circuit.Levels).end() ); 
     cout << "Levelization completed" << endl << endl;
+    return true;
 }
 
 
@@ -171,11 +268,11 @@ void Resolve_Wire(Circuit&,Wire* wire)
         newname = Check_Name_Present(circuit,newname);
         // step 2. Add a new wire for this instance
         cout << "Adding derived wire:    " <<  newname  << endl;
-        AddWire(circuit,newname.c_str(),CONNECTION);
+        Add_Wire(circuit,newname.c_str(),CONNECTION);
 
         // The new wire's output should be the 
         // gate
-        circuit.Add_Gate_To_Wire_Output(gate,newname.c_str());
+        Add_Gate_To_Wire_Output(circuit,gate,newname.c_str());
 
         // The new wire's input should be the old wire and
         // the old wire' output should change from gate to 

@@ -30,102 +30,10 @@ static int cktDebug=1;
 #define DERROR      {printf("Error.Cannot open debug file\n"); exit(0);}
 
 
-void Circuit::Add_Gate_To_Wire_Output(Gate* gate,const char* wirename)
-{
-    Wire* iwire = ((circuit.Netlist).find(wirename))->second;
-    assert( (circuit.Netlist).find(wirename) != (circuit.Netlist).end());
- //   cout << "Added gate  "  << gate->id <<  "  as output of wire  " << iwire->id << endl;
-    iwire->outputs.push_back((Element*)gate);    
-    return;
-}
-
-
-void Circuit::Add_Gate_To_Wire_Input(Gate* gate,const char* wirename)
-{
-    Wire* iwire = ((circuit.Netlist).find(wirename))->second;
-    assert( (circuit.Netlist).find(wirename) != (circuit.Netlist).end());
-  //  cout << "Added gate  "  << gate->id <<  "  as input of wire  " << iwire->id << endl;
-    iwire->input = (Element*)gate;    
-    return;
-}
 
 
 
 
-
-/* By the time a gate is added, all the wires have been added and 
- * their types are known
- * */
-
-bool Circuit::AddGate(GateType type, char *name,char* output,char **inputs,int numSignals)
-{
-    Gate *gate = new Gate(name,type);
-    map<string,Wire *>::iterator iter;
-
-    // Some consistency checks before we add
-    // the wires to the gates inputs and output
-    // 1. Output must be a valid wire
-    iter = Netlist.find(output);
-    if (iter  ==  Netlist.end()) 
-    {
-        ERROR("Gate's output name %s does not represent a valid wire",output);
-        return false;
-    }
-
-    // 2. If output type is PO, it should be
-    // there in PO list
-    if ((iter->second)->wtype == PO)
-    {
-        iter = PriOutputs.find(output);
-        if (iter  ==  PriOutputs.end()) 
-        {
-            ERROR("Gate's output name %s is supposedly PO but not present in PO list",output);
-            return false;
-        }
-    }
-
-    // Now that we are convinced, add the wire as gate's output
-    // and the gate as wire's input :P
-    Add_Gate_To_Wire_Input(gate,((iter->second)->id).c_str());
-    gate->output = iter->second;
-
-    while (numSignals--)
-    {
-
-
-        // Some consistency checks before we add
-        // the wires to the gates inputs and output
-        // 1. Input must be a valid wire
-        iter = Netlist.find(inputs[numSignals]);
-        if (iter  ==  Netlist.end()) 
-        {
-            ERROR("Gate's input name %s does not represent a valid wire",inputs[numSignals]);
-            return false;
-        }
-
-        // 2. If input type is PI, it should be
-        // there in PI list
-        if ((iter->second)->wtype == PI)
-        {
-            iter = PriInputs.find(inputs[numSignals]);
-            if (iter  ==  PriInputs.end()) 
-            {
-                ERROR("Gate's input name %s is supposedly PI but not present in PI list", inputs[numSignals]);
-                return false;
-            }
-        }
-
-        // Now that we are convinced, add the wire as gate's input
-        gate->inputs.push_back(iter->second);
-        Add_Gate_To_Wire_Output(gate,((iter->second)->id).c_str());
-    }
-
-    // Finally we add the gate to the circuit list
-    gate->tempInputs = (gate->inputs).size();
-    circuit.Gates.insert( pair<string,Gate *>(name, gate) );
-
-    return true;
-}
 
 
 

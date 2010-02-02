@@ -366,7 +366,6 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
 
         ImpliQueue.pop();
         
-        
         // If it is the faulty wire, don't set the value
         if ( curWire != (circuit.faultWire) )
         {     
@@ -375,7 +374,6 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
         }    
         return true;
     }
-
 }
 
 

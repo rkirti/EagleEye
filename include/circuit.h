@@ -199,16 +199,6 @@ public:
     Wire *faultWire;
 
  
-    /*this should move to a different header file*/
-  //  bool AddWire(const char* name,WireType type);
-    /*Signals: input and output signals of the gate*/
-    bool AddGate(GateType type, char *name,char* output,char **inputs,int numSignals);
-    void Add_Gate_To_Wire_Output(Gate* gate,const char* wirename);   
-    void  Add_Gate_To_Wire_Input(Gate* gate,const char* wirename);
-
-    void Update_Wire_Pair(Wire* oldwire,Wire* newwire);
-    void  Update_Gate_Input(Gate* gate, Wire* oldwire,Wire* newwire);
-
 
     bool Evaluate();
     vector<Value> CaptureOutput();
