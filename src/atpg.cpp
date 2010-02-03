@@ -1655,7 +1655,7 @@ void RandomVectorTest::PerformTest(int coverage,int timeLimit)
         exit(-1);
     }
 
-    int totalFaults = (circuit.FaultSet).size();
+    int totalFaults = (circuit.set).size();
     int faultsToDetect = ( totalFaults * coverage ) / 100;
     int faultsDetected = 0;
     time_t startTime = time (NULL);
@@ -1675,8 +1675,8 @@ void RandomVectorTest::PerformTest(int coverage,int timeLimit)
         faultFreeOutput = circuit.CaptureOutput();
 
         // Now insert each fault and test if it is detected or not
-        list<Fault>::iterator iter = (circuit.FaultSet).begin();
-        while ( (iter != (circuit.FaultSet).end()) && ((time (NULL) - startTime) < endTime) )
+        list<Fault>::iterator iter = (circuit.set).begin();
+        while ( (iter != (circuit.set).end()) && ((time (NULL) - startTime) < endTime) )
         {
             Clear_Internal_Wire_Values(circuit);
             FaultWireOrigVal = iter->FaultSite->value;
@@ -1690,7 +1690,7 @@ void RandomVectorTest::PerformTest(int coverage,int timeLimit)
             // and increment the detected faults
             if (faultyOutput != faultFreeOutput)
             {
-                iter = (circuit.FaultSet).erase(iter);
+                iter = (circuit.set).erase(iter);
                 faultsDetected++;
                 if (faultsDetected >= faultsToDetect)
                     break;
@@ -1700,17 +1700,17 @@ void RandomVectorTest::PerformTest(int coverage,int timeLimit)
         }
     }
 
-    cout << "The size of the fault set is " << (circuit.FaultSet).size() << endl;
+    cout << "The size of the fault set is " << (circuit.set).size() << endl;
 
 }
 bool ATPG::PerformTest()
 {
     // Run ATPG on the fault set
-    MAIN_DFILE << "size of the fault set = " << circuit.FaultSet.size() << endl;
+    MAIN_DFILE << "size of the fault set = " << circuit.set.size() << endl;
     int detectedFaults=0;
     int undetectedFaults=0;
-    list<Fault>::iterator it = circuit.FaultSet.begin();
-    for (; it != circuit.FaultSet.end(); it++)
+    list<Fault>::iterator it = circuit.set.begin();
+    for (; it != circuit.set.end(); it++)
     {
         // Important to clean up stuff from the previous run before we begin
         // Set all wires to U

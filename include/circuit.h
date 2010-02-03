@@ -18,17 +18,15 @@
 #include <fstream>
 #include <vector>
 #include  "enumdef.h"
-
-
 using namespace std;
 
 class Wire;
+class Fault;
 
-
+typedef list<Fault> FaultSet;
 
 /*Generic Evaluate function table*/
 typedef Value (*GateEvaluate)(list<Wire*> inputs);
-
 
 /* The evaluate functions array */
 extern const GateEvaluate g_EvaluateTable[];
@@ -104,28 +102,6 @@ class Gate: public Element
 };
 
 
-class Fault{
-    public:
-    Wire *FaultSite;
-    bool faultType;     // s-a-0 or s-a-1
-    int level;
-
-    //Constructor
-    Fault(Wire *faultwire,int type)
-    {
-        if ((type != 0) && (type != 1))
-        {
-            cout << "Unknown fault type" << endl;
-            assert(false);
-        }
-        FaultSite = faultwire;
-        faultType = type;
-        level = 0;
-    }
-
-};
-
-
 
 /* Instead of adding gates to D or J Frontiers,
  * we add their output wires
@@ -157,7 +133,6 @@ public:
 
 
 
-
 class Circuit {
 
 friend class ATPG;    
@@ -186,7 +161,7 @@ public:
 
     multimap<int,Element*> Levels;
 
-    list<Fault> FaultSet; // Set of faults we need to run ATPG for
+    FaultSet set; // Set of faults we need to run ATPG for
     
 
     list<WireValuePair> DFrontier;
@@ -202,9 +177,10 @@ public:
  
 
     vector<Value> CaptureOutput();
-    bool ReadFaults();
+    //bool ReadFaults();
 
 };
+
 
 
 /* The global circuit */
@@ -214,4 +190,5 @@ extern Circuit circuit;
 #include "helper.h"
 #include "setup.h"
 #include "simulate.h"
+#include "fault.h"
 #endif /* ifndef CIRCUIT_H */

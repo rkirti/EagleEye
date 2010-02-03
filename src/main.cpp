@@ -1,6 +1,8 @@
 #include "circuit.h"
+#include "fault.h"
 #include "atpg.h"
 #include "lexer.h"
+
 
 using namespace std;
 
@@ -43,8 +45,8 @@ int main(int argc,char **argv)
     Generate_Full_FaultSet();
 
     // Read the faults
-    circuit.ReadFaults(); 
-
+    Read_Faults_Into_FaultSet( "tests/faults.txt",circuit, circuit.set ); 
+    Print_FaultSet(circuit.set);
     // RandomVectorTest object to handle random vector tests
     RandomVectorTest rTest;
 
