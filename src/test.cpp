@@ -21,9 +21,8 @@
  */
 
 #include <iostream>
-#include "test.h"
 using namespace std;
-
+#include "circuit.h"
 
 
 void Test::Print_Test_Set()
@@ -70,21 +69,21 @@ void Test::Print_Test_Set()
 
 
 
-vector<Value> CaptureOutput()
+vector<Value> CaptureOutput(Circuit& circuit)
 {
     vector<Value> output;
-    map<string,Wire *>::iterator iter = PriOutputs.begin();
-    for (;iter != PriOutputs.end(); iter++)
+    map<string,Wire *>::iterator iter = circuit.PriOutputs.begin();
+    for (;iter != circuit.PriOutputs.end(); iter++)
         output.push_back((iter->second)->value);
     return output;
 }
 
 
-vector<Value> CaptureInput()
+vector<Value> CaptureInput(Circuit& circuit)
 {
     vector<Value> output;
-    map<string,Wire *>::iterator iter = PriInputs.begin();
-    for (;iter != PriInputs.end(); iter++)
+    map<string,Wire *>::iterator iter = circuit.PriInputs.begin();
+    for (;iter != circuit.PriInputs.end(); iter++)
         output.push_back((iter->second)->value);
     return output;
 }

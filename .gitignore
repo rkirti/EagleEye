@@ -16,3 +16,5 @@ depend.mak
 cscope.out
 iverilog/
 summary
+docs/
+docs/

@@ -23,6 +23,9 @@ using namespace std;
 class Wire;
 class Fault;
 
+static ofstream CIRCUIT_DFILE ;
+
+
 typedef list<Fault> FaultSet;
 
 /*Generic Evaluate function table*/
@@ -176,10 +179,11 @@ public:
 /* The global circuit */
 extern Circuit circuit;
 
+#include "test.h"
 #include "evaluate.h"
 #include "helper.h"
 #include "setup.h"
 #include "simulate.h"
 #include "fault.h"
-#include "test.h"
+#include "atpg.h"
 #endif /* ifndef CIRCUIT_H */

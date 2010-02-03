@@ -6,19 +6,17 @@
 #define ATPG_H
 
 #include "lexer.h"
-#include "circuit.h"
 #include <vector>
 #include <time.h>
-#include "test.h"
-
+#include "circuit.h"
 
 
 typedef vector<Value> TestVector;
 typedef  list<TestVector> TestSet;
 
 
-
-class ATPG{
+class ATPG : public Test
+{
 
 friend class Circuit;
 
@@ -73,9 +71,6 @@ class RandomVectorTest
 // Both ATPG and Random Test need this - 
 // so keeping it out of both classes
 void Generate_Full_FaultSet();
-
-
-
 bool Change_Value_And_Update_Log (Implication *);
 
 static list<Implication*> Logs;

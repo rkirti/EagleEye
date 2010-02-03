@@ -35,7 +35,7 @@ public:
 // to fault pointers
 // 5. Optimization step - minimize the test vector set needed
 // 6. Print out the results to a file 
-    bool PerformTest;
+    TestSet PerformTest;
     void Print_Test_Set();
 
 

@@ -1705,6 +1705,8 @@ void RandomVectorTest::PerformTest(int coverage,int timeLimit)
 
 }
 */
+
+
 TestSet ATPG::PerformTest(Circuit& circuit, FaultSet set)
 {
     TestSet resultset;
