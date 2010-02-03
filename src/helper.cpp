@@ -23,6 +23,15 @@
 using namespace std;
 
 
+
+/**
+ * @file
+ * Trivial functions which do not fit in any class!
+ * None of these should ideally exist.
+ */
+
+
+/// Extern definitions of the debug files needed by Init_Debug()
 extern ofstream CIRCUIT_DFILE;
 extern ofstream EVALUATE_DFILE;
 extern ofstream ATPG_DFILE;

@@ -1,7 +1,7 @@
 
 /** 
  * @mainpage EagleEye - An Automated Test Pattern Generator
- * @version  0.2
+ * @version  0.01
  * @auth Kirtika Ruchandani, Kashyap Garimella
  * @date 3/2/2010
  *
@@ -15,6 +15,7 @@
  * @note
  * 1. This code is under GIT version control.Please use the latest source from
  * http://github.com/rkirti/EagleEye . 
+ * @see http://github.com/rkirti/EagleEye
  * Comments,flames and suggestions are welcome either on the github
  * comments section or at kirtibr@gmail.com.
  * 

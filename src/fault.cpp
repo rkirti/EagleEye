@@ -25,12 +25,32 @@ using namespace std;
 
 
 
+/**
+ * Reads a file specifying the faults into the fault set data structure.
+ * The file should have the faults in the following format -
+ * one fault on each line, specifying faulty wire name and stuck at value
+ * (stuck-at-0 or stuck-at-1) separated by a space.
+ * The data structure passed on to this function should ideally be the 
+ * set field of the test object which is being run currently.
+ *
+ * @param fname
+ * Name of the file to read the faults from
+ *
+ * @param circuit
+ * Reference to the circuit object for which the faults are specified.
+ * Checks are implemented here to see if the fault set is valid. If a wire not belonging to this circuit is specified in the faults file
+ * an error is thrown and the program exits.
+ *
+ * @param faultset
+ * A list of Fault objects to read the faults into.
+ * @see Check fault.h for definition of the fault class.
+ */
+
 bool Read_Faults_Into_FaultSet(string fname, Circuit& circuit,FaultSet& set)
 {
     ifstream faultsFile;
     
     faultsFile.open(fname.c_str(),ios::in);
-    // Read faults from the faults.txt file
     if (!faultsFile.good())
     {
         cout << "Couldn't open the file " << fname << endl;
@@ -60,6 +80,15 @@ bool Read_Faults_Into_FaultSet(string fname, Circuit& circuit,FaultSet& set)
     faultsFile.close();
     return true;
 }
+
+
+/**
+ * @param 
+ * List of faults which is to be printed. Prints
+ * out the name of the faulty wire, the stuck at value 
+ * and whether the fault is detected or not at the time of 
+ * invocation of this function.
+ */
 
 void Print_FaultSet(FaultSet set)
 {
