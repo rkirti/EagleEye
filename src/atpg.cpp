@@ -1705,8 +1705,10 @@ void RandomVectorTest::PerformTest(int coverage,int timeLimit)
 
 }
 */
-bool ATPG::PerformTest(Circuit& circuit, FaultSet set)
+TestSet ATPG::PerformTest(Circuit& circuit, FaultSet set)
 {
+    TestSet resultset;
+    TestVector tempvector;
     // Run ATPG on the fault set
     MAIN_DFILE << "size of the fault set = " << set.size() << endl;
     int detectedFaults=0;
@@ -1729,6 +1731,7 @@ bool ATPG::PerformTest(Circuit& circuit, FaultSet set)
         bool result = Do_ATPG(it->FaultSite,(it->faultType == 0) ? D : DBAR);
         if (result) 
         {
+            tempvector.clear();
             MAIN_DFILE  << "Ran D algo SUCCESSFULLY for wire  " << it->FaultSite->id << " for the fault s-a-" << it->faultType << endl;
             MAIN_DFILE << "Outputs at which fault is detected" << endl;
 
@@ -1745,8 +1748,10 @@ bool ATPG::PerformTest(Circuit& circuit, FaultSet set)
             MAIN_DFILE << "Emitting the test vectors" << endl;
             for (iter=circuit.PriInputs.begin(); iter!=(circuit.PriInputs).end();iter++)
             {
+                tempvector.push_back(iter->second->value);
                 switch (iter->second->value)
                 {
+
 
                     case ZERO:
                         MAIN_DFILE << "0";
@@ -1768,14 +1773,17 @@ bool ATPG::PerformTest(Circuit& circuit, FaultSet set)
 
                 MAIN_DFILE << " ";
 
-           }
-           MAIN_DFILE << endl << endl;
+            }
             
-             // Open the debug file afresh.
-             // We dont need debug info for runs that were
-             // successful.
-             ATPG_DFILE.close();
-             ATPG_DFILE.open("debug/atpg.debug",ios::out);
+            resultset.push_back(tempvector);
+            MAIN_DFILE << endl << endl;
+
+
+            // Open the debug file afresh.
+            // We dont need debug info for runs that were
+            // successful.
+            ATPG_DFILE.close();
+            ATPG_DFILE.open("debug/atpg.debug",ios::out);
         }
         else
         {
@@ -1783,7 +1791,7 @@ bool ATPG::PerformTest(Circuit& circuit, FaultSet set)
             cout << " FAULT NOT DETECTABLE " << endl;
             undetectedFaults++;
             //Prints stats so far before exiting
-           // MAIN_DFILE << "Faults detected so far "  <<  detectedFaults << endl;
+            // MAIN_DFILE << "Faults detected so far "  <<  detectedFaults << endl;
             //MAIN_DFILE << "DEBUG ME NOW. I am exiting" << endl;
             //cout << "I am " <<  it->FaultSite->id<< " DEBUG ME NOW. I am exiting" << endl;
             //exit(0);
@@ -1797,4 +1805,5 @@ bool ATPG::PerformTest(Circuit& circuit, FaultSet set)
     MAIN_DFILE << "Total Faults not detected :    " << undetectedFaults << endl;  
     MAIN_DFILE << "Total number of wires:         " << circuit.Netlist.size()<< endl;
 
+    return resultset;
 }

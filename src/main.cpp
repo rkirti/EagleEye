@@ -68,7 +68,8 @@ int main(int argc,char **argv)
     //    cout << "the grand result is " << result << endl;
 
     // Run ATPG on the fault set
-    atpgTest.PerformTest(circuit, mytest.faults);
+    mytest.tests =  atpgTest.PerformTest(circuit, mytest.faults);
+    mytest.Print_Test_Set();
     return 0;
 
 }

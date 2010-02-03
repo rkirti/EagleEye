@@ -9,6 +9,12 @@
 #include "circuit.h"
 #include <vector>
 #include <time.h>
+#include "test.h"
+
+
+
+typedef vector<Value> TestVector;
+typedef  list<TestVector> TestSet;
 
 
 
@@ -17,7 +23,7 @@ class ATPG{
 friend class Circuit;
 
 public:
-    bool PerformTest(Circuit& circuit,FaultSet set);
+    TestSet PerformTest(Circuit& circuit,FaultSet set);
     bool Do_ATPG(Wire *faultwire, Value faultval);
     bool D_Algo();
 

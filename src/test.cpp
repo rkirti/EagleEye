@@ -24,3 +24,48 @@
 #include "test.h"
 using namespace std;
 
+
+
+void Test::Print_Test_Set()
+{
+    list<TestVector>::iterator current = tests.begin();
+    for (;current != tests.end(); current++)   
+    {
+
+        vector<Value>::iterator input;
+        for (input=(*current).begin(); input != (*current).end(); input++)
+        {
+            switch (*input)
+            {
+
+
+                case ZERO:
+                    cout << "0";
+                    break;
+                case ONE:
+                    cout << "1";
+                    break;
+                case U:
+                    cout << "U";
+                    break;
+                case D:
+                    cout << "D";
+                    break;
+                case DBAR:
+                    cout << "DBAR";
+                    break;
+
+            }
+
+        }
+
+            
+        cout << endl;
+
+
+    }
+
+    return;
+
+
+}

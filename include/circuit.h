@@ -177,6 +177,7 @@ public:
  
 
     vector<Value> CaptureOutput();
+    vector<Value> CaptureInput();
     //bool ReadFaults();
 
 };

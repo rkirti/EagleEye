@@ -9,9 +9,7 @@
 #include "fault.h"
 
 
-class TestVector{
-    vector<Value> inputs;
-};
+typedef vector<Value> TestVector;
 
 typedef  list<TestVector> TestSet;
 
@@ -38,6 +36,9 @@ public:
 // 5. Optimization step - minimize the test vector set needed
 // 6. Print out the results to a file 
     bool PerformTest;
+
+    void Print_Test_Set();
+
 };
 
 
