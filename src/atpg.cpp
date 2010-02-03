@@ -1641,6 +1641,7 @@ void RandomVectorTest::GenerateAndSetRVector()
  * timeLimit - time limit to stop random vector testing
  *           - 0 to 15 min
  */
+/*
 void RandomVectorTest::PerformTest(int coverage,int timeLimit)
 {
 
@@ -1703,14 +1704,15 @@ void RandomVectorTest::PerformTest(int coverage,int timeLimit)
     cout << "The size of the fault set is " << (circuit.set).size() << endl;
 
 }
-bool ATPG::PerformTest()
+*/
+bool ATPG::PerformTest(Circuit& circuit, FaultSet set)
 {
     // Run ATPG on the fault set
-    MAIN_DFILE << "size of the fault set = " << circuit.set.size() << endl;
+    MAIN_DFILE << "size of the fault set = " << set.size() << endl;
     int detectedFaults=0;
     int undetectedFaults=0;
-    list<Fault>::iterator it = circuit.set.begin();
-    for (; it != circuit.set.end(); it++)
+    list<Fault>::iterator it = set.begin();
+    for (; it != set.end(); it++)
     {
         // Important to clean up stuff from the previous run before we begin
         // Set all wires to U

@@ -1,6 +1,9 @@
 bin/
 obj/
 debug/
+trash/
+trial.dot
+tests/*
 *.o
 *swp
 *swo

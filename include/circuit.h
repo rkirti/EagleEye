@@ -161,7 +161,7 @@ public:
 
     multimap<int,Element*> Levels;
 
-    FaultSet set; // Set of faults we need to run ATPG for
+ //   FaultSet set; // Set of faults we need to run ATPG for
     
 
     list<WireValuePair> DFrontier;

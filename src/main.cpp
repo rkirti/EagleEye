@@ -50,14 +50,14 @@ int main(int argc,char **argv)
     // Read the faults
     Read_Faults_Into_FaultSet( "tests/faults.txt",circuit, mytest.faults); 
     Print_FaultSet(mytest.faults);
-/*
+
     // RandomVectorTest object to handle random vector tests
-    RandomVectorTest rTest;
+ //   RandomVectorTest rTest;
 
     // Fault Set generated, written to a file and read into the FaultSet
     // strcuture. Random vectors also available in a file.
     // Now testing.
-    rTest.PerformTest(10,1);  // 10% in 1 min
+   // rTest.PerformTest(10,1);  // 10% in 1 min
 
     // ATPG object to handle atpg algorithm
     ATPG atpgTest;
@@ -68,8 +68,8 @@ int main(int argc,char **argv)
     //    cout << "the grand result is " << result << endl;
 
     // Run ATPG on the fault set
-    atpgTest.PerformTest();
+    atpgTest.PerformTest(circuit, mytest.faults);
     return 0;
-*/
+
 }
 

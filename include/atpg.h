@@ -17,7 +17,7 @@ class ATPG{
 friend class Circuit;
 
 public:
-    bool PerformTest();
+    bool PerformTest(Circuit& circuit,FaultSet set);
     bool Do_ATPG(Wire *faultwire, Value faultval);
     bool D_Algo();
 
