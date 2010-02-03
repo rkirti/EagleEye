@@ -44,9 +44,13 @@ int main(int argc,char **argv)
     // Write both possible faults for each wire in the fault file
     Generate_Full_FaultSet();
 
+
+    Test mytest;
+
     // Read the faults
-    Read_Faults_Into_FaultSet( "tests/faults.txt",circuit, circuit.set ); 
-    Print_FaultSet(circuit.set);
+    Read_Faults_Into_FaultSet( "tests/faults.txt",circuit, mytest.faults); 
+    Print_FaultSet(mytest.faults);
+/*
     // RandomVectorTest object to handle random vector tests
     RandomVectorTest rTest;
 
@@ -66,6 +70,6 @@ int main(int argc,char **argv)
     // Run ATPG on the fault set
     atpgTest.PerformTest();
     return 0;
-
+*/
 }
 

@@ -191,4 +191,5 @@ extern Circuit circuit;
 #include "setup.h"
 #include "simulate.h"
 #include "fault.h"
+#include "test.h"
 #endif /* ifndef CIRCUIT_H */
