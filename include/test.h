@@ -36,8 +36,11 @@ public:
 // 5. Optimization step - minimize the test vector set needed
 // 6. Print out the results to a file 
     bool PerformTest;
-
     void Print_Test_Set();
+
+
+    vector<Value> CaptureOutput();
+    vector<Value> CaptureInput();
 
 };
 

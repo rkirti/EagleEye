@@ -156,12 +156,8 @@ public:
      */
     map<string,int> RepeatInputs; 
 
-
-
-
     multimap<int,Element*> Levels;
 
- //   FaultSet set; // Set of faults we need to run ATPG for
     
 
     list<WireValuePair> DFrontier;
@@ -173,13 +169,6 @@ public:
 
     // The current fault under consideration
     Wire *faultWire;
-
- 
-
-    vector<Value> CaptureOutput();
-    vector<Value> CaptureInput();
-    //bool ReadFaults();
-
 };
 
 

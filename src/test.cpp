@@ -66,6 +66,31 @@ void Test::Print_Test_Set()
     }
 
     return;
-
-
 }
+
+
+
+vector<Value> CaptureOutput()
+{
+    vector<Value> output;
+    map<string,Wire *>::iterator iter = PriOutputs.begin();
+    for (;iter != PriOutputs.end(); iter++)
+        output.push_back((iter->second)->value);
+    return output;
+}
+
+
+vector<Value> CaptureInput()
+{
+    vector<Value> output;
+    map<string,Wire *>::iterator iter = PriInputs.begin();
+    for (;iter != PriInputs.end(); iter++)
+        output.push_back((iter->second)->value);
+    return output;
+}
+
+
+
+
+
+
