@@ -14,7 +14,7 @@
 typedef vector<Value> TestVector;
 typedef  list<TestVector> TestSet;
 
-
+//! Test Generator class that uses the D-Algorithm 
 class ATPG : public Test
 {
 
@@ -22,6 +22,7 @@ friend class Circuit;
 
 public:
     TestSet PerformTest(Circuit& circuit,FaultSet set);
+ 
     bool Do_ATPG(Wire *faultwire, Value faultval);
     bool D_Algo();
 
@@ -43,18 +44,15 @@ public:
     bool Remove_From_J(Wire *wire);
     
     bool Compatible(Value oldval,Value newval);
-    bool  Check_Wire_Value_For_Assignment(Wire* wire,Value val);
+    bool Check_Wire_Value_For_Assignment(Wire* wire,Value val);
     
-//    void Make_Assignments();
     void Clean_Logs();
+
+    /// Deprecated function - use back again if you switch to 9V
     void Update_PI_For_9V();
 
     void Failure();
-    void Random_Vector_Test();
 
-
-
-    Implication* Find_In_Logs_List(Wire* wire);
 
 };
 

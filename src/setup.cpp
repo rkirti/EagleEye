@@ -24,9 +24,18 @@ using namespace std;
 
 
 
+/**
+ * @see Lexer_AddWire which is the wrapper function for this
+ *      for what this function is meant to do. This section is only
+ *      meant to document what internal sanity checks are implemented
+ *
+ * A wire is accepted and this function returns true only if 
+ * Wire name is valid as per the definition of the name
+ * token given to the lexer in cktfill.l
+ * No other checks are implemented currently.
+ */
 
-
-bool  Add_Wire(Circuit& circuit,const char *inName,WireType type)
+bool Add_Wire(Circuit& circuit,const char *inName,WireType type)
 {
 	Wire *iwire = new Wire(inName,type);
 	circuit.Netlist.insert( pair<string,Wire *>(inName,iwire) );
@@ -39,6 +48,7 @@ bool  Add_Wire(Circuit& circuit,const char *inName,WireType type)
 
 	return true;
 }
+
 
 
 
@@ -68,14 +78,22 @@ void Add_Gate_To_Wire_Input(Circuit& circuit, Gate* gate,const char* wirename)
  * their types are known
  * */
 
+
+/**
+ * @see Lexer_AddGate which is the wrapper function for this
+ *      for what this function is meant to do. This section is only
+ *      meant to document what internal sanity checks are implemented
+ */
+
+
 bool Add_Gate(Circuit& circuit,GateType type, char *name,char* output,char **inputs,int numSignals)
 {
     Gate *gate = new Gate(name,type);
     map<string,Wire *>::iterator iter;
 
-    // Some consistency checks before we add
-    // the wires to the gates inputs and output
-    // 1. Output must be a valid wire
+    /// Some consistency checks before we add
+    /// the wires to the gates inputs and output
+    /// 1. Output must be a valid wire
     iter = circuit.Netlist.find(output);
     if (iter  ==  circuit.Netlist.end()) 
     {
@@ -83,8 +101,8 @@ bool Add_Gate(Circuit& circuit,GateType type, char *name,char* output,char **inp
         return false;
     }
 
-    // 2. If output type is PO, it should be
-    // there in PO list
+    /// 2. If output type is PO, it should be
+    /// there in PO list
     if ((iter->second)->wtype == PO)
     {
         iter = circuit.PriOutputs.find(output);
@@ -95,8 +113,8 @@ bool Add_Gate(Circuit& circuit,GateType type, char *name,char* output,char **inp
         }
     }
 
-    // Now that we are convinced, add the wire as gate's output
-    // and the gate as wire's input :P
+    /// Now that we are convinced, add the wire as gate's output
+    /// and the gate as wire's input :P
     Add_Gate_To_Wire_Input(circuit, gate,((iter->second)->id).c_str());
     gate->output = iter->second;
 
@@ -104,9 +122,9 @@ bool Add_Gate(Circuit& circuit,GateType type, char *name,char* output,char **inp
     {
 
 
-        // Some consistency checks before we add
-        // the wires to the gates inputs and output
-        // 1. Input must be a valid wire
+        /// Before we add
+        /// the wires to the gates inputs
+        /// 1. Input must be a valid wire
         iter = circuit.Netlist.find(inputs[numSignals]);
         if (iter  ==  circuit.Netlist.end()) 
         {
@@ -114,8 +132,8 @@ bool Add_Gate(Circuit& circuit,GateType type, char *name,char* output,char **inp
             return false;
         }
 
-        // 2. If input type is PI, it should be
-        // there in PI list
+        /// 2. If input type is PI, it should be
+        /// there in PI list
         if ((iter->second)->wtype == PI)
         {
             iter = circuit.PriInputs.find(inputs[numSignals]);
@@ -126,20 +144,26 @@ bool Add_Gate(Circuit& circuit,GateType type, char *name,char* output,char **inp
             }
         }
 
-        // Now that we are convinced, add the wire as gate's input
         gate->inputs.push_back(iter->second);
         Add_Gate_To_Wire_Output(circuit,gate,((iter->second)->id).c_str());
     }
 
-    // Finally we add the gate to the circuit list
+    /// Finally we add the gate to the circuit list
     gate->tempInputs = (gate->inputs).size();
     circuit.Gates.insert( pair<string,Gate *>(name, gate) );
 
     return true;
 }
 
+/** @param
+ *  Reference to the circuit object whose gates/PIs/POs should
+ *  be  levelized
+ *  @note
+ *  We add only PIs, POs, and intermediate gates to the levels.
+ *  @return
+ *  Always returns true.
+ */
 
-// NOTE:  We add only PIs, POs, and intermediate gates to the levels
 bool Levelize(Circuit& circuit)
 {
     int level=0;
@@ -211,7 +235,27 @@ bool Levelize(Circuit& circuit)
 
 
 
-
+/**
+ *  @param
+ *  Reference to the circuit object whose gates/PIs/POs should
+ *  be  levelized
+ *  
+ *  @return 
+ *  True if always branches can be resolved ie. branch structure
+ *  is valid as per our specification.
+ *  For instance, a wire branching to a gate and to a PO 
+ *  isn't allowed.
+ *  All branches should be inputs to some gate.
+ * 
+ *  This function is needed because branches arent
+ *  explicitly names and hence unidentifiable in the original
+ *  verilog description.
+ *  
+ *  A branch is detected if the wire has an output list
+ *  of size > 1 if it is an internal wire. 
+ *  Resolve_Wire is called to separately name its branches
+ *  and add them to the Netlist.
+ */
 
 bool Resolve_Branches(Circuit& circuit)
 {
@@ -243,19 +287,26 @@ bool Resolve_Branches(Circuit& circuit)
 }
 
 
+/**
+ * @param  circuit
+ * Reference to the circuit object, which the wire belongs to 
+ *
+ * @param wire
+ * Pointer to the "stem" wire
+ * 
+ */
 
 void Resolve_Wire(Circuit&,Wire* wire)
 {
 
-    // Assuming that initially all outputs of
-    // a wire are gates
-    //Steps:
-    // 1. Find out if a wire has more than one outputs
-    // 2. Create a new wire - with input as the orig wire
-    // and output as the gate
-    // 3. Update the orig wire's outputs to reflect the wires rather than gates
-    // 4. Update the output gates (orig gates) inputs showing the new wires
-    // as inputs
+    /// Assuming that initially all outputs of
+    /// a wire are gates
+    /// Steps:
+    /// 1. Find out if a wire has more than one outputs
+    /// 2. Create a new wire - with input as the orig wire
+    /// and output as the gate
+    /// 3. Update the orig wire's outputs to reflect the wires rather than gates
+    /// 4. Update the output gates (orig gates) inputs showing the new wires as inputs
 
     cout << "Need to resolve wire:   " << wire->id << endl;
     list<Element*>:: iterator iter = (wire->outputs).begin();
@@ -269,21 +320,21 @@ void Resolve_Wire(Circuit&,Wire* wire)
         assert(gate); // dynamic_cast must not fail
         string newname = (wire->id)+"_"+(gate->id);
         newname = Check_Name_Present(circuit,newname);
-        // step 2. Add a new wire for this instance
+        /// step 2. Add a new wire for this instance.
         cout << "Adding derived wire:    " <<  newname  << endl;
         Add_Wire(circuit,newname.c_str(),CONNECTION);
 
-        // The new wire's output should be the 
-        // gate
+        /// The new wire's output should be the 
+        /// gate
         Add_Gate_To_Wire_Output(circuit,gate,newname.c_str());
 
-        // The new wire's input should be the old wire and
-        // the old wire' output should change from gate to 
-        // new wire
+        /// The new wire's input should be the old wire and
+        /// the old wire's output should change from gate to 
+        /// new wire.
 
         Wire* newwire = ((circuit.Netlist).find(newname))->second;
         newwire->input = wire;
-         // finally update the gate's inputlist
+         /// Finally update the gate's inputlist.
         (gate->inputs).remove(wire);
         (gate->inputs).push_back(newwire);
         
@@ -305,7 +356,13 @@ void Resolve_Wire(Circuit&,Wire* wire)
 
 
 
-
+/**
+ * @todo
+ * Come up with a better way of detected if a wire is already a
+ * branch. In benchmarks which use O_245 and I_245 for 
+ * buffer gate I/O wires, we need to rename things in the 
+ * verilog file only because of this reason.
+ */
 bool Wire_Not_Derived(Wire* wire)
 {
     if (wire->id.find("_") != string::npos ) return false;
@@ -313,6 +370,10 @@ bool Wire_Not_Derived(Wire* wire)
 }
 
 
+/**
+ * This routine to handle a weird case.
+ * @see Explanation in the comments within Circuit class.
+ */
 
 string Check_Name_Present(Circuit& circuit,string givenname)
 {

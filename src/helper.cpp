@@ -40,7 +40,10 @@ extern ofstream MAIN_DFILE;
 
 
 
-// returns if the value is known or not
+/// Returns if the value is known or not.
+/// This is needed for some checks on the wire
+///  value compatibility done during the algorithm 
+///  to generate tests.
 bool isNotKnown(Value v)
 {
     switch(v)
@@ -58,6 +61,11 @@ bool isNotKnown(Value v)
 }
 
 
+/// Some operations (the bitwise ops for
+/// examples) take only integer operands
+///  but the output is needed back as a Value
+/// to keep the compiler happy.
+///  Hence this messy hack.
 int Translate_Value_To_Int(Value value)
 {
     switch(value)
@@ -72,7 +80,10 @@ int Translate_Value_To_Int(Value value)
 
 
 
-/*Use only to check if value is c xor i or  cbar xor i*/
+/// Use only to check if value is c xor i or  cbar xor i
+/// This needs to be here, because the Xor function in
+///  evaluate.cpp does not use values - it takes a list
+///  of wire pointers as inputs. 
 Value Do_Xor(Value val1, Value val2)
 {
     Value output;
@@ -83,6 +94,8 @@ Value Do_Xor(Value val1, Value val2)
 }
 
 
+/// Needed to aid the function which 
+/// renames the branch wires.
 string intToString(int inInt)
 {
     stringstream ss;
@@ -91,6 +104,7 @@ string intToString(int inInt)
     s = ss.str();
     return s;
 }
+
 
 
 void Init_Debug()
@@ -138,8 +152,14 @@ void Print_All_Wires(Circuit& circuit)
 
 
 
-/*
+/**
  * Clear all wire values to U
+ * @param
+ * Reference to a circuit object.
+ * This must be called after each run of the 
+ * test generation algorithm. 100% bugs
+ * guaranteed otherwise.
+ *
  */
 void Clear_Wire_Values(Circuit& circuit)
 {
@@ -149,7 +169,6 @@ void Clear_Wire_Values(Circuit& circuit)
         (iter->second)->value = U;
     }
 }
-
 
 
 void Clear_Internal_Wire_Values( Circuit& circuit)

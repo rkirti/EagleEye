@@ -1,8 +1,10 @@
 
 /** 
- * @mainpage EagleEye - An Automated Test Pattern Generator
- * @version  0.01
- * @auth Kirtika Ruchandani, Kashyap Garimella
+ * @mainpage  EagleEye - [An Automated Test Pattern Generator]
+ * @version  
+ * 0.01
+ * @auth 
+ * Kirtika Ruchandani, Kashyap Garimella
  * @date 3/2/2010
  *
  * This program has been developed as a part of the CS633 course at IIT Madras,
@@ -15,10 +17,8 @@
  * @note
  * 1. This code is under GIT version control.Please use the latest source from
  * http://github.com/rkirti/EagleEye . 
- * @see http://github.com/rkirti/EagleEye
  * Comments,flames and suggestions are welcome either on the github
  * comments section or at kirtibr@gmail.com.
- * 
  * 2. You need to have a recent version of lex and yacc installed 
  * to be able to compile.
  */

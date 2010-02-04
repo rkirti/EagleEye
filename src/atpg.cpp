@@ -14,6 +14,18 @@ extern ofstream MAIN_DFILE;
 ofstream faultWriteFile;
 ofstream randomVectorFile;
 
+
+/**
+ * @param faultwire
+ * Name of the wire which has SSF
+ *
+ * @param faultval
+ * Value at which wire is stuck
+ *
+ * The current implementation uses D Algo.
+ */
+
+
 bool ATPG::Do_ATPG(Wire *faultwire, Value faultval)
 {
     bool result;
@@ -24,14 +36,14 @@ bool ATPG::Do_ATPG(Wire *faultwire, Value faultval)
     ATPG_DFILE << "Faulty value of the wire is " <<  faultval << endl;
 #endif
    
-    // set the fault wire
+    /// Set the fault wire first.
     (circuit.faultWire) = faultwire; 
     
 
 
-    // Push two implications for the faulty wire.
-    // One backward to justify vbar on the line stuck
-    // at v. One forward to propagate the stuck at v error.
+    /// Push two implications for the faulty wire.
+    /// One backward to justify vbar on the line stuck
+    /// at v. One forward to propagate the stuck at v error.
     newImply= new Implication(circuit.faultWire,(faultval == D)?ONE:ZERO ,false); 
     (ImpliQueue).push(newImply); 
     newImply= new Implication(circuit.faultWire,faultval,true); 
@@ -44,11 +56,9 @@ bool ATPG::Do_ATPG(Wire *faultwire, Value faultval)
 #endif
 
 
-    // Run the D Algorithm to find the test vectors.
+    /// Run the D Algorithm to find the test vectors.
     result = D_Algo();
 
-    // Useless for now, as only D is implemented
-    //Update_PI_For_9V();
 
 
     // Display results
@@ -64,7 +74,19 @@ bool ATPG::Do_ATPG(Wire *faultwire, Value faultval)
 }
 
 
-
+/**
+ * This function is invoked if the value to be justified backward
+ * on a wire is (cbar xor i) for the gate which is the input of the wire.
+ * @see ControlValues and InversionValues in enumdef.h for details. 
+ * @param curImplication
+ * Pointer to an implication i.e.  a value on a wire
+ * to be justified in the backward direction
+ *
+ * @return
+ * True if the implication can be satisfied without any conflict
+ * i.e the wire's value can be justified to the given value. 
+ * False otherwise.
+ */ 
 bool ATPG::Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplication, Wire* curWire,Value impliedValue)
 {
     Gate* curGate = dynamic_cast<Gate*>(curWire->input);
@@ -75,11 +97,11 @@ bool ATPG::Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplicatio
     ATPG_DFILE << "Handling implication on wire " << curWire->id
           << " non-controlling value on gate inputs needed" << endl; 
 #endif
-
-    // This function is reached only if the wire on 
-    // which the implication is made has a gate 
-    // input. i.e it is not a fanout branch and 
-    // its value is cbar xor i
+    /// Assert that the pre-conditions are met.
+    /// i.e. This function is reached only if the wire on 
+    /// which the implication is made has a gate 
+    /// input. i.e it is not a fanout branch and 
+    /// its value is cbar xor i
     
 #ifdef VERBOSE_MODE
     ATPG_DFILE << "Value to be implied" << impliedValue << endl;
@@ -91,14 +113,14 @@ bool ATPG::Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplicatio
     assert(curGate);
 
 
-    // Note the order of actions from here on is
-    // important. 
+    /// Note the order of actions from here on is
+    /// important. 
 
 
-    // ACTION 1:
-    // The current value of the wire should be 
-    // compatible with the value to be implied
-    // else we need backtracking
+    /// ACTION 1:
+    /// The current value of the wire should be 
+    /// compatible with the value to be implied
+    /// else we need backtracking
 
     if ( (curWire != circuit.faultWire) && !Compatible(curWire->value,impliedValue))
     {
@@ -113,11 +135,11 @@ bool ATPG::Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplicatio
     }
 
 
-    // ACTION 2:
-    // If the current value of the wire equals the 
-    // implied value, the implication is popped here.
-    // This means that either the gate is in Jfrontier already
-    // or is already set by a forward impli
+    /// ACTION 2:
+    /// If the current value of the wire equals the 
+    /// implied value, the implication is popped here.
+    /// This means that either the gate is in Jfrontier already
+    /// or is already set by a forward impli
     if (curWire->value == impliedValue) 
     {
 #ifdef VERBOSE_MODE
@@ -131,16 +153,16 @@ bool ATPG::Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplicatio
     } 
    
    
-    // ACTION 3:
-    // The current gate will evaluate to the
-    // implied value only if all input values
-    // are cbar. Thus, no need to go backward.
-    // Return true.
+    /// ACTION 3:
+    /// The current gate will evaluate to the
+    /// implied value only if all input values
+    /// are cbar. Thus, no need to go backward.
+    /// Return true.
     
-    // The second check is to ensure that 
-    // we are still talking of the same implication
-    // and not popping off something else, since
-    // we might have popped in action 2
+    /// The second check is to ensure that 
+    /// we are still talking of the same implication
+    /// and not popping off something else, since
+    /// we might have popped in action 2
     if ((curGate->Evaluate() == impliedValue) && (curWire->id == ImpliQueue.front()->wire->id) )
     {
 #ifdef VERBOSE_MODE
@@ -150,9 +172,9 @@ bool ATPG::Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplicatio
         ATPG_DFILE << endl;
 #endif
 
-        // Pop off the implication anyways
-        // Set the value only if its not
-        // the faulty wire
+        /// Pop off the implication anyways
+        /// Set the value only if its not
+        /// the faulty wire
         if ( curWire != (circuit.faultWire) )
             Change_Value_And_Update_Log(curImplication);
         ImpliQueue.pop();
@@ -162,11 +184,11 @@ bool ATPG::Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplicatio
 
 
 
-    // ACTION 4: 
-    // At this point, the gate can evaluate to either 
-    // unknown or to c xor i, the latter being the case
-    // where backtracking is needed.Check which of these
-    // cases applies.
+    /// ACTION 4: 
+    /// At this point, the gate can evaluate to either 
+    /// unknown or to c xor i, the latter being the case
+    /// where backtracking is needed.Check which of these
+    /// cases applies.
 
     switch (curGate->Evaluate())
     {   
@@ -214,7 +236,19 @@ bool ATPG::Handle_Output_Coming_From_Noncontrol_Value(Implication* curImplicatio
 
 }
 
-
+/**
+ * This function is invoked if the value to be justified backward
+ * on a wire is (c xor i) for the gate which is the input of the wire.
+ * @see ControlValues and InversionValues in enumdef.h for details. 
+ * @param curImplication
+ * Pointer to an implication i.e.  a value on a wire
+ * to be justified in the backward direction
+ *
+ * @return
+ * True if the implication can be satisfied without any conflict
+ * i.e the wire's value can be justified to the given value. 
+ * False otherwise.
+ */ 
 
 bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, Wire* curWire,Value impliedValue)
 {
@@ -233,25 +267,25 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
 #endif
 
 
-    // Assumption: 
-    // The implication is on a wire
-    // that isn't a PI or a fanout branch
-    // They are taken care of separately and 
-    // not in this function
+    /// Assert: 
+    /// The implication is on a wire
+    /// that isn't a PI or a fanout branch
+    /// They are taken care of separately and 
+    /// not in this function
     
     int inputUCount = 0;
     list<Wire*>::iterator iter;
     
     assert(impliedValue == xorValue);
 
-    // Note the order of actions from here on is
-    // important. 
+    /// Note the order of actions from here on is
+    /// important. 
 
 
-    // ACTION 1:
-    // The current value of the wire should be 
-    // compatible with the value to be implied
-    // else we need backtracking
+    /// ACTION 1:
+    /// The current value of the wire should be 
+    /// compatible with the value to be implied
+    /// else we need backtracking
 
     if ( (curWire != circuit.faultWire) &&   !Compatible(curWire->value,impliedValue))
     {
@@ -266,11 +300,11 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
         return false;
     }
 
-    // ACTION 2:
-    // If the current value of the wire equals the 
-    // implied value, the implication is popped here.
-    // This means that either the gate is in Jfrontier already
-    // or is already set by a forward impli
+    /// ACTION 2:
+    /// If the current value of the wire equals the 
+    /// implied value, the implication is popped here.
+    /// This means that either the gate is in Jfrontier already
+    /// or is already set by a forward impli
     if (curWire->value == impliedValue) 
     {
 #ifdef VERBOSE_MODE
@@ -284,11 +318,11 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
     } 
 
 
-    // ACTION 3:
-    // The current gate will evaluate to the
-    // implied value only if some input value
-    // are c. Thus, no need to go backward.
-    // Return true.
+    /// ACTION 3:
+    /// The current gate will evaluate to the
+    /// implied value only if some input value
+    /// are c. Thus, no need to go backward.
+    /// Return true.
     
     if ((curGate->Evaluate() == impliedValue) && (curWire->id == ImpliQueue.front()->wire->id) )
     {
@@ -299,17 +333,17 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
         return true;
     } 
 
-    // ACTION 4:
-    // If we came here, no input has value
-    // C. Therefore, the following code sets 
-    // some input to C.
-    // Count the number of unknown inputs. 
-    // Further action depends on the count.
-    // 0  : Something wrong. We need atleast
-    // one U to set it to c.
-    // 1  :  Imply on that being C since
-    // thats the only way out.
-    // >1 : Add the gate to J frontier.
+    /// ACTION 4:
+    /// If we came here, no input has value
+    /// C. Therefore, the following code sets 
+    /// some input to C.
+    /// Count the number of unknown inputs. 
+    /// Further action depends on the count.
+    /// 0  : Something wrong. We need atleast
+    /// one U to set it to c.
+    /// 1  :  Imply on that being C since
+    /// thats the only way out.
+    /// >1 : Add the gate to J frontier.
     
     
     iter = (curGate->inputs).begin();
@@ -377,7 +411,15 @@ bool ATPG::Handle_Output_Coming_From_Control_Value(Implication* curImplication, 
 }
 
 
-
+/**
+ * Helper function
+ * @param oldval 
+ * @param newval
+ * Old and new values of the wire.
+ *
+ * @return
+ * True if the old value is compatible with the new one.
+ */
 bool ATPG::Compatible(Value oldval,Value newval)
 {
     if (oldval == newval) return true;
@@ -416,6 +458,21 @@ bool ATPG::Compatible(Value oldval,Value newval)
 
 
 
+/**
+ * Note that this function only adds to the temporary frontiers since
+ * this addition may have to be reverted if the implication fails
+ * and we have to backtrack.
+ * If the implication succeeds, the Imply_And_Check function takes care
+ * of merging the temporary frontiers with the actual ones.
+ * A gate's output is added to the J Frontier if the output value wanted
+ * is known but more than one of the gates inputs are unknown.
+ * @param wire
+ * Wire/line on which the value has to be justified.
+ * @param value
+ * The value to be justified.
+ * @return
+ * Always true.
+ */
 bool ATPG::Add_To_JFrontier(Wire *wire,Value value)
 {
     circuit.TempJFrontier.push_back(WireValuePair(wire,value));
@@ -427,6 +484,24 @@ bool ATPG::Add_To_JFrontier(Wire *wire,Value value)
 #endif
     return true;
 }
+
+
+/**
+ * Note that this function only adds to the temporary frontiers since
+ * this addition may have to be reverted if the implication fails
+ * and we have to backtrack.
+ * If the implication succeeds, the Imply_And_Check function takes care
+ * of merging the temporary frontiers with the actual ones.
+ * A gate's input is added to the D Frontier if the input value 
+ * is known to be D or DBAR but it is not known if the D-drive has to be made
+ * through that gate.
+ * @param wire
+ * Wire/line on which the value has to be justified.
+ * @param value
+ * The value to be justified.
+ * @return
+ * Always true.
+ */
 
 
 bool ATPG::Add_To_DFrontier(Wire *wire,Value value)
@@ -442,7 +517,8 @@ bool ATPG::Add_To_DFrontier(Wire *wire,Value value)
 }
 
 
-
+/// A wire is removed from the D Frontier is D-drive is done through
+///  the gate which is the output of the concerned wire.
 bool ATPG::Remove_From_D(Wire *wire)
 {
     bool result=false;
@@ -471,7 +547,8 @@ bool ATPG::Remove_From_D(Wire *wire)
 }
 
 
-
+/// A wire is removed from the J Frontier if the value on that wire
+///  is successfully justified. 
 bool ATPG::Remove_From_J(Wire *wire)
 {
     bool result=false;
@@ -497,7 +574,15 @@ bool ATPG::Remove_From_J(Wire *wire)
 }
 
 
-
+/**
+ * This function picks up all the implications pushed in the queue
+ * by D-Algo() one at a time, and tries to resolve them, looking at the
+ * implication direction and calling the appropriate function.
+ * 
+ * @return
+ * True if the ImpliQueue - the implication queue can be emptied and all
+ * implications can be resolved. False if any of them fails.
+ */
 bool ATPG::Imply_And_Check()
 {
 #ifdef VERBOSE_MODE
@@ -568,7 +653,11 @@ fail:
 }
 
 
-
+/**
+ * The additions we made to the D and J frontiers are correct if 
+ * Imply_And_Check() succeeded. So, make those additions permanent
+ * by merging the temporary frontiers with the global ones.
+ */
 void ATPG::Merge_Frontiers()
 {
     list<WireValuePair>::iterator iter= circuit.TempJFrontier.begin();
@@ -606,7 +695,6 @@ void ATPG::Make_Assignments()
 */
 
 
-
 void ATPG::Clean_Logs()
 {
     assert(ImpliQueue.empty());
@@ -618,11 +706,17 @@ void ATPG::Clean_Logs()
     }
     // Don't remove the logs because they might be used by Jfrontier.
     // DfrontierWork clears the logs in the start.
-//    Logs.clear();
+    //    Logs.clear();
     return;
 }
 
 
+/**
+ * If any implication fails in Imply_And_Check(), we need to reverse
+ * all the assignments made so far and clear the temporary D and J frontiers.
+ * The Logs data structure is used for this purpose. It records the wire
+ * name, the old and the new values.
+ */
 void ATPG::Failure()
 {
 #ifdef VERBOSE_MODE
@@ -653,7 +747,11 @@ void ATPG::Failure()
 #endif
 }
 
-
+/** 
+ * @return
+ * True if the fault is detectable. The fault is implicitly specified
+ * using circuit.faultWire.
+ */
 bool ATPG::D_Algo()
 { 
      // Ensure all implications are made and they 
@@ -691,13 +789,13 @@ bool ATPG::D_Algo()
     }
 
 DFrontierWork:
-    // Error is not at PO. Algo should execute
-    //
+    // If the error is not at PO, Algo should execute
     // We don't need to save logs. Therefore let us clear the logs;
     Logs.clear();
     
 
-    // No means of propagating the error ahead
+    // If we have no means of propagating the error ahead,
+    // the algo has failed. Fault not detectable.
     if (circuit.DFrontier.empty()) 
     {
 
@@ -711,7 +809,6 @@ DFrontierWork:
     PRINTDFRONTIER;
     
     
-    // for (;checkIter !=(circuit.DFrontier).end();checkIter++)
     // Remember a stack and understand how this works
     // Add_to_D_frontier function always pushes into 
     // this stack. We will pop off the top one from the D frontier
@@ -732,12 +829,12 @@ DFrontierWork:
         (circuit.DFrontier).pop_front();
         
         
-        /*Selecting a gate from the DFrontier*/
+        // Selecting a gate from the DFrontier
         Gate* curGate=dynamic_cast<Gate*>(checkIter->iwire->input);
         Value cval = ControlValues[curGate->gtype];
         list<Wire*>::iterator inputIter = (curGate->inputs).begin();
 
-        // Handle Xor here
+        // Handle Xor gate case here itself 
         if (curGate->gtype == XOR)
         {
 #ifdef VERBOSE_MODE
@@ -1040,7 +1137,17 @@ void ATPG::Update_PI_For_9V()
 
 
 
-
+/**
+ * @param curImplication
+ * The implication to be resolved
+ * @param curWire
+ * [redundant param] The wire on which there is a forward implication.
+ * @param impliedValue
+ * [redundant param] The value to be implied.
+ *
+ * @return
+ * True if the value can be justified.
+ */
 bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire, Value impliedValue)
 {
    
@@ -1075,8 +1182,8 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
 	    }
 	}
     }
-    // Check if the value of the wire is already set
-    // And if it is the right value or not
+    /// Check if the value of the wire is already set
+    /// And if it is the right value or not
     else if (!Compatible(curWire->value,impliedValue))
     {
 
@@ -1090,9 +1197,9 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
         return false;
     }
 
-    // CASE 0:
-    // If it is a PO, set the value to the wire 
-    // and pop off the implication 
+    /// CASE 0:
+    /// If it is a PO, set the value to the wire 
+    /// and pop off the implication 
     if ((curWire->outputs).empty())
     {
         Change_Value_And_Update_Log(curImplication);
@@ -1106,14 +1213,14 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
 
     Element *curEle = *((curWire->outputs).begin());
 
-    // CASE 1: If there is a stemout, just
-    // do the needful and return.
+    /// CASE 1: If there is a stemout, just
+    /// do the needful and return.
     
     if ( curEle->type ==  WIRE )
         return Handle_Forward_Implication_On_Stem(curImplication,curWire,impliedValue);
 
-    // Case 2:  The wire has only one output
-    // and it is a gate.
+    /// Case 2:  The wire has only one output
+    /// and it is a gate.
 
     Gate *curGate = dynamic_cast<Gate*>(curEle);
     assert(curGate);
@@ -1121,7 +1228,7 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
     Value gateOldOutput = curGate->output->value;
     Value wireOldValue = curWire->value;
 
-    // set the value for the wire, ie impliedValue to wire->value
+    /// set the value for the wire, ie impliedValue to wire->value
 #ifdef VERBOSE_MODE
     ATPG_DFILE << "Setting the value of the wire " << curImplication->wire->id  
                << " to the implied value " <<  curImplication->value << endl; 
@@ -1129,8 +1236,8 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
     Change_Value_And_Update_Log(curImplication);
         
 
-    // Now that the value of the wire implied on is set, evaluate the 
-    // gate again.
+    /// Now that the value of the wire implied on is set, evaluate the 
+    /// gate again.
     Value gateNewOutput = curGate->Evaluate();
 
 
@@ -1157,34 +1264,31 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
     
     
     
-    // Case - gate's old output is unknown or not completely known
+    /// Case - gate's old output is unknown or not completely known
     if ( isNotKnown(gateOldOutput) ) 
     {
-        // Case I - gate old value == new value = U / partially known
+        /// Case I - gate old value == new value = U / partially known
         if (isNotKnown(gateNewOutput))
         {
-            // Add to the D frontier, only if there is error on the input line
+            /// Add to the D frontier, only if there is error on the input line
             if ( (impliedValue == D) || (impliedValue == DBAR))
             {
-                // Add the gate to D frontier
+                /// Add the gate to D frontier
 #ifdef VERBOSE_MODE
                  ATPG_DFILE << "Adding gate to D frontier: " << curGate->id  
                             << " with value: "  << gateNewOutput << endl;
 #endif
-                 //bug: Add_To_DFrontier(curGate->output, gateNewOutput);
                  Add_To_DFrontier(curGate->output, U);
             }
 
-            // Set the value of the value (useful in 9V)
-            // curGate->output->value = gateNewOutput;
-            // pop off the implication and proceed !
+            /// Then pop off the implication and proceed !
             ImpliQueue.pop();
             return true;
         }
 
-        // Now just propagate the value further
-        // But before that check if the gate is in D frontier 
-        // and remove the gate from it. Because it is resolved now
+        /// Now just propagate the value further
+        /// But before that check if the gate is in D frontier 
+        /// and remove the gate from it. Because it is resolved now
 
         if (Remove_From_D(curGate->output))
              ATPG_DFILE << "The gate is indeed in D and has been removed" << curGate->id << endl;
@@ -1192,10 +1296,10 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
             ATPG_DFILE << "The gate is not there in D frontier. report from " << __LINE__ << endl;
                 
 
-        // The last thing to do is to propagate the impli and
-        // before that, popping off the current impli
+        /// The last thing to do is to propagate the impli and
+        /// before that, popping off the current impli
 
-        // pop off the current impli
+        /// Pop off the current impli
         ImpliQueue.pop();
         Implication* newImply= new Implication(curGate->output,gateNewOutput,true); /*bool true = 0 = forward*/
 #ifdef VERBOSE_MODE
@@ -1207,9 +1311,9 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
 
     }
 
-    // This is the case where the gate ouput is previously known.
-    // Reason: Due to some implication, which finally added this 
-    // gate to J frontier  
+    /// This is the case where the gate ouput is previously known.
+    /// Reason: Due to some implication, which finally added this 
+    /// gate to J frontier  
     else 
     {
 #ifdef VERBOSE_MODE
@@ -1232,9 +1336,6 @@ bool ATPG::Resolve_Forward_Implication(Implication* curImplication,Wire* curWire
 
         // pop off the current impli
         ImpliQueue.pop();
-//        Implication* newImply= new Implication(curGate->output,gateNewOutput,true); /*bool true = 0 = forward*/
-//        cout<<__FILE__<<__LINE__ << "    " << "Adding implication :  " << curGate->id << ". Line: " << __LINE__ << "    " << endl;
-//        (ImpliQueue).push(newImply); 
         return true;
     }
 
@@ -1300,14 +1401,14 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
         assert(false);
 	}
     }
-    // First check if the curr value is compatable with current
+    /// First check if the curr value is compatable with current
     else if (!Compatible(curWire->value, curImplication->value)) 
         return false;
 
 
-    // Check if the wire is a PI.
-    // If yes just set the value and
-    // we are done with the implication 
+    /// Check if the wire is a PI.
+    /// If yes just set the value and
+    /// we are done with the implication 
     if ((curWire->input) == NULL)
     {
         cout<< "Reached PI." << endl;
@@ -1318,20 +1419,20 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
     }
 
 
-    // Handle two cases. Fanout and no fanout.
-    // CASE 1: If there is a stemout, just
-    // do the needful and return.
+    /// Handle two cases. Fanout and no fanout.
+    /// CASE 1: If there is a stemout, just
+    /// do the needful and return.
 
     if ((curWire->input)->type == WIRE)
     {
-        // first check if the curr value is compatable with current
+        /// first check if the curr value is compatable with current
         if ( (curWire != circuit.faultWire) && 
                 (!Compatible(curWire->value, curImplication->value) 
                 ) )
             return false;
 
 
-        // First set the value of the current wire
+        /// First set the value of the current wire
         if (curWire != circuit.faultWire )
             Change_Value_And_Update_Log(curImplication);
 
@@ -1339,21 +1440,21 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
         Wire *stemWire = dynamic_cast<Wire*> (curWire->input);
 
 
-        // Add a new implication for the stem - backward
+        /// Add a new implication for the stem - backward
         Implication* newImply = new Implication(stemWire, curImplication->value,false); 
         (ImpliQueue).push(newImply); 
 
-        // Add implications for the remaining branches of the input
+        /// Add implications for the remaining branches of the input
         list<Element*>::iterator iter=(stemWire->outputs).begin();
         for (; iter != (stemWire->outputs).end(); iter++)
         {
             Wire *owire = dynamic_cast<Wire *> (*iter);
 
-            // If this assert fails == resolve branches failure
+            /// If this assert fails == resolve branches failure
             assert(owire != NULL);
             if ( owire != curWire  && owire != circuit.faultWire)
             {
-                // Add forward implications for the remaining branches, other than the current one
+                /// Add forward implications for the remaining branches, other than the current one
                 newImply = new Implication(owire, curImplication->value,true);
 #ifdef VERBOSE_MODE
                 ATPG_DFILE << "Adding forward implication: " <<  owire->id << endl;
@@ -1363,14 +1464,14 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
             }
         }
 
-        // Pop off the current implication and return
+        /// Pop off the current implication and return
         ImpliQueue.pop();
         return true;
     }
 
 
-    // CASE 2:  Not fanout. So the wire is the output 
-    // of a gate.
+    /// CASE 2:  Not fanout. So the wire is the output 
+    /// of a gate.
 
     Gate* curGate = dynamic_cast<Gate*>(curWire->input);
     Value xorValue =  Do_Xor(ControlValues[curGate->gtype],InversionValues[curGate->gtype]);
@@ -1392,17 +1493,17 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
     else 
     {
 
-        // Note: The xor for the gates which have no
-        // controlling value will always return U
-        // Hence, this piece of code will be used
-        // for BUF  NOT and XOR gates.
+        /// Note: The xor for the gates which have no
+        /// controlling value will always return U
+        /// Hence, this piece of code will be used
+        /// for BUF  NOT and XOR gates.
 
-        // NOT & BUF GATE are almost identical
+        /// NOT & BUF GATE are almost identical
         if ((curGate->gtype == NOT) || (curGate->gtype == BUF))
         {
 
-            // First take care of the output wire, on this
-            // implication has been made.
+            /// First take care of the output wire, on this
+            /// implication has been made.
             if (curWire != circuit.faultWire)
             {
                 if ( !Compatible(curWire->value, curImplication->value) )
@@ -1411,7 +1512,7 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
             }
 
 
-            // Then take care of the gate inputs.
+            /// Then take care of the gate inputs.
             Wire *iwire = *((curGate->inputs).begin());
             Value negValue =  (Value)((~impliedValue)&0xf);
 
@@ -1533,18 +1634,14 @@ bool ATPG::Resolve_Backward_Implication(Implication* curImplication,Wire* curWir
 
 
 
-Implication* Find_In_Logs_List(Wire* wire)
-{
-    list<Implication*>:: iterator iter = Logs.begin();
-    for (;iter!=Logs.end();iter++)
-    {
-         if (wire == (*iter)->wire) 
-            return (*iter);
-    }
-    return NULL;
-}
+// @todo: Create a new class for log, which doesn't contain the bool direction
 
-// TODO: Create a new class for log, which doesn't contain the bool direction
+
+/**
+ * This function is called when an implication on a wire can be resolved and its
+ * value can be set. A further implication triggered by this one may fail
+ * so we log this change to be able to undo it later.
+ */
 bool Change_Value_And_Update_Log (Implication *curImpli)
 {
 	// You have a intention, I make it true :) Enjoy !
@@ -1591,6 +1688,8 @@ RandomVectorTest::~RandomVectorTest()
 {
     randomVectorFile.close();
 }
+
+
 
 void Generate_Full_FaultSet()
 {
@@ -1707,29 +1806,48 @@ void RandomVectorTest::PerformTest(int coverage,int timeLimit)
 */
 
 
+
+/**
+ * Generic Test function redefined by ATPG class to perform the test generation
+ * using D algorithm for a given circuit and a given set of faults.
+ * 
+ * @return
+ * Returns a set of test vectors which cover all the detectable faults
+ * of the fault set specified.
+ *
+ * @param circuit
+ * Reference to the circuit object that needs to be tested.
+ * @param set
+ * Set of faults, basically a list of Fault objects that need to be
+ * tested for.
+ *
+ * This function repeatedly calls Do_ATPG for each individual fault. 
+ * Stats about the number of detected/undetected faults can be seen
+ * in debug/main.debug .
+ */
 TestSet ATPG::PerformTest(Circuit& circuit, FaultSet set)
 {
     TestSet resultset;
     TestVector tempvector;
-    // Run ATPG on the fault set
+    /// Run ATPG in a loop on the specified fault set
     MAIN_DFILE << "size of the fault set = " << set.size() << endl;
     int detectedFaults=0;
     int undetectedFaults=0;
     list<Fault>::iterator it = set.begin();
     for (; it != set.end(); it++)
     {
-        // Important to clean up stuff from the previous run before we begin
-        // Set all wires to U
+        /// Important to clean up stuff from the previous run before we begin
+        ///  1. Set all wires to U
         Clear_Wire_Values(circuit);
-        // No Implications or logs should be there.    
+        ///  2. No Implications or logs should be there.    
         while (!ImpliQueue.empty())
             ImpliQueue.pop();
         Logs.clear();
-        // Clear all the Frontiers.
+        ///  3. Clear all the Frontiers.
         circuit.DFrontier.clear();
         circuit.JFrontier.clear();
 
-
+        /// Run ATPG on this fault, and see if our D Algo can detect it
         bool result = Do_ATPG(it->FaultSite,(it->faultType == 0) ? D : DBAR);
         if (result) 
         {
@@ -1748,6 +1866,9 @@ TestSet ATPG::PerformTest(Circuit& circuit, FaultSet set)
                         << endl;
             }
             MAIN_DFILE << "Emitting the test vectors" << endl;
+            
+            /// If fault is detected, record the testvector and add it to the
+            ///  test set
             for (iter=circuit.PriInputs.begin(); iter!=(circuit.PriInputs).end();iter++)
             {
                 tempvector.push_back(iter->second->value);

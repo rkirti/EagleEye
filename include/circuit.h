@@ -20,6 +20,7 @@
 #include  "enumdef.h"
 using namespace std;
 
+
 class Wire;
 class Fault;
 
@@ -36,16 +37,19 @@ extern const GateEvaluate g_EvaluateTable[];
 
 
 
-
-
-
+//! Element class from which each wire and gate inherits
 class Element
 {
     public:
+        //! Name of the wire/gate element
         string id;
+        //! @see enum CktElement for details 
+        //       It can either be wire, gate or unknown 
+        //       (extensible to add further modules in future)
         CktElement type; 
 
-        /*Class element is an abstract class*/
+        //! This class is an abstract class, since
+        //  we dont want unknown circuit elements to be instantiated
         virtual Value Evaluate()=0;
         Element(const char* s, CktElement givenType=UNKNOWN) 
         { 
@@ -55,31 +59,34 @@ class Element
 };
 
 
+//! Wire class to specify each net
 class Wire: public Element
 {
     public:
         Value value; 
+        
+        //! Indicates the type used for various checks in the algo
         WireType wtype;
         virtual Value Evaluate()	
-        // Not used. Any class inheriting Element has to define this.
+        //! Not used. Needed because any class inheriting Element has to define this.
 	{
 		return U;
 	}
-        /* Gate has only one output 
-         * and wire has only one input*/
+        //! Gate has only one output and wire has only one input
         Element* input;
+        //! Output is a list because the wire may be a stem
         list<Element*> outputs;
 
-	// This bit is set whenever the value is modified
-	// This will be useful to eliminate further logging 
-	// after it's first overwrite.
+	/*! DEPRECATED This bit is set whenever the value is modified
+	 * This will be useful to eliminate further logging 
+	 * after it's first overwrite. */
 	bool modified;
         Wire(const char *name, WireType givenWtype,Value val=U)
            :Element(name,WIRE) 
         {
 	        wtype = givenWtype;
-            	value = val;
-		modified=false; 	// The wire value is not modified yet
+            value = val;
+		    modified=false; 	// The wire value is not modified yet
         }
 };
 
@@ -88,14 +95,18 @@ class Gate: public Element
 {
     public:
     GateType gtype;
+    //! @see: functions in evaluate.cpp to see how this function is implemented
+    //        using a function pointer table
     virtual Value Evaluate();
  
     list<Wire*> inputs;
     Wire* output;
 
-    int level;	// The level of the gate, initially should be zero and is assigned after calling Levelize()
+    //! The level of the gate, initially should be zero and is assigned after calling Levelize()
+    int level;	
 
-    int tempInputs; // needed by levelise
+    //! This field is needed by levelise
+    int tempInputs; 
     Gate( char* name, GateType givenType) 
     	:Element(name,GATE)
     {  
@@ -106,9 +117,12 @@ class Gate: public Element
 
 
 
-/* Instead of adding gates to D or J Frontiers,
- * we add their output wires
- * */
+/*! Instead of adding gates to D Frontiers,
+ * we add their output wires to maintain similarity
+ * with J Frontier. We use a class wire value pair
+ * because J Frontier takes a wire and a value to be justified
+ * on that line
+ */
 class WireValuePair{
     public:
     Wire*  iwire;
@@ -119,6 +133,7 @@ class WireValuePair{
         value = val;
     }
 };
+
 
 
 class Implication{
@@ -152,7 +167,7 @@ public:
     //queue<Implication*> ImpliQueue;
 
 
-    /* This headache added to take care of a special case in renaming fanout
+    /** This headache added to take care of a special case in renaming fanout
      * wires. 
      * If the same wire branches and two or more branches go to the same gate, 
      * we need this to name the wires
@@ -162,7 +177,11 @@ public:
     multimap<int,Element*> Levels;
 
     
-
+    /*! @todo: 
+     *  This should ideally move out of the circuit class
+     *  Frontiers have more to do with the D-Algo test 
+     *  rather than the circuit
+     */
     list<WireValuePair> DFrontier;
     list<WireValuePair> JFrontier;
     

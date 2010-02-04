@@ -18,9 +18,27 @@
  * 	Boston, MA  02110-1301, USA.
  */
 
+
+/**
+ * @file
+ * Single function module to do good simulation
+ */
+
 #include <iostream>
 #include "simulate.h"
 using namespace std;
+
+
+/**
+ * @param
+ * Reference to the circuit object to be simulated
+ *
+ * This function is a mere wrapper over Evaluate
+ * in evaluate.cpp. It reads the inputs from a file
+ * containing one value per line, in the order in which
+ * the PriInputs field stores wires, and sets those values
+ * and calls Evaluate, printing the outputs at the end. 
+ */
 
 
 bool Simulate_Good(Circuit& circuit)
@@ -36,7 +54,7 @@ bool Simulate_Good(Circuit& circuit)
     cout << "Starting simulation" << endl;
     cout << "Please enter the name of the file with input vectors " << endl;
     
-    // Input vectors can be only 0,15,5 standing for 0,1,unknown
+    /// Input vectors can be only 0,15,5 standing for 0,1,unknown
     cin >> inName;
     inputFile.open(inName.c_str(),ios::in);
     
@@ -51,8 +69,8 @@ bool Simulate_Good(Circuit& circuit)
             iter->second->value = (Value) inputval;
             cout << "Setting  value of " <<  iter->second->id << " to  "  << inputval <<  endl;   
             
-            // If the PI has fanout, then all branches should also be set to the
-            // same value
+            /// If the PI has fanout, then all branches should also be set to the
+            /// same value
             if (iter->second->outputs.size() > 1 )
             {
                 innerIter = iter->second->outputs.begin();
@@ -84,7 +102,6 @@ bool Simulate_Good(Circuit& circuit)
     cout << "Evaluation done. Now printing outputs" << endl;
     cout << "Please enter the name of the file to print output vectors " << endl;
     
-    // Input vectors can be only 0,15,5 standing for 0,1,unknown
     cin >> outName;
     outputFile.open(outName.c_str(),ios::out);
     

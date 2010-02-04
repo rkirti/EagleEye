@@ -25,6 +25,10 @@ using namespace std;
 #include "circuit.h"
 
 
+/**
+ * Print out the set of test vectors recorded by a particular
+ * test object after a successful run.
+ */ 
 void Test::Print_Test_Set()
 {
     list<TestVector>::iterator current = tests.begin();
@@ -68,7 +72,9 @@ void Test::Print_Test_Set()
 }
 
 
-
+/// Record the outputs, either for later
+/// comparison with good simulation or to print at which output  
+/// the fault is detected.
 vector<Value> CaptureOutput(Circuit& circuit)
 {
     vector<Value> output;
@@ -78,7 +84,9 @@ vector<Value> CaptureOutput(Circuit& circuit)
     return output;
 }
 
-
+/// Record the input values as soon as a fault is detected
+/// successfully at the primary outputs and put it in the 
+/// test vector list.
 vector<Value> CaptureInput(Circuit& circuit)
 {
     vector<Value> output;
