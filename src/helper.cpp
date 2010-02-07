@@ -107,12 +107,12 @@ string intToString(int inInt)
 
 
 
-void Init_Debug()
+void Init_Debug(string ofile)
 {
     CIRCUIT_DFILE.open("debug/ckt.debug",ios::out);   
     EVALUATE_DFILE.open("debug/eval.debug",ios::out);   
     ATPG_DFILE.open("debug/atpg.debug",ios::out);   
-    MAIN_DFILE.open("debug/main.debug",ios::out);   
+    MAIN_DFILE.open(ofile.c_str(),ios::out);   
 }
 
 

@@ -63,13 +63,15 @@ extern ofstream ATPG_DFILE;
 
 int main(int argc,char **argv)
 {
-
-    if (argc != 2)
+    string ofile;
+        
+    if (argc != 3)
     {
-        cout << "Usage: ./bin/atpg <benchmarkfile> " << endl;
+        cout << "Usage: ./bin/atpg <benchmarkfile> <output stats file>" << endl;
         exit(0);
     }
 
+    ofile = argv[2];
     /// MAIN FUNCTION TASKS
 
     ///  Call the lexer to parse the verilog description and populate the circuit
@@ -82,7 +84,7 @@ int main(int argc,char **argv)
     }
 
     /// Open all the files needed for writing debug info.
-    Init_Debug();
+    Init_Debug(ofile);
 
     /// Levels are needed for evaluation.
     Levelize(circuit);

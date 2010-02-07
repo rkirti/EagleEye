@@ -13,7 +13,7 @@ bool isNotKnown(Value);
 string intToString(int inInt);
 Value Do_Xor(Value val1, Value val2);
 int Translate_Value_To_Int(Value value);
-void Init_Debug();
+void Init_Debug(string ofile);
 void Print_All_Wires(Circuit& circuit);
 void Clear_Wire_Values(Circuit& circuit);
 void Clear_Internal_Wire_Values(Circuit& circuit);
